@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+#
+# commit-msg hook — OmniFlow commit format validator
+# Kurulum: git config core.hooksPath .githooks && chmod +x .githooks/commit-msg
+#
+# Beklenen format:
+#   Keyword: [#issue-no] Short summary
+#   Keyword: Short summary            (issue numarası opsiyonel)
+#
+# Geçerli keyword'ler: Feature, Remove, Redesign, Refactor, Bugfix, Bump, Build, Document, Revert, Test
+
+COMMIT_MSG_FILE="$1"
+SUBJECT_LINE=$(head -n 1 "$COMMIT_MSG_FILE")
+
+KEYWORDS="Feature|Remove|Redesign|Refactor|Bugfix|Bump|Build|Document|Revert|Test"
+PATTERN="^(${KEYWORDS}): (\[#[0-9]+\] )?.+$"
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+# Merge commit'leri atla
+if [[ "$SUBJECT_LINE" =~ ^Merge ]]; then
+  exit 0
+fi
+
+if [[ ! "$SUBJECT_LINE" =~ $PATTERN ]]; then
+  echo -e "${RED}✗ Commit mesajı formatı hatalı.${NC}"
+  echo ""
+  echo "Beklenen:  Keyword: [#issue-no] Short summary"
+  echo "Geçerli keyword'ler: ${KEYWORDS//|/, }"
+  echo ""
+  echo "Örnek:"
+  echo "  Feature: [#42] Add destination search to Explore screen"
+  echo "  Bump: Update Kotlin to 2.0.0"
+  echo ""
+  echo "Senin yazdığın:"
+  echo "  $SUBJECT_LINE"
+  exit 1
+fi
+
+# Subject satırı 50 karakteri aşıyorsa uyar (bloklamaz)
+SUBJECT_LENGTH=${#SUBJECT_LINE}
+if [ "$SUBJECT_LENGTH" -gt 72 ]; then
+  echo -e "${RED}✗ Subject satırı çok uzun (${SUBJECT_LENGTH} karakter, max 72).${NC}"
+  exit 1
+elif [ "$SUBJECT_LENGTH" -gt 50 ]; then
+  echo -e "${YELLOW}⚠ Subject satırı 50 karakteri aşıyor (${SUBJECT_LENGTH}). İdealde kısalt.${NC}"
+fi
+
+# Sonunda nokta var mı
+if [[ "$SUBJECT_LINE" =~ \.$ ]]; then
+  echo -e "${RED}✗ Subject satırı nokta ile bitmemeli.${NC}"
+  exit 1
+fi
+
+echo -e "${GREEN}✓ Commit mesajı formatı uygun.${NC}"
+exit 0

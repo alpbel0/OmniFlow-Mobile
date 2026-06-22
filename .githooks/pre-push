@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+#
+# pre-push hook — branch ismi formatını push'tan önce local'de kontrol eder
+# Kurulum: git config core.hooksPath .githooks && chmod +x .githooks/pre-push
+#
+# Beklenen format: (feature|bugfix|project|revert)/<issue-no>_<kebab-case-description>
+
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+PATTERN="^(feature|bugfix|project|revert)/[0-9]+_[a-z0-9-]+$"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+# main/develop gibi koruma altındaki branch'lerde direkt push yapılıyorsa burada engellemiyoruz,
+# o GitHub branch protection'ın işi. Sadece feature/bugfix/project/revert isimlendirmesini kontrol ediyoruz.
+if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "develop" ]]; then
+  exit 0
+fi
+
+if [[ ! "$BRANCH_NAME" =~ $PATTERN ]]; then
+  echo -e "${RED}✗ Branch ismi formatı hatalı: '${BRANCH_NAME}'${NC}"
+  echo "Beklenen format: (feature|bugfix|project|revert)/<issue-no>_<kebab-case-description>"
+  echo "Örnek: feature/42_destination-search"
+  exit 1
+fi
+
+echo -e "${GREEN}✓ Branch ismi formatı uygun.${NC}"
+exit 0

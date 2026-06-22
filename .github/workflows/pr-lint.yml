@@ -1,0 +1,54 @@
+name: PR Lint
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  check-branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+        run: |
+          PATTERN='^(feature|bugfix|project|revert)/[0-9]+_[a-z0-9-]+$'
+
+          echo "Branch: $BRANCH_NAME"
+
+          if [[ ! "$BRANCH_NAME" =~ $PATTERN ]]; then
+            echo "::error::Branch ismi formatı hatalı: '$BRANCH_NAME'"
+            echo "::error::Beklenen format: (feature|bugfix|project|revert)/<issue-no>_<kebab-case-description>"
+            echo "::error::Örnek: feature/42_destination-search"
+            exit 1
+          fi
+
+          echo "✓ Branch ismi formatı uygun."
+
+  check-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          KEYWORDS="Feature|Remove|Redesign|Refactor|Bugfix|Bump|Build|Document|Revert|Test"
+          PATTERN="^(${KEYWORDS}): (\[#[0-9]+\] )?.+$"
+
+          echo "PR title: $PR_TITLE"
+
+          if [[ ! "$PR_TITLE" =~ $PATTERN ]]; then
+            echo "::error::PR title formatı hatalı: '$PR_TITLE'"
+            echo "::error::Beklenen format: Keyword: [#issue-no] Short summary"
+            echo "::error::Geçerli keyword'ler: ${KEYWORDS//|/, }"
+            echo "::error::Örnek: Feature: [#42] Add destination search to Explore screen"
+            exit 1
+          fi
+
+          SUBJECT_LENGTH=${#PR_TITLE}
+          if [ "$SUBJECT_LENGTH" -gt 72 ]; then
+            echo "::error::PR title çok uzun (${SUBJECT_LENGTH} karakter, max 72)."
+            exit 1
+          fi
+
+          echo "✓ PR title formatı uygun."
