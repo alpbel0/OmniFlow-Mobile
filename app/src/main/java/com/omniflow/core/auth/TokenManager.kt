@@ -1,32 +1,36 @@
 package com.omniflow.core.auth
 
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.omniflow.core.data.local.datastore.PreferencesManager
+import com.omniflow.core.di.ApplicationScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TokenManager @Inject constructor() {
-    private val accessTokenState = MutableStateFlow<String?>(null)
-    private val refreshTokenState = MutableStateFlow<String?>(null)
-    private val sessionStateFlow = MutableStateFlow<SessionState>(SessionState.SignedOut)
+class TokenManager @Inject constructor(
+    private val preferencesManager: PreferencesManager,
+    @ApplicationScope applicationScope: CoroutineScope,
+) : TokenStore {
+    override val sessionState: StateFlow<SessionState> = preferencesManager.tokenPair
+        .map { tokenPair ->
+            if (tokenPair == null) SessionState.SignedOut else SessionState.SignedIn
+        }
+        .stateIn(applicationScope, SharingStarted.Eagerly, SessionState.Unknown)
 
-    val sessionState: StateFlow<SessionState> = sessionStateFlow.asStateFlow()
-
-    suspend fun saveTokens(accessToken: String, refreshToken: String) {
-        accessTokenState.value = accessToken
-        refreshTokenState.value = refreshToken
-        sessionStateFlow.value = SessionState.SignedIn(accessToken)
+    override suspend fun saveTokens(accessToken: String, refreshToken: String) {
+        preferencesManager.saveTokens(TokenPair(accessToken, refreshToken))
     }
 
-    suspend fun clearSession() {
-        accessTokenState.value = null
-        refreshTokenState.value = null
-        sessionStateFlow.value = SessionState.SignedOut
+    override suspend fun clearSession() {
+        preferencesManager.clearTokens()
     }
 
-    suspend fun getAccessToken(): String? = accessTokenState.value
+    override suspend fun getAccessToken(): String? = preferencesManager.tokenPair.first()?.accessToken
 
-    suspend fun getRefreshToken(): String? = refreshTokenState.value
+    override suspend fun getRefreshToken(): String? = preferencesManager.tokenPair.first()?.refreshToken
 }

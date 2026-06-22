@@ -233,44 +233,44 @@ Boş Android projesinden, ilk gerçek ekrandan önce tüm altyapının hazır ol
 
 **Tahmini Süre:** 4 saat
 
-- [ ] Android Studio'da yeni Compose projesi (`com.omniflow`), ayrı git repo init
-- [ ] `libs.versions.toml` Version Catalog kurulumu
-- [ ] Bağımlılıklar: Compose BOM, Material3, Hilt, Retrofit, OkHttp, kotlinx.serialization, Coil, Room, DataStore, Navigation-Compose, Coroutines, MockK/Turbine (test)
-- [ ] `core/` ve `features/` paket iskeleti oluştur (yukarıdaki şema)
-- [ ] `OmniFlowApp` (@HiltAndroidApp), `MainActivity` (setContent + Theme + NavHost placeholder)
+- [x] Android Studio'da yeni Compose projesi (`com.omniflow`), ayrı git repo init
+- [x] `libs.versions.toml` Version Catalog kurulumu
+- [x] Bağımlılıklar: Compose BOM, Material3, Hilt, Retrofit, OkHttp, kotlinx.serialization, Coil, Room, DataStore, Navigation-Compose, Coroutines, MockK/Turbine (test)
+- [x] `core/` ve `features/` paket iskeleti oluştur (yukarıdaki şema)
+- [x] `OmniFlowApp` (@HiltAndroidApp), `MainActivity` (setContent + Theme + NavHost placeholder)
 - [ ] Build başarılı, uygulama boş ekranla açılıyor
 
 ### Week 0.2 — Network & Auth Altyapısı
 
 **Tahmini Süre:** 6 saat
 
-- [ ] `ApiResult` sealed wrapper (Success/Error/Loading) + `ErrorResponse` parse (backend 422 `ValidationErrorDetail` formatına uygun)
-- [ ] `NetworkModule` (Hilt) — Retrofit + OkHttp + Json, base URL config (debug/release)
-- [ ] `AuthInterceptor` — istek başlığına Bearer access token
-- [ ] `TokenAuthenticator` — 401'de `POST /api/account/refresh-token` (mobile: body + `X-Platform: mobile`) ile yeni token al, isteği tekrarla; başarısızsa oturumu kapat
-- [ ] `TokenManager` — access/refresh token DataStore/Encrypted saklama
-- [ ] `SessionState` — uygulama geneli oturum durumu (Flow)
+- [x] `ApiResult` sealed wrapper (Success/Error/Loading) + `ErrorResponse` parse (backend 422 `ValidationErrorDetail` formatına uygun)
+- [x] `NetworkModule` (Hilt) — Retrofit + OkHttp + Json, base URL config (debug/release)
+- [x] `AuthInterceptor` — istek başlığına Bearer access token
+- [x] `TokenAuthenticator` — 401'de `POST /api/account/refresh-token` (mobile: body + `X-Platform: mobile`) ile yeni token al, isteği tekrarla; başarısızsa oturumu kapat
+- [x] `TokenManager` — access/refresh token DataStore/Encrypted saklama
+- [x] `SessionState` — uygulama geneli oturum durumu (Flow)
 
 ### Week 0.3 — Design System & Navigation
 
 **Tahmini Süre:** 6 saat
 
-- [ ] **Tasarımdan** renk paleti, tipografi, shape → `OmniFlowTheme` (Material 3)
-- [ ] Temel component'ler: `OmniButton`, `OmniTextField`, `OmniCard`, `OmniTopBar`, `LoadingIndicator`, `ErrorView`, `EmptyState`
-- [ ] `Routes` (sealed) + `OmniFlowNavHost` + `BottomNavBar` (5 sekme placeholder)
-- [ ] `UiState` / `UiText` ortak pattern'leri
-- [ ] Ortak extension'lar (Flow `asUiState`, Modifier, tarih formatlama)
+- [x] **Tasarımdan** renk paleti, tipografi, shape → `OmniFlowTheme` (Material 3)
+- [x] Temel component'ler: `OmniButton`, `OmniTextField`, `OmniCard`, `OmniTopBar`, `LoadingIndicator`, `ErrorView`, `EmptyState`
+- [x] `Routes` (sealed) + `OmniFlowNavHost` + `BottomNavBar` (5 sekme placeholder)
+- [x] `UiState` / `UiText` ortak pattern'leri
+- [x] Ortak extension'lar (Flow `asUiState`, Modifier, tarih formatlama)
 
 ### Definition of Done (M0)
 
 - [ ] Uygulama derleniyor ve açılıyor
-- [ ] Token saklama + otomatik refresh altyapısı hazır (henüz ekran yok ama test edilebilir)
-- [ ] Tema ve temel component'ler kullanılabilir
-- [ ] Navigation iskeleti ayakta
+- [x] Token saklama + otomatik refresh altyapısı hazır (henüz ekran yok ama test edilebilir)
+- [x] Tema ve temel component'ler kullanılabilir
+- [x] Navigation iskeleti ayakta
 
 ### Test (Minimal)
 
-- [ ] `ApiResult` / `ErrorParser` map'leme unit testi (backend hata formatı doğru parse ediliyor mu)
+- [x] `ApiResult` / `ErrorParser` map'leme unit testi (backend hata formatı doğru parse ediliyor mu)
 
 ---
 
