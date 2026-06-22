@@ -1,0 +1,34 @@
+[
+    {
+        "merged": "com.omniflow.app-debug-66:/drawable_ic_map.xml.flat",
+        "source": "com.omniflow.app-main-68:/drawable/ic_map.xml"
+    },
+    {
+        "merged": "com.omniflow.app-debug-66:/drawable_ic_person.xml.flat",
+        "source": "com.omniflow.app-main-68:/drawable/ic_person.xml"
+    },
+    {
+        "merged": "com.omniflow.app-debug-66:/drawable_ic_home.xml.flat",
+        "source": "com.omniflow.app-main-68:/drawable/ic_home.xml"
+    },
+    {
+        "merged": "com.omniflow.app-debug-66:/drawable_ic_error.xml.flat",
+        "source": "com.omniflow.app-main-68:/drawable/ic_error.xml"
+    },
+    {
+        "merged": "com.omniflow.app-debug-66:/drawable_ic_explore.xml.flat",
+        "source": "com.omniflow.app-main-68:/drawable/ic_explore.xml"
+    },
+    {
+        "merged": "com.omniflow.app-debug-66:/font_plus_jakarta_sans.ttf.flat",
+        "source": "com.omniflow.app-main-68:/font/plus_jakarta_sans.ttf"
+    },
+    {
+        "merged": "com.omniflow.app-debug-66:/drawable_ic_inbox.xml.flat",
+        "source": "com.omniflow.app-main-68:/drawable/ic_inbox.xml"
+    },
+    {
+        "merged": "com.omniflow.app-debug-66:/drawable_ic_public.xml.flat",
+        "source": "com.omniflow.app-main-68:/drawable/ic_public.xml"
+    }
+]

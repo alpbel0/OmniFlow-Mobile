@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.7.3" type="partial_results">
+    <map id="UnsafeIntentLaunch">
+            <map id="unprotected">
+                <entry
+                    name="com.omniflow.MainActivity"
+                    boolean="true"/>
+            </map>
+    </map>
+    <map id="UnusedResources">
+        <entry
+            name="model"
+            string="drawable[ic_error(U),ic_explore(U),ic_home(U),ic_inbox(U),ic_map(U),ic_person(U),ic_public(U)],font[plus_jakarta_sans(R)],string[app_name(U)],style[Theme_OmniFlow(U)];;;;"/>
+    </map>
+
+</incidents>
