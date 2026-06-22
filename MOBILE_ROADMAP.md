@@ -5,6 +5,10 @@
 **Backend:** ASP.NET Core 8.0 API (ayrı repo) — `https://omniflow-backend-...azurewebsites.net`
 **Bu roadmap'in mantığı:** Önce **mevcut backend'e karşı çalışan tam bir mobil MVP** (M0–M6), sonra **backend gerektiren ileri özellikler** (M7–M14). Backend gerektiren her madde, `BACKEND_ROADMAP_V2.md`'deki task'a **⛔ Bağımlılık** etiketiyle bağlanır.
 
+> **Yapı:** Bu roadmap, `BACKEND_ROADMAP_MVP.md` ile aynı kırılım disiplinini kullanır: her **Milestone (M)** → numaralı **Task**'lara bölünür. Her Task'ın kendi **Tahmini Süre**, **Durum** ve **Yapılacaklar** (checklist) alanı vardır. Task numarası `{milestone}.{task}` biçimindedir (örn. `Task 3.5`).
+>
+> **Durum etiketleri:** `✅ Tamamlandı` · `🔄 Devam ediyor` · `[ ] Bekliyor`
+
 > **Test politikası (Minimal):** Her fazda yalnızca kritik **ViewModel unit testleri** (JVM, MockK + Turbine + coroutines-test) yazılır. UI ve uçtan uca testler manuel QA ile yürütülür. Bu, solo geliştirme + sık değişen UI için bilinçli bir tercihtir.
 
 ---
@@ -229,37 +233,126 @@ sealed interface UiState<out T> {
 
 Boş Android projesinden, ilk gerçek ekrandan önce tüm altyapının hazır olması: build, DI, network (token/refresh dahil), design system, navigation iskeleti.
 
-### Week 0.1 — Proje & Bağımlılıklar
+---
 
-**Tahmini Süre:** 4 saat
+### Task 0.1: Proje Oluşturma & Git
 
-- [x] Android Studio'da yeni Compose projesi (`com.omniflow`), ayrı git repo init
+**Tahmini Süre:** 2 saat
+**Durum:** ✅ Tamamlandı
+
+**Yapılacaklar:**
+- [x] Android Studio'da yeni Compose projesi (`com.omniflow`)
+- [x] Ayrı git repo init (backend'den bağımsız)
+
+---
+
+### Task 0.2: Version Catalog & Bağımlılıklar
+
+**Tahmini Süre:** 1 saat
+**Durum:** ✅ Tamamlandı
+
+**Yapılacaklar:**
 - [x] `libs.versions.toml` Version Catalog kurulumu
 - [x] Bağımlılıklar: Compose BOM, Material3, Hilt, Retrofit, OkHttp, kotlinx.serialization, Coil, Room, DataStore, Navigation-Compose, Coroutines, MockK/Turbine (test)
+
+---
+
+### Task 0.3: Paket İskeleti & Application/Activity
+
+**Tahmini Süre:** 1 saat
+**Durum:** ✅ Tamamlandı
+
+**Yapılacaklar:**
 - [x] `core/` ve `features/` paket iskeleti oluştur (yukarıdaki şema)
 - [x] `OmniFlowApp` (@HiltAndroidApp), `MainActivity` (setContent + Theme + NavHost placeholder)
-- [ ] Build başarılı, uygulama boş ekranla açılıyor
+- [x] Build başarılı, uygulama boş ekranla açılıyor
 
-### Week 0.2 — Network & Auth Altyapısı
+---
 
-**Tahmini Süre:** 6 saat
+### Task 0.4: ApiResult & Error Parsing
 
-- [x] `ApiResult` sealed wrapper (Success/Error/Loading) + `ErrorResponse` parse (backend 422 `ValidationErrorDetail` formatına uygun)
-- [x] `NetworkModule` (Hilt) — Retrofit + OkHttp + Json, base URL config (debug/release)
+**Tahmini Süre:** 1.5 saat
+**Durum:** ✅ Tamamlandı
+
+**Yapılacaklar:**
+- [x] `ApiResult` sealed wrapper (Success/Error/Loading)
+- [x] `ErrorResponse` parse (backend 422 `ValidationErrorDetail` formatına uygun)
+
+---
+
+### Task 0.5: NetworkModule (Retrofit/OkHttp/Json)
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** ✅ Tamamlandı
+
+**Yapılacaklar:**
+- [x] `NetworkModule` (Hilt) — Retrofit + OkHttp + Json
+- [x] Base URL config (debug/release)
+
+---
+
+### Task 0.6: Auth Interceptor & Token Authenticator
+
+**Tahmini Süre:** 2 saat
+**Durum:** ✅ Tamamlandı
+
+**Yapılacaklar:**
 - [x] `AuthInterceptor` — istek başlığına Bearer access token
 - [x] `TokenAuthenticator` — 401'de `POST /api/account/refresh-token` (mobile: body + `X-Platform: mobile`) ile yeni token al, isteği tekrarla; başarısızsa oturumu kapat
+
+---
+
+### Task 0.7: TokenManager & SessionState
+
+**Tahmini Süre:** 1 saat
+**Durum:** ✅ Tamamlandı
+
+**Yapılacaklar:**
 - [x] `TokenManager` — access/refresh token DataStore/Encrypted saklama
 - [x] `SessionState` — uygulama geneli oturum durumu (Flow)
 
-### Week 0.3 — Design System & Navigation
+---
 
-**Tahmini Süre:** 6 saat
+### Task 0.8: Tema (Renk / Tipografi / Shape)
 
+**Tahmini Süre:** 2 saat
+**Durum:** ✅ Tamamlandı
+
+**Yapılacaklar:**
 - [x] **Tasarımdan** renk paleti, tipografi, shape → `OmniFlowTheme` (Material 3)
+
+---
+
+### Task 0.9: Temel Component'ler
+
+**Tahmini Süre:** 2 saat
+**Durum:** ✅ Tamamlandı
+
+**Yapılacaklar:**
 - [x] Temel component'ler: `OmniButton`, `OmniTextField`, `OmniCard`, `OmniTopBar`, `LoadingIndicator`, `ErrorView`, `EmptyState`
+
+---
+
+### Task 0.10: Navigation İskeleti
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** ✅ Tamamlandı
+
+**Yapılacaklar:**
 - [x] `Routes` (sealed) + `OmniFlowNavHost` + `BottomNavBar` (5 sekme placeholder)
+
+---
+
+### Task 0.11: UiState/UiText & Extension'lar
+
+**Tahmini Süre:** 0.5 saat
+**Durum:** ✅ Tamamlandı
+
+**Yapılacaklar:**
 - [x] `UiState` / `UiText` ortak pattern'leri
 - [x] Ortak extension'lar (Flow `asUiState`, Modifier, tarih formatlama)
+
+---
 
 ### Definition of Done (M0)
 
@@ -282,27 +375,124 @@ Boş Android projesinden, ilk gerçek ekrandan önce tüm altyapının hazır ol
 
 Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırlama. M0 token altyapısı burada uçtan uca bağlanır.
 
-### Week 1.1 — Auth Data + Domain
+---
 
-**Tahmini Süre:** 4 saat
+### Task 1.1: AuthApi (Retrofit)
 
-- [ ] `AuthApi` — register, login, refresh, verify-email, resend-verification, forgot-password, reset-password
-- [ ] DTO'lar + domain model (`AuthUser`, `Tokens`) + mapper
-- [ ] `AuthRepository` (interface) + `AuthRepositoryImpl`
-- [ ] UseCase'ler: `LoginUseCase`, `RegisterUseCase`, `VerifyEmailUseCase`, `ResendVerificationUseCase`, `ForgotPasswordUseCase`, `ResetPasswordUseCase`
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
 
-### Week 1.2 — Auth UI
+**Yapılacaklar:**
+- [ ] `AuthApi` — register, login, refresh, verify-email, resend-verification, forgot-password, reset-password endpoint imzaları
 
-**Tahmini Süre:** 8 saat
+---
 
+### Task 1.2: DTO + Domain Model + Mapper
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] Request/Response DTO'ları (LoginRequest, RegisterRequest, AuthResponse...)
+- [ ] Domain model (`AuthUser`, `Tokens`)
+- [ ] DTO ↔ domain mapper'lar
+
+---
+
+### Task 1.3: AuthRepository + Impl
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] `AuthRepository` (domain interface)
+- [ ] `AuthRepositoryImpl` (data) — Api çağrıları + `ApiResult` sarmalama + token saklama entegrasyonu
+
+---
+
+### Task 1.4: Auth UseCase'ler
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] `LoginUseCase`, `RegisterUseCase`
+- [ ] `VerifyEmailUseCase`, `ResendVerificationUseCase`
+- [ ] `ForgotPasswordUseCase`, `ResetPasswordUseCase`
+
+---
+
+### Task 1.5: Splash Ekranı
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Splash** — token kontrolü → Home veya Onboarding/Login yönlendirmesi
-- [ ] **Onboarding** (3 ekran, swipe) — "görüldü" flag'i DataStore'da
+- [ ] `SplashViewModel` + UiState
+
+---
+
+### Task 1.6: Onboarding Ekranı
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] **Onboarding** (3 ekran, swipe)
+- [ ] "görüldü" flag'i DataStore'da (bir kez gösterim)
+- [ ] ViewModel + UiState
+
+---
+
+### Task 1.7: Login Ekranı
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Login** — email/şifre, hata gösterimi, "forgot password" linki
+- [ ] Yanlış kimlik → inline "Email veya şifre hatalı" (401)
+- [ ] Başarıda token saklanır → Home
+- [ ] `LoginViewModel` + UiState
+
+---
+
+### Task 1.8: Register Ekranı
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Register** — username/email/şifre/şifre tekrar → 202 + "verify email" ekranına
-- [ ] **Verify Email Info** — bilgi + resend
+- [ ] 422 → alan bazlı hata; duplicate email → inline
+- [ ] ViewModel + UiState
+
+---
+
+### Task 1.9: Verify Email Info Ekranı
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] **Verify Email Info** — bilgi + resend (geri sayım)
+- [ ] Resend hatası → snackbar
+- [ ] ViewModel + UiState
+
+---
+
+### Task 1.10: Forgot & Reset Password Ekranları
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Forgot Password** — email input → reset link gönder
-- [ ] **Reset Password** — token + yeni şifre
-- [ ] Her ekran için ViewModel + UiState
+- [ ] **Reset Password** — token + yeni şifre; geçersiz/expired token → "Link geçersiz" + Login'e dön
+- [ ] ViewModel'ler + UiState
+
+---
 
 ### Ekran Durumları (M1)
 
@@ -337,23 +527,101 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 
 Bottom navigation devreye girer; Home, bildirimler ve tüm profil/sosyal-kullanıcı ekranları.
 
-### Week 2.1 — Home & Bildirimler
+---
 
-**Tahmini Süre:** 6 saat
+### Task 2.1: Home Ekranı
 
+**Tahmini Süre:** 3.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Home** — aktif/yaklaşan trip kartı, quick actions, featured trips (`GET /explore/featured`), önerilen aksiyonlar
+- [ ] Aktif trip yoksa → "Bir trip planla" CTA kartı
+- [ ] Featured boşsa o bölüm gizlenir
+- [ ] `HomeViewModel` + UiState
+
+---
+
+### Task 2.2: Notifications Ekranı
+
+**Tahmini Süre:** 2.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Notifications** — listeleme, okundu işaretle, tümünü okundu, unread badge (`/notifications`, `/notifications/unread-count`)
+- [ ] Tarihe göre gruplu liste + unread vurgusu + pagination footer
+- [ ] ViewModel + UiState
 
-### Week 2.2 — Profil Ekranları
+---
 
-**Tahmini Süre:** 8 saat
+### Task 2.3: My Profile Ekranı
 
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **My Profile** — profil bilgisi, karma, followers/following sayıları, kendi postları/trip'leri (`/users/me`, `/users/me/posts`, `/users/{id}/trips`)
+- [ ] Post/trip yoksa sekme içi "Henüz paylaşım yok"
+- [ ] ViewModel + UiState
+
+---
+
+### Task 2.4: Edit Profile + Foto Yükleme
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Edit Profile** — bio + profil fotoğrafı yükleme (`PUT /users/me`, `POST /users/me/profile-photo`, media upload)
+- [ ] Foto yükleme sırasında foto alanında loading; başarıda snackbar
+- [ ] ViewModel + UiState
+
+---
+
+### Task 2.5: Public User Profile + Follow/Block
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Public User Profile** — başka kullanıcı (`/users/{username}`) + Follow/Unfollow/Block
+- [ ] Engellenmiş kullanıcı → metrikler sıfır/gizli
+- [ ] Follow toggle optimistic
+- [ ] ViewModel + UiState
+
+---
+
+### Task 2.6: Followers / Following
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Followers / Following** — liste + search
-- [ ] **Suggested Follows** + **Top Contributors**
+- [ ] Search sonucu boşsa "Sonuç yok"
+
+---
+
+### Task 2.7: Suggested Follows + Top Contributors
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] **Suggested Follows** + **Top Contributors** — sıralı kullanıcı listesi
+
+---
+
+### Task 2.8: Settings Shell
+
+**Tahmini Süre:** 0.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Settings (shell)** — logout + alt ayar girişleri (içerikler ileride dolacak)
+- [ ] Logout → oturum temizle → Login
+
+---
 
 ### Ekran Durumları (M2)
 
@@ -389,76 +657,214 @@ Bottom navigation devreye girer; Home, bildirimler ve tüm profil/sosyal-kullan�
 
 Uygulamanın kalbi. Trip listesi, detay, 8 adımlı oluşturma wizard'ı, destinasyon yönetimi, timeline ve bütçe.
 
-### Week 3.1 — Trip Liste & Detail
+---
 
-**Tahmini Süre:** 7 saat
+### Task 3.1: My Trips Listesi
 
+**Tahmini Süre:** 2.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **My Trips** — Draft/Published/Archived sekmeleri (`GET /trips`)
+- [ ] Sekme bazlı "Henüz {Draft/Published/Archived} trip yok" + Wizard CTA
+- [ ] Pagination footer
+- [ ] ViewModel + UiState
+
+---
+
+### Task 3.2: Trip Detail Görünümü
+
+**Tahmini Süre:** 2.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Trip Detail** — kapak, başlık, destinasyon özeti, timeline özeti, flight/hotel özeti, budget özeti
+- [ ] Owner değilse edit/publish/delete gizli; Draft/Archived sadece owner'a görünür
+- [ ] ViewModel + UiState
+
+---
+
+### Task 3.3: Trip Detail Aksiyonları
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Detail aksiyonları: publish, archive, edit, delete, save/unsave, upvote, fork
+- [ ] Save/upvote optimistic + snackbar
+
+---
+
+### Task 3.4: Saved Trips
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Saved Trips** (`GET /saved-trips`)
+- [ ] "Henüz kayıtlı trip yok" + Explore CTA
+- [ ] Unsave → optimistic + snackbar
 
-### Week 3.2 — Trip Wizard (8 Adım)
+---
 
-**Tahmini Süre:** 10 saat
+### Task 3.5: Wizard İskeleti & WizardViewModel
 
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Ortak `WizardViewModel` — adımlar arası state (her adımın verisi tek `WizardState`'te tutulur), ileri/geri navigasyon, her adımda kendi validasyonu geçmeden "Devam" pasif
 - [ ] Her adım ayrı Composable; üstte ilerleme göstergesi (1/8 ...)
-- [ ] Son adımda `POST /trips/wizard` → `CreateTripWizardResponse` (budget fallback sonucu) → Trip Detail'e yönlendir
 - [ ] Kısmi state kaybını önlemek için `SavedStateHandle` / process-death koruması
 
-**Adım detayları (alanlar + validasyon):**
+---
 
+### Task 3.6: Wizard Adım 1 (Origin) + Adım 2 (Destinations)
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Adım 1 — Origin**
   - Alanlar: `origin` (şehir), `originCountry`
   - Validasyon: ikisi de zorunlu, boş olamaz
   - Empty/başlangıç: arama/autocomplete ile şehir seçimi
-
 - [ ] **Adım 2 — Destinations**
   - Alanlar (her destinasyon): `city`, `country`, `arrivalDate`, `departureDate`, `orderIndex`
   - Validasyon: 1-10 destinasyon · en az 1 zorunlu · `departureDate ≥ arrivalDate` · **sıralı tarihler** (bir sonraki destinasyonun arrival'ı, öncekinin departure'ından önce olamaz) · origin ile aynı şehir uyarısı (opsiyonel)
   - Aksiyonlar: ekle / sil / sırala (drag)
   - Empty: "Henüz destinasyon eklemedin"
 
+---
+
+### Task 3.7: Wizard Adım 3 (Person Count) + Adım 4 (Travel Companion)
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Adım 3 — Person Count**
   - Alan: `personCount` (int)
   - Validasyon: `≥ 1` (stepper, makul üst sınır örn. 20)
-
 - [ ] **Adım 4 — Travel Companion**
   - Alan: `travelCompanion` (enum: Solo / Couple / Family / Friends — backend `TravelCompanion`)
   - Validasyon: tek seçim zorunlu
 
+---
+
+### Task 3.8: Wizard Adım 5 (Budget) + Adım 6 (Travel Styles)
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Adım 5 — Budget**
   - Alanlar: `budgetTier` (Economy/Standard/Premium), `manualBudget` (decimal, opsiyonel)
   - Validasyon: tier zorunlu · manualBudget girilirse `> 0` · para birimi gösterimi
   - Bilgi: "Bütçe yetersizse sistem otomatik daha düşük tier önerebilir" (fallback notu)
-
 - [ ] **Adım 6 — Vibe / Travel Styles**
   - Alan: `travelStyles` (multi-select, backend 11 değer: Romantic, Cultural, Adventure, Nature, Local, Relax, Shopping, Gastronomy, Influencer, Nightlife, Budget)
   - Validasyon: **en az 1, en fazla 3** seçim
 
+---
+
+### Task 3.9: Wizard Adım 7 (Tempo) + Adım 8 (Transport)
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Adım 7 — Tempo**
   - Alan: `tempo` (Slow / Moderate / Fast — backend `Tempo`)
   - Validasyon: tek seçim zorunlu · her birinin günlük kapasite etkisi açıklaması (Slow≈3, Moderate≈5, Fast≈7)
-
 - [ ] **Adım 8 — Transport Preference**
   - Alan: `transportPreference` (Walk / Transit / Mixed — backend `TransportPreference`)
   - Validasyon: tek seçim zorunlu
 
+---
+
+### Task 3.10: Wizard Review & Create
+
+**Tahmini Süre:** 2.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Review & Create**
   - Tüm seçimlerin özeti (düzenle linkleriyle) + destinasyon listesi + tahmini bütçe fallback sonucu
   - Aksiyon: "Trip Oluştur" → submit (buton loading) · hata → snackbar + ilgili adıma dön
+- [ ] Son adımda `POST /trips/wizard` → `CreateTripWizardResponse` (budget fallback sonucu) → Trip Detail'e yönlendir
 
-### Week 3.3 — Destinations, Timeline & Budget
+---
 
-**Tahmini Süre:** 10 saat
+### Task 3.11: Destinations Management
 
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Destinations Management** — list/add/update/delete (`/trips/{id}/destinations`)
+- [ ] "Destinasyon yok" → ekle CTA
+- [ ] Tarih çakışması → inline hata
+
+---
+
+### Task 3.12: Timeline Listesi
+
+**Tahmini Süre:** 2.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Timeline** — gün bazlı liste, lock/visited/sıralama durumu (`GET /trips/{id}/timeline`)
+- [ ] Gün için "Bu güne entry yok" + ekle CTA
+- [ ] Locked entry kilitli rozet
+
+---
+
+### Task 3.13: Create / Edit Timeline Entry
+
+**Tahmini Süre:** 3 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Create/Edit Timeline Entry** — 5 tip (Place, CustomFlight, CustomTransport, CustomAccommodation, CustomEvent)
-- [ ] **Reorder** (drag) → `PUT /timeline/reorder`; **Visited** toggle
+- [ ] Tip seçimine göre dinamik form (her tip farklı alan seti)
+
+---
+
+### Task 3.14: Timeline Reorder + Visited
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] **Reorder** (drag) → `PUT /timeline/reorder`
+- [ ] **Visited** toggle
+- [ ] Reorder/visited optimistic
+
+---
+
+### Task 3.15: Budget Summary
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Budget Summary** — gerçek zamanlı kırılım (`GET /trips/{id}/budget-summary`)
+- [ ] Veri yoksa "Bütçe için entry ekle"
+- [ ] Fallback uygulanmışsa bilgi rozeti (adjusted tier)
+
+---
+
+### Task 3.16: Recommend Places
+
+**Tahmini Süre:** 0.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Recommend Places** — recommended/neutral/other (`GET /trips/{id}/recommend-places`) → timeline'a ekle
+- [ ] "Öneri bulunamadı" → empty; Timeline'a ekle → snackbar
+
+---
 
 ### Ekran Durumları (M3)
 
@@ -496,24 +902,96 @@ Uygulamanın kalbi. Trip listesi, detay, 8 adımlı oluşturma wizard'ı, destin
 
 Keşif ekranları ve planlama için provider (uçak/otel) verisi.
 
-### Week 4.1 — Explore & Place
+---
 
-**Tahmini Süre:** 7 saat
+### Task 4.1: Explore Main
 
+**Tahmini Süre:** 3 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Explore Main** — liste, filtreler (city/country/budget/style/tags), sort, search (`GET /explore?searchTerm=`)
+- [ ] Filtre sonucu boşsa "Bu kriterlere uygun trip yok" + filtreleri temizle
+- [ ] Aktif filtre çipleri; search debounce
+- [ ] ViewModel + UiState
+
+---
+
+### Task 4.2: Explore Featured
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Explore Featured** (`GET /explore/featured`)
-- [ ] Cursor-based infinite scroll
+- [ ] "Şu an öne çıkan trip yok" → empty
+
+---
+
+### Task 4.3: Cursor Infinite Scroll
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] Cursor-based infinite scroll (footer loading + sonraki sayfa hatası inline retry)
+
+---
+
+### Task 4.4: Place Detail
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Place Detail** — foto, kategori, açıklama, travel style uyumu, Google/OSM metadata (`GET /places/{id}`)
-- [ ] Explore'dan trip kaydet/fork
+- [ ] Koordinat varsa "Haritada aç"
 
-### Week 4.2 — Provider Ekranları
+---
 
-**Tahmini Süre:** 4 saat
+### Task 4.5: Explore'dan Kaydet / Fork
 
+**Tahmini Süre:** 0.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] Explore'dan trip kaydet/fork (optimistic + snackbar)
+
+---
+
+### Task 4.6: Provider Flights
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Provider Flights** — route bazlı (`GET /providers/flights`, `GET /providers/origin-cities`)
+- [ ] Origin city seçimi gerekli
+- [ ] "Bu route için uçuş yok" → empty
+
+---
+
+### Task 4.7: Provider Hotels
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Provider Hotels** — segment/bütçe (`GET /providers/hotels`)
-- [ ] Freshness/snapshot bilgisi gösterimi (varsa)
+- [ ] "Bu şehir için otel yok" → empty
+
+---
+
+### Task 4.8: Timeline'a Ekleme + Freshness Gösterimi
+
+**Tahmini Süre:** 0.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] Freshness/snapshot bilgisi gösterimi (varsa freshness rozeti)
 - [ ] Provider sonucundan timeline'a custom flight/accommodation ekleme
+
+---
 
 ### Ekran Durumları (M4)
 
@@ -545,22 +1023,76 @@ Keşif ekranları ve planlama için provider (uçak/otel) verisi.
 
 Topluluk akışı, gönderiler, yorumlar, tip'ler ve etkileşimler.
 
-### Week 5.1 — Feed & Posts
+---
 
-**Tahmini Süre:** 8 saat
+### Task 5.1: Community Feed
 
+**Tahmini Süre:** 2.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Community Feed** — ForYou/Following/Latest sekmeleri + cursor (`GET /feed`)
+- [ ] Following sekmesi boşsa "Kimseyi takip etmiyorsun" + öneri CTA; diğer sekmeler "Henüz içerik yok"
+- [ ] Upvote optimistic
+- [ ] ViewModel + UiState
+
+---
+
+### Task 5.2: Create Post
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Create Post** — metin, foto (media upload), tag, ilişkili trip/place (`POST /posts`)
+- [ ] Foto yükleme loading; min içerik validasyonu
+
+---
+
+### Task 5.3: Post Detail + Upvote/Edit/Delete
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Post Detail** — içerik, foto, upvote, yorumlar (`GET /posts/{id}`)
 - [ ] Post upvote/remove-upvote, edit/delete (owner)
+
+---
+
+### Task 5.4: Liked Posts + Trending Tags
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Liked Posts** + **Trending Tags**
+- [ ] "Henüz beğeni yok" / "Trend etiket yok" → empty
 
-### Week 5.2 — Comments & Tips
+---
 
-**Tahmini Süre:** 6 saat
+### Task 5.5: Comments
 
+**Tahmini Süre:** 3.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Comments** — listeleme, 1 seviye reply, upvote (`/posts/{id}/comments`)
+- [ ] "Henüz yorum yok" → "İlk yorumu sen yap"
+- [ ] Cross-post reply engeli (backend)
+
+---
+
+### Task 5.6: Community Tips
+
+**Tahmini Süre:** 2.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Community Tips** — trip bazlı listeleme/oluşturma/upvote (`/trips/{id}/tips`)
+- [ ] "Bu trip için henüz tip yok" + ekle CTA
+
+---
 
 ### Ekran Durumları (M5)
 
@@ -593,15 +1125,63 @@ Topluluk akışı, gönderiler, yorumlar, tip'ler ve etkileşimler.
 
 MVP'yi kapatan son parçalar: engelleme yönetimi ve admin paneli.
 
-### Week 6.1 — Block & Admin
+---
 
-**Tahmini Süre:** 7 saat
+### Task 6.1: Blocked Users
 
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Blocked Users** — liste + unblock (`/users/{id}/blocked-users`)
+- [ ] "Engellenen kullanıcı yok" → empty
+- [ ] Unblock optimistic + snackbar
+
+---
+
+### Task 6.2: Profilden Block/Unblock Entegrasyonu
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Profilden block/unblock entegrasyonu (M2 ile tamamlanır)
+
+---
+
+### Task 6.3: Admin Dashboard
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Admin Dashboard** (admin stack girişi, `[Authorize Admin]`)
+- [ ] Özet kartlar + kısayollar (sadece Admin rolü)
+
+---
+
+### Task 6.4: Admin Users (Suspend/Unsuspend)
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Admin Users** — liste, suspend/unsuspend (`/admin/users`)
+- [ ] Search sonucu boşsa "Kullanıcı bulunamadı"
+- [ ] Aksiyon onayı (dialog)
+
+---
+
+### Task 6.5: Admin Posts (Delete)
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Admin Posts** — liste, delete (`/admin/posts`)
+- [ ] Delete onayı (dialog)
+
+---
 
 ### Ekran Durumları (M6)
 
@@ -638,12 +1218,43 @@ MVP'yi kapatan son parçalar: engelleme yönetimi ve admin paneli.
 
 > ⛔ **Bağımlılık:** `BACKEND_ROADMAP_V2 → B1` (Google OAuth) tamamlanmalı.
 
-**Tahmini Süre:** 5 saat
+### Scope
 
-- [ ] Google Sign-In SDK (Credential Manager) entegrasyonu, Google Cloud OAuth client id
+Email/şifre akışının yanına Google ile giriş eklenir. Google Sign-In SDK ID token üretir; backend doğrular ve OmniFlow JWT'si döner.
+
+---
+
+### Task 7.1: Google Sign-In SDK + OAuth Client
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] Google Sign-In SDK (Credential Manager) entegrasyonu
+- [ ] Google Cloud OAuth client id
+
+---
+
+### Task 7.2: "Google ile Devam Et" Butonu
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Login/Register ekranlarına "Google ile devam et" butonu
+
+---
+
+### Task 7.3: Token Akışı (ID token → JWT)
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Alınan ID token → `POST /api/account/google` → OmniFlow JWT
 - [ ] Token saklama mevcut `TokenManager` ile aynı
+
+---
 
 ### Definition of Done (M7)
 
@@ -658,24 +1269,88 @@ MVP'yi kapatan son parçalar: engelleme yönetimi ve admin paneli.
 
 > ⛔ **Bağımlılık:** `BACKEND_ROADMAP_V2 → B2` (Visit Log, Trip Summary, Timezone). Ayrıca **Google Maps API anahtarı** gerekir.
 
-### Week 8.1 — Harita Altyapısı
+### Scope
 
-**Tahmini Süre:** 5 saat
+Seyahat sırasında kullanım: bugünün planı + harita + konum; gerçek ziyaret kayıtları; kapanış özeti.
 
+---
+
+### Task 8.1: Google Maps Compose + API Key
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Google Maps Compose + API key (Manifest)
+
+---
+
+### Task 8.2: Konum İzni + FusedLocationProvider
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Konum izni (just-in-time), `FusedLocationProvider`
+
+---
+
+### Task 8.3: Timeline Koordinat Pinleme
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Timeline entry koordinatlarını haritada pinleme
 
-### Week 8.2 — Live Trip & Visit Log & Summary
+---
 
-**Tahmini Süre:** 10 saat
+### Task 8.4: Live Trip Mode Ekranı
 
+**Tahmini Süre:** 3 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Live Trip Mode** — bugünün timeline'ı + harita + aktif konum aynı ekranda
-- [ ] Yakındaki mekanlar önerisi (kendi places + kapsam dışı için ileride canlı API)
-- [ ] **Visit Log** — gerçek harcama + puan + not (`/trips/{id}/visit-logs`)
+- [ ] Bugün entry yoksa "Bugün için plan yok"
+- [ ] Konum izni reddedilirse harita merkez fallback + uyarı
 - [ ] Timeline'dan visited işaretleme ile entegrasyon (mevcut)
+
+---
+
+### Task 8.5: Yakındaki Mekanlar Önerisi
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] Yakındaki mekanlar önerisi (kendi places + kapsam dışı için ileride canlı API)
+
+---
+
+### Task 8.6: Visit Log
+
+**Tahmini Süre:** 2.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
+- [ ] **Visit Log** — gerçek harcama + puan + not (`/trips/{id}/visit-logs`)
+- [ ] Submit loading; başarı snackbar
+
+---
+
+### Task 8.7: Trip Summary Ekranı
+
+**Tahmini Süre:** 2.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Trip Summary** — kapanış ekranı (ziyaret/harcama/öne çıkanlar) (`/trips/{id}/summary`)
+- [ ] Veri azsa "Henüz yeterli ziyaret kaydı yok"
+- [ ] Paylaş aksiyonu
 - [ ] (Sonraki sürüm) Offline cache notu — M14'e bırakılır
+
+---
 
 ### Ekran Durumları (M8)
 
@@ -700,13 +1375,62 @@ MVP'yi kapatan son parçalar: engelleme yönetimi ve admin paneli.
 
 > ⛔ **Bağımlılık:** `BACKEND_ROADMAP_V2 → B3` (FCM + Preferences).
 
-**Tahmini Süre:** 6 saat
+### Scope
 
+Mevcut in-app notification'a push katmanı: token kaydı, deep link, tercihler.
+
+---
+
+### Task 9.1: Firebase + FCM SDK
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Firebase projesi + `google-services.json` + FCM SDK
+
+---
+
+### Task 9.2: Bildirim İzni + Channels
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Bildirim izni (Android 13+), notification channels
+
+---
+
+### Task 9.3: FCM Token Yönetimi
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] FCM token alma + `POST /api/v1/push-tokens` ile kaydetme; logout'ta silme
+
+---
+
+### Task 9.4: Push → Deep Link Yönlendirme
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Gelen push → ilgili ekrana deep link (notification → post/trip/profil)
+
+---
+
+### Task 9.5: Notification Preferences Ekranı
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Notification Preferences** ekranı (`/users/me/notification-preferences`)
+- [ ] Tip bazlı toggle listesi; toggle optimistic + kaydet; izin kapalıysa sistem ayarı uyarısı
+
+---
 
 ### Ekran Durumları (M9)
 
@@ -728,20 +1452,68 @@ MVP'yi kapatan son parçalar: engelleme yönetimi ve admin paneli.
 
 > ⛔ **Bağımlılık:** `BACKEND_ROADMAP_V2 → B4`.
 
-### Week 10.1 — Collections & Search
+### Scope
 
-**Tahmini Süre:** 8 saat
+Kişisel düzenleme ve keşif katmanı: koleksiyonlar, global arama, paylaşım linki, gezi günlüğü.
 
+---
+
+### Task 10.1: Collections
+
+**Tahmini Süre:** 3 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Collections** — liste, oluştur/düzenle/sil (`/collections`)
+- [ ] "Henüz koleksiyon yok" + oluştur CTA
+- [ ] Sil → onay dialog
+
+---
+
+### Task 10.2: Collection Detail
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Collection Detail** — içindeki trip'ler, ekle/çıkar
+- [ ] "Bu koleksiyon boş" + trip ekle
+- [ ] Çıkar optimistic
+
+---
+
+### Task 10.3: Global Search
+
+**Tahmini Süre:** 3 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Global Search** — tek arama kutusu, sekmeli sonuç (kullanıcı/trip/post/place/tag) (`/search?q=`)
+- [ ] Arama öncesi son aramalar / öneriler; sonuç yoksa "Sonuç bulunamadı"
+- [ ] Debounce + min karakter
 
-### Week 10.2 — Deep-link & Memories
+---
 
-**Tahmini Süre:** 7 saat
+### Task 10.4: Trip Deep-link / Share Intent
 
+**Tahmini Süre:** 3 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Trip paylaşım (deep link / share intent) → link tıklanınca trip detail açılır
+
+---
+
+### Task 10.5: Memories / Journal
+
+**Tahmini Süre:** 4 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Memories / Journal** — gezi notları + fotoğraflar (`/trips/{id}/memories`)
+- [ ] "Henüz anı eklenmedi" → empty; gün bazlı not + foto akışı; foto yükleme loading
+
+---
 
 ### Ekran Durumları (M10)
 
@@ -768,13 +1540,64 @@ MVP'yi kapatan son parçalar: engelleme yönetimi ve admin paneli.
 
 > ⛔ **Bağımlılık:** `BACKEND_ROADMAP_V2 → B5`.
 
-**Tahmini Süre:** 7 saat
+### Scope
 
+Kullanıcı raporlama akışı + admin moderasyon (rapor yönetimi, soft moderation, audit log).
+
+---
+
+### Task 11.1: Report Aksiyonu
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Post/comment/tip/trip/profil üzerinde **Report** aksiyonu
+
+---
+
+### Task 11.2: Report Reason + Submitted Ekranları
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Report Reason** + **Report Submitted** ekranları (`POST /reports`)
+- [ ] Sebep seçimi (radio) + opsiyonel açıklama; aynı içeriği tekrar raporlama → bilgi mesajı
+
+---
+
+### Task 11.3: Admin Reports Listesi + Detail + Aksiyon
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Admin: **Reports** listesi + **Report Detail** + aksiyon (ignore/hide/delete/suspend) (`/admin/reports`)
+- [ ] Status filtreli liste; aksiyon onayı
+
+---
+
+### Task 11.4: Admin Audit Log Ekranı
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Admin: **Audit Log** ekranı (`/admin/audit-log`)
+- [ ] Kronolojik aksiyon listesi + filtre
+
+---
+
+### Task 11.5: Soft Moderation Aksiyonları
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Admin: soft moderation aksiyonları (hide/review-pending/restrict)
+
+---
 
 ### Ekran Durumları (M11)
 
@@ -800,12 +1623,54 @@ MVP'yi kapatan son parçalar: engelleme yönetimi ve admin paneli.
 
 > ⛔ **Bağımlılık:** `BACKEND_ROADMAP_V2 → B6`.
 
-**Tahmini Süre:** 8 saat
+### Scope
 
+AI önerir/optimize eder (tam rota üretmez). AI chat + timeline optimizasyon sonucu.
+
+---
+
+### Task 12.1: AI Chat / Assistant Ekranı
+
+**Tahmini Süre:** 3.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **AI Chat / Assistant** ekranı — soru-cevap, önerilen sonuç kartları, trip bağlamına göre yönlendirme (`POST /ai/chat`)
+- [ ] Başlangıçta öneri/örnek sorular; cevap beklerken "yazıyor" göstergesi; hata → tekrar dene
+
+---
+
+### Task 12.2: AI Sonucunu Trip/Timeline'a Uygulama
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Sonucu trip'e / timeline'a uygulama
+
+---
+
+### Task 12.3: Timeline Optimization Result Ekranı
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Timeline Optimization Result** ekranı — mevcut sıra vs önerilen, tahmini kazanç (`POST /trips/{id}/timeline/optimize`)
+- [ ] "İyileştirme önerisi yok" (zaten optimal) → empty
+
+---
+
+### Task 12.4: Öneri Onay → Reorder Uygulama
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Öneri otomatik uygulanmaz; onaylanınca mevcut reorder kullanılır
+- [ ] Kilitli entry değişmez
+
+---
 
 ### Ekran Durumları (M12)
 
@@ -828,12 +1693,53 @@ MVP'yi kapatan son parçalar: engelleme yönetimi ve admin paneli.
 
 > ⛔ **Bağımlılık:** `BACKEND_ROADMAP_V2 → B7` (Currency servisi).
 
-**Tahmini Süre:** 5 saat
+### Scope
 
+Lokal para birimi ana, kullanıcının para birimi ikincil gösterilir.
+
+---
+
+### Task 13.1: Currency Preferences Ekranı
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Currency Preferences** ekranı (ana + ikincil para birimi)
+- [ ] Kur verisi yüklenirken loading; kaydet snackbar
+
+---
+
+### Task 13.2: Kur Verisi Çekme + Cache
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Kur verisini çekme (`/currency/rates`) + cache
+
+---
+
+### Task 13.3: Çift Para Birimi Format
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Fiyat gösterimlerinde lokal (ana) + kullanıcı para birimi (ikincil/küçük) format
+- [ ] Kur çekilemezse sadece ana birim + "kur güncellenemedi"
+
+---
+
+### Task 13.4: Ekranlara Uygulama
+
+**Tahmini Süre:** 1 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Budget/provider/visit-log ekranlarında uygulama
+
+---
 
 ### Ekran Durumları (M13)
 
@@ -856,20 +1762,62 @@ MVP'yi kapatan son parçalar: engelleme yönetimi ve admin paneli.
 
 > ⛔ **Bağımlılık:** `BACKEND_ROADMAP_V2 → B8`.
 
-### Week 14.1 — Offline
+### Scope
 
-**Tahmini Süre:** 8 saat
+İki ileri özellik: offline cache/senkron ve trip collaboration. En sona bırakılır.
 
+---
+
+### Task 14.1: Trip Room Cache (Offline Görüntüleme)
+
+**Tahmini Süre:** 3 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Trip verisini Room'a cache'leme; internetsiz timeline/harita görüntüleme
+
+---
+
+### Task 14.2: updatedSince Delta Senkronizasyon
+
+**Tahmini Süre:** 3 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] `updatedSince` delta ile senkronizasyon; online olunca güncelleme
+
+---
+
+### Task 14.3: Live Trip Mode Offline Çalışma
+
+**Tahmini Süre:** 2 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Live Trip Mode'un offline çalışması (asıl kullanım senaryosu)
 
-### Week 14.2 — Collaboration
+---
 
-**Tahmini Süre:** 8 saat
+### Task 14.4: Trip Collaboration Management
 
+**Tahmini Süre:** 4 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] **Trip Collaboration Management** — davet gönder/iptal, collaborator listesi, rol (`/trips/{id}/collaborators`)
+- [ ] Sadece owner; rol değiştir/çıkar onayı
+
+---
+
+### Task 14.5: Davet Kabul + Rol Bazlı Yetki
+
+**Tahmini Süre:** 4 saat
+**Durum:** [ ] Bekliyor
+
+**Yapılacaklar:**
 - [ ] Davet kabul akışı + rol bazlı düzenleme yetkisi UI'da
+
+---
 
 ### Ekran Durumları (M14)
 
@@ -892,7 +1840,7 @@ MVP'yi kapatan son parçalar: engelleme yönetimi ve admin paneli.
 
 | Faz | Konu | Backend bağımlılığı | Durum |
 |-----|------|---------------------|-------|
-| M0 | Proje kurulumu & iskelet | — | [ ] |
+| M0 | Proje kurulumu & iskelet | — | 🔄 |
 | M1 | Auth & Onboarding | — | [ ] |
 | M2 | Navigasyon + Home + Profil | — | [ ] |
 | M3 | Trips (wizard/timeline/budget) | — | [ ] |
