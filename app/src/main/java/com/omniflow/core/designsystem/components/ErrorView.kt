@@ -11,6 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import com.omniflow.R
 
 @Composable
 fun ErrorView(
@@ -24,10 +27,16 @@ fun ErrorView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_error),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.error,
+        )
         Text(
             text = message,
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 16.dp),
         )
         if (onRetry != null) {
             OmniButton(

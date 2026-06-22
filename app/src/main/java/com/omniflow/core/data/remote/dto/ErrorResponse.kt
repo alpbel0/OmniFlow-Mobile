@@ -5,6 +5,14 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ErrorResponse(
-    @SerialName("title") val title: String? = null,
-    @SerialName("detail") val detail: String? = null,
+    @SerialName("message") val message: String,
+    @SerialName("errors") val errors: List<ValidationErrorDetail> = emptyList(),
+)
+
+@Serializable
+data class ValidationErrorDetail(
+    @SerialName("field") val field: String,
+    @SerialName("message") val message: String,
+    @SerialName("code") val code: String,
+    @SerialName("attemptedValue") val attemptedValue: String? = null,
 )

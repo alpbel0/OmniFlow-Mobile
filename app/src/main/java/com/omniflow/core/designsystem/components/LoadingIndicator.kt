@@ -1,6 +1,5 @@
 package com.omniflow.core.designsystem.components
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -16,6 +15,9 @@ fun LoadingIndicator(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator(modifier = Modifier.size(36.dp))
+        CircularProgressIndicator(
+            modifier = Modifier.size(36.dp),
+            color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+        )
     }
 }
