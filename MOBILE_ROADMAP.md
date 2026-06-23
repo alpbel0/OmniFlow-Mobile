@@ -380,22 +380,61 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 ### Task 1.1: AuthApi (Retrofit)
 
 **Tahmini Süre:** 1 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [ ] `AuthApi` — register, login, refresh, verify-email, resend-verification, forgot-password, reset-password endpoint imzaları
+- [x] `AuthApi` — register, login, refresh, verify-email, resend-verification, forgot-password, reset-password endpoint imzaları
+
+**Plan:**
+- `AuthApi.kt` Retrofit `suspend` imzalarıyla `/api/account/*` sözleşmesini tanımlar.
+- `login` ve `refresh-token` isteklerinde mobil token gövdesi için mevcut global `X-Platform: mobile` davranışı kullanılır.
+- `refresh-token` imzası `AuthApi` içinde sözleşme bütünlüğü için bulunur; 401 otomatik yenileme M0'daki ayrı, authenticator içermeyen `RefreshTokenApi` üzerinden çalışmaya devam eder.
+- Başarı tipleri endpoint'e özel olur: register `202 RegistrationVerificationResponseDto`, login/refresh `200 AuthResponseDto`, diğerleri `200 MessageResponseDto`.
+- Retrofit dışı HTTP/status/error dönüşümü Task 1.3'te repository sorumluluğunda kalır; `AuthApi` içine iş mantığı eklenmez.
 
 ---
 
 ### Task 1.2: DTO + Domain Model + Mapper
 
 **Tahmini Süre:** 1 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [ ] Request/Response DTO'ları (LoginRequest, RegisterRequest, AuthResponse...)
-- [ ] Domain model (`AuthUser`, `Tokens`)
-- [ ] DTO ↔ domain mapper'lar
+- [x] Request/Response DTO'ları (LoginRequest, RegisterRequest, AuthResponse...)
+- [x] Domain model (`AuthUser`, `Tokens`)
+- [x] DTO ↔ domain mapper'lar
+
+**Plan:**
+- `features/auth/data/remote/dto/` altında `Dto` son ekli request modelleri oluşturulur: login, register, verify email, resend verification, forgot password ve reset password.
+- Response modelleri backend ile birebir eşleşir: auth (`accessToken`, nullable `refreshToken`, `id`, `username`, `email`, `role`), registration verification ve message.
+- `AuthUser` saf domain modeli `id`, `username`, `email`, `role`; `Tokens` modeli access/refresh token taşır. Android/Retrofit/serialization bağımlılığı domain'e sızmaz.
+- Mapper'lar data katmanında tutulur. `AuthResponseDto`, kullanıcı ve token modellerine ayrı map edilir; mobil login/refresh için boş veya null refresh token geçersiz sözleşme kabul edilir.
+- Mevcut placeholder repository constructor kullanımları yalnızca yeni domain modelini derletecek kadar uyarlanır; API çağrısı ve token kaydetme Task 1.3'e bırakılır.
+
+#### Task 1.1–1.2 Uygulama Sırası
+
+1. Backend alan/status sözleşmesini DTO'lara sabitle.
+2. Domain modellerini ve tek yönlü DTO → domain mapper'ları oluştur.
+3. `AuthApi` endpoint imzalarını DTO tiplerine bağla.
+4. M0 refresh DTO/API ayrımını koruyup isim çakışmalarını temizle.
+5. Serialization, mapper ve endpoint path/header testlerini ekle.
+6. `testDebugUnitTest`, `lintDebug` ve `assembleDebug` çalıştır.
+
+#### Etki Alanı ve Riskler
+
+- `AuthUser` alan değişikliği mevcut placeholder `AuthRepositoryImpl` ve use case imzalarını etkiler; davranış eklemeden derleme uyumu sağlanır.
+- `refresh-token` iki Retrofit client tarafından temsil edilir; testler path/body/header sözleşmesinin ayrışmasını engeller.
+- Backend `refreshToken` alanı web yanıtında nullable, mobil yanıtta zorunludur; null kontrolü mapper/repository sınırında yapılır.
+- Backend mesajları doğrudan UI metni kabul edilmez; yerelleştirme Task 1.7–1.10 ekranlarında yapılır.
+
+#### Doğrulama Standardı
+
+- [x] Yedi endpoint doğru HTTP methodu, path ve DTO tipiyle tanımlı.
+- [x] DTO JSON alanları backend örnekleriyle serialize/deserialize oluyor.
+- [x] Auth mapper kullanıcı ve token alanlarını kayıpsız dönüştürüyor.
+- [x] Domain paketinde Android, Retrofit veya serialization importu yok.
+- [x] M0 `TokenAuthenticatorTest` regresyonsuz geçiyor.
+- [x] Unit test, lint ve debug build başarılı.
 
 ---
 
@@ -475,9 +514,15 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 **Tahmini Süre:** 1 saat
 **Durum:** [ ] Bekliyor
 
+> **Akış kararı:** Backend email doğrulamayı **zorunlu** kılar (login, doğrulanmamış kullanıcıya `403` döner). Maildeki doğrulama linki **web frontend'ine** iner (`FrontendVerifyUrl`), mobil app'e değil. Bu yüzden bu ekran bir **"doğrula → app'e dön → giriş yap" köprüsüdür**. **Polling yapılmaz**; doğrulamayı login'in 403'ü garanti eder. (Linkin doğrudan app'te açılması ayrı bir iş → `Task 10.6`.)
+
 **Yapılacaklar:**
-- [ ] **Verify Email Info** — bilgi + resend (geri sayım)
-- [ ] Resend hatası → snackbar
+- [ ] **Verify Email Info** — "**{email}** adresine doğrulama linki gönderdik" (email bir önceki ekrandan state ile taşınır)
+- [ ] **Mail uygulamasını aç** butonu (`ACTION_MAIN` + `CATEGORY_APP_EMAIL` intent)
+- [ ] **Tekrar gönder** — cooldown / geri sayımlı (backend rate-limit ile uyumlu); resend hatası → snackbar
+- [ ] Spam/junk klasörü uyarısı (gri yardım metni)
+- [ ] **"Doğruladım, giriş yap"** butonu → kayıtlı email/şifre ile sessiz login dener: `200` → Home, `403` → "Email henüz doğrulanmadı" uyarısı (ekranda kalır). Otomatik poll YOK; tetikleyici hep kullanıcı aksiyonu
+- [ ] "Yanlış email mi? Değiştir" → Register'a dön
 - [ ] ViewModel + UiState
 
 ---
@@ -502,7 +547,7 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 | Onboarding | — | — | — | 3 sayfa swipe + "Başla/Giriş/Kayıt" |
 | Login | Buton içi loading | — | Yanlış kimlik → inline "Email veya şifre hatalı" (401) | Token saklanır → Home |
 | Register | Buton içi loading | — | 422 → alan bazlı hata; duplicate email → inline | 202 → Verify Email Info |
-| Verify Email Info | Resend buton loading | — | Resend hatası → snackbar | "Mail gönderildi" + geri sayım |
+| Verify Email Info | Resend buton loading | — | Resend hatası → snackbar; "Doğruladım" denemesi 403 → "Email henüz doğrulanmadı" | Email gösterimi + mail aç + geri sayımlı resend; doğrulanınca login → Home (köprü ekran, polling yok) |
 | Forgot Password | Buton içi loading | — | Hata → snackbar | "Reset linki gönderildi" mesajı |
 | Reset Password | Buton içi loading | — | Geçersiz/expired token → "Link geçersiz" + Login'e dön | Başarı → Login + snackbar |
 
@@ -1515,6 +1560,24 @@ Kişisel düzenleme ve keşif katmanı: koleksiyonlar, global arama, paylaşım 
 
 ---
 
+### Task 10.6: Email Verify App Link (Deep Link Altyapısı Üstüne)
+
+**Tahmini Süre:** 3 saat
+**Durum:** [ ] Bekliyor
+
+> **Bağlam:** MVP'de (Task 1.9) email doğrulama linki **web frontend'ine** iniyordu ve Verify ekranı bir login köprüsüydü. Bu task, Task 10.4 ile kurulan Android App Links altyapısının üstüne email doğrulamayı bağlar: maildeki link **doğrudan app'i açar**, kullanıcı login formuna dönmek zorunda kalmaz.
+>
+> ⛔ **Backend bağımlılığı:** `BACKEND_ROADMAP_V2 → Task B4.5` (App Link uyumlu email verify URL + `assetlinks.json`). `AccountService` şu an doğrulama URL'ini `FrontendVerifyUrl` ile (web) üretiyor; B4.5 bu URL'i App Link uyumlu hale getirir ve `assetlinks.json` host'lar. Bu task B4.5 tamamlanmadan başlatılamaz; `assetlinks.json` için package name + SHA-256 imza parmak izi backend'e iletilmeli.
+
+**Yapılacaklar:**
+- [ ] `assetlinks.json` (Digital Asset Links) frontend domaininde host'lanır + `AndroidManifest`'e `autoVerify` intent-filter
+- [ ] Email verify path'i için deep link route'u (`/verify-email?email=&token=`) app içinde handle edilir
+- [ ] Link açıldığında `POST /api/account/verify-email` çağrılır → başarı → otomatik login / Home'a yönlendirme
+- [ ] Geçersiz/expired token → Verify Email Info ekranına anlamlı hata ile düşülür
+- [ ] Fallback: App Link doğrulanmazsa (app kurulu değil / domain doğrulanmadı) mevcut web akışı korunur
+
+---
+
 ### Ekran Durumları (M10)
 
 | Ekran | Empty | Success | Not |
@@ -1530,6 +1593,7 @@ Kişisel düzenleme ve keşif katmanı: koleksiyonlar, global arama, paylaşım 
 - [ ] Global arama çalışıyor
 - [ ] Trip paylaşım linki dış uygulamadan trip detail'e açılıyor
 - [ ] Gezi günlüğü eklenebiliyor
+- [ ] (Backend koordinasyonu varsa) Email doğrulama linki doğrudan app'i açıp doğrulamayı tamamlıyor
 
 ### Test (Minimal)
 - [ ] `SearchViewModel` unit testi (debounce + sonuç gruplama)

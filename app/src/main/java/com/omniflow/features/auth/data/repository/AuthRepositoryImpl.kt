@@ -11,6 +11,6 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
     }
 
     override suspend fun register(name: String, email: String): AuthUser {
-        return AuthUser(id = "pending", displayName = name, email = email)
+        return AuthUser(id = "pending", username = name, email = email, role = "User")
     }
 }
