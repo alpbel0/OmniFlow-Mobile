@@ -441,23 +441,84 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 ### Task 1.3: AuthRepository + Impl
 
 **Tahmini Süre:** 1 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [ ] `AuthRepository` (domain interface)
-- [ ] `AuthRepositoryImpl` (data) — Api çağrıları + `ApiResult` sarmalama + token saklama entegrasyonu
+- [x] `AuthRepository` (domain interface)
+- [x] `AuthRepositoryImpl` (data) — Api çağrıları + `ApiResult` sarmalama + token saklama entegrasyonu
+
+**Plan:**
+- `AuthRepository` tüm auth işlemlerini `ApiResult` ile sunar; Retrofit DTO'ları domain/UI katmanına sızmaz.
+- `login(email, password)` başarılı yanıttan `AuthUser` üretir, access/refresh token çiftini dönüşten önce `TokenStore`'a atomik olarak kaydeder ve UI'a token döndürmez.
+- `register(username, email, password, confirmPassword)` backend'in gerçek request sözleşmesine geçirilir ve `RegistrationResult(requiresEmailVerification)` döndürür.
+- Verify, resend, forgot ve reset işlemleri başarıda `Unit` döndürür; backend mesajları doğrudan UI metni olarak kullanılmaz.
+- Ortak `ApiCallExecutor`, `HttpException` gövdesini `ErrorParser` ile `ApiResult.Error`'a çevirir; ağ/bilinmeyen hatalara güvenli fallback uygular ve coroutine cancellation'ı yutmaz.
+- `AuthModule`, Retrofit'ten `AuthApi` üretir ve `AuthRepositoryImpl` bağlamasını Hilt'e ekler.
 
 ---
 
 ### Task 1.4: Auth UseCase'ler
 
 **Tahmini Süre:** 1 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [ ] `LoginUseCase`, `RegisterUseCase`
-- [ ] `VerifyEmailUseCase`, `ResendVerificationUseCase`
-- [ ] `ForgotPasswordUseCase`, `ResetPasswordUseCase`
+- [x] `LoginUseCase`, `RegisterUseCase`
+- [x] `VerifyEmailUseCase`, `ResendVerificationUseCase`
+- [x] `ForgotPasswordUseCase`, `ResetPasswordUseCase`
+
+**Plan:**
+- Altı use case yalnız domain repository sözleşmesini dışarı açar; Retrofit, DTO, `TokenStore` veya Android bağımlılığı içermez.
+- Login use case `ApiResult<AuthUser>`, register use case `ApiResult<RegistrationResult>`, mesaj tabanlı dört işlem `ApiResult<Unit>` döndürür.
+- Parametreler backend sözleşmesiyle kayıpsız taşınır; UI validation ve kullanıcıya gösterilecek yerelleştirilmiş metinler Task 1.7–1.10 ViewModel'lerinde kalır.
+
+#### Task 1.3–1.4 RFC-Lite Uygulama Planı
+
+**Amaç:** Auth data/domain sınırını gerçek backend çağrılarıyla tamamlamak, başarılı login oturumunu güvenle saklamak ve ekranların kullanacağı tek amaçlı use case'leri hazırlamak.
+
+**Teknik Strateji:**
+- **Pattern:** Repository + use case; tekrar eden HTTP hata dönüşümü için ortak executor.
+- **State:** Token oturumu `TokenStore`'da; repository ve use case stateless.
+- **Constraints:** Backend değişikliği yok, şifre kalıcı depoya yazılmaz, cancellation yeniden fırlatılır, domain'de Retrofit/serialization importu olmaz.
+
+**Dosya Değişiklikleri:**
+
+| Aksiyon | Dosya | Amaç |
+|:--|:--|:--|
+| Yeni | `core/network/ApiCallExecutor.kt` | Ortak HTTP/ağ hata dönüşümü |
+| Yeni | `features/auth/domain/model/RegistrationResult.kt` | Kayıt sonucunu domain'de temsil etme |
+| Değiştir | `features/auth/domain/repository/AuthRepository.kt` | Altı kullanıcı auth operasyonunun `ApiResult` sözleşmesi |
+| Değiştir | `features/auth/data/repository/AuthRepositoryImpl.kt` | API çağrıları, mapper ve token saklama |
+| Yeni | `features/auth/di/AuthModule.kt` | `AuthApi` provider ve repository binding |
+| Değiştir/Yeni | `features/auth/domain/usecase/*.kt` | Altı use case'in nihai imzaları |
+| Yeni | `core/network/ApiCallExecutorTest.kt` | HTTP, network ve cancellation testleri |
+| Yeni | `features/auth/data/repository/AuthRepositoryImplTest.kt` | Request, mapping, hata ve token testleri |
+| Yeni | `features/auth/domain/usecase/AuthUseCasesTest.kt` | Use case parametre/result aktarım testleri |
+
+**Uygulama Sırası:**
+1. Repository, executor ve use case davranış testlerini kırmızı aşamada ekle.
+2. `ApiCallExecutor` ile ortak hata sınırını oluştur.
+3. Domain sonuç modelini ve repository imzalarını düzelt.
+4. `AuthRepositoryImpl` içinde yedi endpoint'i bağla; login token kaydını başarı koşulu yap.
+5. Hilt `AuthModule` ve altı use case'i tamamla.
+6. Hedef testleri, tüm unit testleri, lint ve debug build'i çalıştır.
+
+**Etki Alanı ve Riskler:**
+- Mevcut `LoginUseCase` ve `RegisterUseCase` dönüş/imza değişiklikleri gelecekteki Task 1.7–1.9 ViewModel sözleşmelerini belirler; henüz bağlı ekran olmadığı için mevcut runtime kırılımı yoktur.
+- Altı repository metodu tek hata dönüştürücü olmadan shotgun surgery üretir; `ApiCallExecutor` sonraki feature repository'lerinde de kullanılacak ortak sınırdır.
+- Refresh-token kullanıcı use case'i değildir; M0 `TokenAuthenticator` üzerinden otomatik yönetilmeye devam eder.
+- Token kaydı başarısızsa login başarı sayılmaz; yarım oturumla Home'a geçiş engellenir.
+- `401`, `403`, `409` ve `422` kodları `ApiResult.Error.code` ile korunur; alan hataları `validationErrors` üzerinden ViewModel'e taşınır.
+- Verify-email use case MVP akışında doğrudan kullanılmasa da Task 10.6 app-link doğrulaması için sözleşmede tutulur.
+
+**Doğrulama Standardı:**
+- [x] Login başarılıysa kullanıcı map edilir ve tokenlar tam bir kez saklanır.
+- [x] Login/API/token saklama hatasında sahte başarı veya yarım oturum oluşmaz.
+- [x] Register request'i username/email/password/confirmPassword alanlarını eksiksiz taşır.
+- [x] Altı use case doğru repository metoduna tüm parametreleri kayıpsız iletir.
+- [x] HTTP status, backend validation detayları ve ağ hataları doğru `ApiResult.Error` üretir.
+- [x] Cancellation yutulmaz; domain paketine data/framework bağımlılığı girmez.
+- [x] Hilt graph derlenir; unit test, lint ve debug build başarılıdır.
 
 ---
 
