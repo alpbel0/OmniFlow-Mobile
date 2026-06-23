@@ -1,5 +1,6 @@
 package com.omniflow.ui.auth.onboarding
 
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,18 +10,22 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.omniflow.R
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 @Composable
 fun OnboardingScreen(
     paddingValues: PaddingValues,
     onLoginClick: () -> Unit,
-    onRegisterClick: () -> Unit,
     viewModel: OnboardingViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -28,6 +33,10 @@ fun OnboardingScreen(
         initialPage = uiState.currentPage,
         pageCount = { onboardingPages.size },
     )
+    val pagerProgress = (pagerState.currentPage + pagerState.currentPageOffsetFraction)
+        .coerceIn(0f, onboardingPages.lastIndex.toFloat())
+    val coroutineScope = rememberCoroutineScope()
+    var isCardExpanded by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.settledPage }
@@ -43,7 +52,6 @@ fun OnboardingScreen(
         viewModel.effects.collect { destination ->
             when (destination) {
                 OnboardingDestination.Login -> onLoginClick()
-                OnboardingDestination.Register -> onRegisterClick()
             }
         }
     }
@@ -62,14 +70,22 @@ fun OnboardingScreen(
                 page = onboardingPages[pageIndex],
                 pageIndex = pageIndex,
                 pageCount = onboardingPages.size,
+                pagerProgress = pagerProgress,
+                isCardExpanded = isCardExpanded,
                 isSaving = uiState.isSaving,
                 showPersistenceError = uiState.showPersistenceError,
                 onSkip = viewModel::onSkip,
+                onCardToggle = { isCardExpanded = !isCardExpanded },
                 onPrimaryClick = {
                     if (pageIndex == onboardingPages.lastIndex) {
-                        viewModel.onGetStarted()
+                        viewModel.onSkip()
                     } else {
-                        viewModel.onNext()
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(
+                                page = pageIndex + 1,
+                                animationSpec = tween(durationMillis = NEXT_PAGE_ANIMATION_DURATION_MS),
+                            )
+                        }
                     }
                 },
             )
@@ -100,3 +116,5 @@ private val onboardingPages = listOf(
         bodyRes = R.string.onboarding_share_body,
     ),
 )
+
+private const val NEXT_PAGE_ANIMATION_DURATION_MS = 420

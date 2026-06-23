@@ -28,16 +28,8 @@ class OnboardingViewModel @Inject constructor(
         _uiState.update { state -> state.copy(currentPage = page.coerceIn(0, LAST_PAGE)) }
     }
 
-    fun onNext() {
-        onPageChanged(_uiState.value.currentPage + 1)
-    }
-
     fun onSkip() {
         completeOnboarding(OnboardingDestination.Login)
-    }
-
-    fun onGetStarted() {
-        completeOnboarding(OnboardingDestination.Register)
     }
 
     private fun completeOnboarding(destination: OnboardingDestination) {

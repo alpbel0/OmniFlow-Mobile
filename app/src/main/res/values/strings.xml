@@ -4,8 +4,8 @@
     <string name="splash_tagline">Preparing your journey</string>
     <string name="splash_status">Syncing essentials</string>
     <string name="onboarding_skip">Skip</string>
-    <string name="onboarding_next">Next</string>
-    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_next">Next →</string>
+    <string name="onboarding_start">Get Started</string>
     <string name="onboarding_discover_hero">Discover</string>
     <string name="onboarding_discover_eyebrow">Real trips start here</string>
     <string name="onboarding_discover_title">Save the feeling and shape it into a journey</string>

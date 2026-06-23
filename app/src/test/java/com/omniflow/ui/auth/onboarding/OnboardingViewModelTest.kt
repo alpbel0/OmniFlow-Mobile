@@ -36,13 +36,11 @@ class OnboardingViewModelTest {
     }
 
     @Test
-    fun `next advances pages without persisting onboarding`() {
+    fun `page changes are bounded without persisting onboarding`() {
         val store = mockk<OnboardingStore>(relaxed = true)
         val viewModel = OnboardingViewModel(store)
 
-        viewModel.onNext()
-        viewModel.onNext()
-        viewModel.onNext()
+        viewModel.onPageChanged(5)
 
         assertEquals(2, viewModel.uiState.value.currentPage)
         coVerify(exactly = 0) { store.setOnboardingSeen(any()) }
@@ -61,20 +59,6 @@ class OnboardingViewModelTest {
             coVerify(exactly = 1) { store.setOnboardingSeen(true) }
             assertEquals(OnboardingDestination.Login, awaitItem())
             assertFalse(viewModel.uiState.value.isSaving)
-        }
-    }
-
-    @Test
-    fun `get started persists onboarding before navigating register`() = runTest(dispatcher) {
-        val store = mockk<OnboardingStore>()
-        coEvery { store.setOnboardingSeen(true) } returns Unit
-        val viewModel = OnboardingViewModel(store)
-
-        viewModel.effects.test {
-            viewModel.onGetStarted()
-            runCurrent()
-
-            assertEquals(OnboardingDestination.Register, awaitItem())
         }
     }
 
@@ -109,4 +93,5 @@ class OnboardingViewModelTest {
 
         coVerify(exactly = 1) { store.setOnboardingSeen(true) }
     }
+
 }

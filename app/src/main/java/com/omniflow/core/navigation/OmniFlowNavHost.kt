@@ -63,12 +63,6 @@ fun OmniFlowNavHost() {
                             launchSingleTop = true
                         }
                     },
-                    onRegisterClick = {
-                        navController.navigate(Routes.Register.route) {
-                            popUpTo(Routes.Onboarding.route) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    },
                 )
             }
             composable(Routes.Login.route) {

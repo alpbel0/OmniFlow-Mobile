@@ -11,7 +11,6 @@ data class OnboardingUiState(
 
 enum class OnboardingDestination {
     Login,
-    Register,
 }
 
 data class OnboardingPage(
