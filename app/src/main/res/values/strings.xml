@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">OmniFlow</string>
+    <string name="splash_tagline">Preparing your journey</string>
+    <string name="splash_status">Syncing essentials</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_discover_hero">Discover</string>
+    <string name="onboarding_discover_eyebrow">Real trips start here</string>
+    <string name="onboarding_discover_title">Save the feeling and shape it into a journey</string>
+    <string name="onboarding_discover_body">Turn inspiring travel moments into saved places, routes, and plans you can actually use.</string>
+    <string name="onboarding_build_hero">Build</string>
+    <string name="onboarding_build_eyebrow">Build with ease</string>
+    <string name="onboarding_build_title">Turn saved places into a smooth itinerary</string>
+    <string name="onboarding_build_body">Organize stops, shape your route, and keep every plan in one clear flow.</string>
+    <string name="onboarding_share_hero">Share</string>
+    <string name="onboarding_share_eyebrow">Travel together</string>
+    <string name="onboarding_share_title">Share trips, tips, and moments with your circle</string>
+    <string name="onboarding_share_body">Keep friends in the loop, discover ideas from others, and make every trip more social.</string>
+    <string name="onboarding_page_description">Page %1$d of %2$d</string>
+    <string name="onboarding_persistence_error">Couldn’t save your choice. Please try again.</string>
 </resources>

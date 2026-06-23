@@ -11,15 +11,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.omniflow.features.auth.ui.login.LoginScreen
-import com.omniflow.features.auth.ui.onboarding.OnboardingScreen
-import com.omniflow.features.auth.ui.register.RegisterScreen
-import com.omniflow.features.auth.ui.resetpassword.ResetPasswordScreen
-import com.omniflow.features.auth.ui.splash.SplashScreen
-import com.omniflow.features.auth.ui.verifyemail.VerifyEmailScreen
-import com.omniflow.features.home.ui.HomeScreen
-import com.omniflow.features.notifications.ui.NotificationsScreen
-import com.omniflow.features.profile.ui.ProfileScreen
+import com.omniflow.uicomponents.EmptyState
+import com.omniflow.ui.auth.login.LoginScreen
+import com.omniflow.ui.auth.onboarding.OnboardingScreen
+import com.omniflow.ui.auth.register.RegisterScreen
+import com.omniflow.ui.auth.resetpassword.ResetPasswordScreen
+import com.omniflow.ui.auth.splash.SplashScreen
+import com.omniflow.ui.auth.splash.SplashDestination
+import com.omniflow.ui.auth.verifyemail.VerifyEmailScreen
+import com.omniflow.ui.home.HomeScreen
+import com.omniflow.ui.notifications.NotificationsScreen
+import com.omniflow.ui.profile.ProfileScreen
 
 @Composable
 fun OmniFlowNavHost() {
@@ -44,14 +46,29 @@ fun OmniFlowNavHost() {
             composable(Routes.Splash.route) {
                 SplashScreen(
                     paddingValues = innerPadding,
-                    onContinue = { navController.navigate(Routes.Onboarding.route) },
+                    onDestination = { destination ->
+                        navController.navigate(destination.route) {
+                            popUpTo(Routes.Splash.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
             composable(Routes.Onboarding.route) {
                 OnboardingScreen(
                     paddingValues = innerPadding,
-                    onLoginClick = { navController.navigate(Routes.Login.route) },
-                    onRegisterClick = { navController.navigate(Routes.Register.route) },
+                    onLoginClick = {
+                        navController.navigate(Routes.Login.route) {
+                            popUpTo(Routes.Onboarding.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
+                    onRegisterClick = {
+                        navController.navigate(Routes.Register.route) {
+                            popUpTo(Routes.Onboarding.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
             composable(Routes.Login.route) {
@@ -121,7 +138,7 @@ private fun FeaturePlaceholderScreen(
             .fillMaxSize()
             .padding(paddingValues),
     ) {
-        com.omniflow.core.designsystem.components.EmptyState(
+        EmptyState(
             title = "$name module",
             description = "This screen is ready for the next milestone.",
         )
@@ -136,3 +153,10 @@ private val bottomBarRoutes = setOf(
     Routes.Notifications.route,
     Routes.Profile.route,
 )
+
+private val SplashDestination.route: String
+    get() = when (this) {
+        SplashDestination.Home -> Routes.Home.route
+        SplashDestination.Onboarding -> Routes.Onboarding.route
+        SplashDestination.Login -> Routes.Login.route
+    }

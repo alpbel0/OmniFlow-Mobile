@@ -1,7 +1,7 @@
 # OmniFlow Mobile — Project Roadmap (Kotlin / Jetpack Compose)
 
 **Proje:** OmniFlow Mobile — Android (Kotlin) uygulaması
-**Mimari:** Jetpack Compose + MVVM + Clean Architecture (data / domain / ui)
+**Mimari:** Jetpack Compose + MVVM + katmanlı yapı (core / data / ui — feature bazlı UI, merkezi data, UseCase/domain yok)
 **Backend:** ASP.NET Core 8.0 API (ayrı repo) — `https://omniflow-backend-...azurewebsites.net`
 **Bu roadmap'in mantığı:** Önce **mevcut backend'e karşı çalışan tam bir mobil MVP** (M0–M6), sonra **backend gerektiren ileri özellikler** (M7–M14). Backend gerektiren her madde, `BACKEND_ROADMAP_V2.md`'deki task'a **⛔ Bağımlılık** etiketiyle bağlanır.
 
@@ -71,28 +71,10 @@ omniflow-mobile/                         ← Backend'den AYRI repo
         │       │   │   ├── TokenManager.kt           (access/refresh — DataStore/Encrypted)
         │       │   │   └── SessionState.kt           (oturum durumu — uygulama geneli)
         │       │   │
-        │       │   ├── data/
-        │       │   │   ├── local/
-        │       │   │   │   ├── OmniFlowDatabase.kt   (Room)
-        │       │   │   │   ├── dao/
-        │       │   │   │   └── datastore/            (PreferencesManager)
-        │       │   │   └── remote/
-        │       │   │       └── dto/                  (PagedResponse, ErrorResponse, ortak)
+        │       │   ├── designsystem/                 ← Tema token'ları (TASARIMDAN gelir)
+        │       │   │   └── theme/                    (Color, Type, Shape, OmniFlowTheme)
         │       │   │
-        │       │   ├── designsystem/                 ← TASARIMDAN gelir
-        │       │   │   ├── theme/
-        │       │   │   │   ├── Color.kt
-        │       │   │   │   ├── Type.kt
-        │       │   │   │   ├── Shape.kt
-        │       │   │   │   └── OmniFlowTheme.kt
-        │       │   │   └── components/
-        │       │   │       ├── OmniButton.kt
-        │       │   │       ├── OmniTextField.kt
-        │       │   │       ├── OmniCard.kt
-        │       │   │       ├── OmniTopBar.kt
-        │       │   │       ├── LoadingIndicator.kt
-        │       │   │       ├── ErrorView.kt
-        │       │   │       └── EmptyState.kt
+        │       │   ├── preferences/                  (DataStore tabanlı tercih erişimi)
         │       │   │
         │       │   ├── navigation/
         │       │   │   ├── OmniFlowNavHost.kt
@@ -110,68 +92,40 @@ omniflow-mobile/                         ← Backend'den AYRI repo
         │       │       ├── DatabaseModule.kt
         │       │       └── DispatcherModule.kt
         │       │
-        │       └── features/                         ← Her feature: data / domain / ui
+        │       ├── ui-components/                   ← Tüm feature'ların paylaştığı ORTAK component'ler
+        │       │   ├── OmniButton.kt   OmniTextField.kt   OmniCard.kt   OmniTopBar.kt
+        │       │   └── LoadingIndicator.kt   ErrorView.kt   EmptyState.kt
+        │       │
+        │       ├── data/                            ← BÜTÜN veri işi merkezi burada
+        │       │   ├── local/                       (OmniFlowDatabase, dao/, datastore/) — Room/DataStore
+        │       │   ├── remote/                      (AuthService, AdminService ... API servisleri)
+        │       │   ├── models/                      ← feature'a göre gruplu (request+response+model birlikte)
+        │       │   │   ├── auth/                     (AuthUser, Tokens, RegistrationResult,
+        │       │   │   │                              AuthRequestDtos, AuthResponseDtos, RefreshTokenDtoModel)
+        │       │   │   └── common/                   (paylaşılan network modelleri: ErrorResponse, ValidationErrorDetail)
+        │       │   ├── mapper/                       (DTO → model dönüşümü, ör. AuthMappers)
+        │       │   └── repository/                  (AuthRepository [interface] + AuthRepositoryImpl ...)
+        │       │
+        │       └── ui/                              ← SADECE feature ekranları (data/domain YOK)
+        │           │   her ekran = Screen + ViewModel + UiState + UiModel + Event + Mapper
         │           │
-        │           ├── auth/                         (M1)
-        │           │   ├── data/
-        │           │   │   ├── remote/
-        │           │   │   │   ├── AuthApi.kt
-        │           │   │   │   └── dto/              (LoginRequest, RegisterRequest, AuthResponse...)
-        │           │   │   └── repository/
-        │           │   │       └── AuthRepositoryImpl.kt
-        │           │   ├── domain/
-        │           │   │   ├── model/                (AuthUser, Tokens)
-        │           │   │   ├── repository/
-        │           │   │   │   └── AuthRepository.kt
-        │           │   │   └── usecase/              (Login, Register, ForgotPassword, ResetPassword, VerifyEmail)
-        │           │   └── ui/
-        │           │       ├── splash/               (SplashScreen, SplashViewModel)
-        │           │       ├── onboarding/
-        │           │       ├── login/
-        │           │       ├── register/
-        │           │       ├── verifyemail/
-        │           │       └── resetpassword/
-        │           │
-        │           ├── home/                         (M2)
-        │           │   ├── data/ · domain/ · ui/
-        │           │
-        │           ├── profile/                      (M2)
-        │           │   ├── data/ · domain/
-        │           │   └── ui/  (me, edit, public, followers, following, suggested, topContributors, settings)
-        │           │
-        │           ├── notifications/                (M2/M6)
-        │           │   └── data/ · domain/ · ui/
-        │           │
-        │           ├── trips/                        (M3)
-        │           │   ├── data/ · domain/
-        │           │   └── ui/
-        │           │       ├── mytrips/
-        │           │       ├── detail/
-        │           │       ├── wizard/               (8 adım — her adım Composable + ortak WizardViewModel)
-        │           │       ├── destinations/
-        │           │       ├── timeline/             (list, createEntry, editEntry, reorder, visited)
-        │           │       ├── budget/
-        │           │       ├── recommendplaces/
-        │           │       └── savedtrips/
-        │           │
-        │           ├── explore/                      (M4)
-        │           │   └── data/ · domain/ · ui/ (explore, featured, search, placeDetail)
-        │           │
-        │           ├── providers/                    (M4)
-        │           │   └── data/ · domain/ · ui/ (flights, hotels)
-        │           │
-        │           ├── social/                       (M5)
-        │           │   ├── data/ · domain/
-        │           │   └── ui/ (feed, postDetail, createPost, comments, tips)
-        │           │
-        │           ├── admin/                        (M6)
-        │           │   └── data/ · domain/ · ui/ (dashboard, users, posts)
-        │           │
-        │           ├── livetrip/                     (M8) ← yeni
-        │           │   └── data/ · domain/ · ui/ (liveMode, map, visitLog, summary)
-        │           ├── collections/                  (M10) ← yeni
-        │           ├── aichat/                       (M12) ← yeni
-        │           └── moderation/                   (M11) ← yeni (report ekranları)
+        │           ├── auth/                        (M1) → splash, onboarding, login, register,
+        │           │                                       verifyemail, forgotpassword, resetpassword
+        │           ├── home/                        (M2) → HomeScreen, HomeViewModel, HomeMapper,
+        │           │                                       HomeUiState, HomeUiModel, HomeUiEvent
+        │           ├── profile/                     (M2) → me, edit, public, followers, following,
+        │           │                                       suggested, topContributors, settings
+        │           ├── notifications/               (M2/M6)
+        │           ├── trips/                       (M3) → mytrips, detail, wizard, destinations,
+        │           │                                       timeline, budget, recommendplaces, savedtrips
+        │           ├── explore/                     (M4) → explore, featured, search, placeDetail
+        │           ├── providers/                   (M4) → flights, hotels
+        │           ├── social/                      (M5) → feed, postDetail, createPost, comments, tips
+        │           ├── admin/                       (M6) → dashboard, users, posts
+        │           ├── livetrip/                    (M8) → liveMode, map, visitLog, summary
+        │           ├── collections/                 (M10)
+        │           ├── aichat/                      (M12)
+        │           └── moderation/                  (M11) → report ekranları
         │
         ├── test/                                     (JVM unit testler — ViewModel)
         │   └── java/com/omniflow/...
@@ -180,20 +134,23 @@ omniflow-mobile/                         ← Backend'den AYRI repo
             └── java/com/omniflow/...
 ```
 
+> ✅ **`auth` feature** yeni yapıya taşındı (Step 2 tamamlandı): veri katmanı merkezi `data/`'ya çıktı (`AuthService`, request/response DTO'lar, `AuthRepository`+Impl, mapper), **usecase/domain kaldırıldı**, DI `core/di/AuthModule`'a taşındı, ekranlar `ui/auth/<screen>/` olarak düzleştirildi. Şema artık tüm feature'lar için geçerli.
+
 ### Mimari Akış (tek feature için)
 
 ```
-UI (Composable) → ViewModel (UiState/Flow) → UseCase → Repository (interface, domain)
-                                                              ↑
-                                            RepositoryImpl (data) → Api / Dao
-DTO ──(mapper)──► Domain Model ──(mapper)──► UI Model
+UI (Composable) → ViewModel (UiState/Flow) → Repository (data/)
+                                                   ↑
+                                  RepositoryImpl → Api (remote) / Dao (local)
+Response DTO ──(Mapper · feature içinde)──► UiModel
 ```
 
-| Katman | Sorumluluk | Bağımlılık |
-|--------|------------|------------|
-| **domain** | Saf iş modeli, UseCase, repository **interface**'leri | Hiçbir Android/framework bağımlılığı yok |
-| **data** | Api, Dao, DTO, repository **implementasyon**, mapper | domain'i implemente eder |
-| **ui** | Composable ekran + ViewModel + UiState | domain (UseCase) çağırır |
+| Katman | Sorumluluk | Not |
+|--------|------------|-----|
+| **core** | Ortak altyapı: network, token/session, theme, navigation, di, common, preferences | Feature'a özel değil |
+| **ui-components** | Tüm feature'ların paylaştığı Compose component'leri | Feature'a özel component'ler ilgili feature içinde kalır |
+| **data** | API servisleri, request/response DTO'ları, repository (interface + impl), local (Room/DataStore) | Tüm veri tek merkezde |
+| **ui (feature)** | Sadece ekran: Screen + ViewModel + UiState + UiModel + Event + Mapper | ViewModel → Repository çağırır; Mapper DTO → UiModel çevirir. **UseCase/domain katmanı yok** |
 
 ---
 
@@ -263,7 +220,7 @@ Boş Android projesinden, ilk gerçek ekrandan önce tüm altyapının hazır ol
 **Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [x] `core/` ve `features/` paket iskeleti oluştur (yukarıdaki şema)
+- [x] `core/`, `data/`, `ui/` ve `ui-components/` paket iskeleti oluştur (yukarıdaki şema)
 - [x] `OmniFlowApp` (@HiltAndroidApp), `MainActivity` (setContent + Theme + NavHost placeholder)
 - [x] Build başarılı, uygulama boş ekranla açılıyor
 
@@ -377,52 +334,52 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 
 ---
 
-### Task 1.1: AuthApi (Retrofit)
+### Task 1.1: AuthService (Retrofit)
 
 **Tahmini Süre:** 1 saat
 **Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [x] `AuthApi` — register, login, refresh, verify-email, resend-verification, forgot-password, reset-password endpoint imzaları
+- [x] `AuthService` — register, login, refresh, verify-email, resend-verification, forgot-password, reset-password endpoint imzaları
 
 **Plan:**
-- `AuthApi.kt` Retrofit `suspend` imzalarıyla `/api/account/*` sözleşmesini tanımlar.
+- `data/remote/AuthService.kt` Retrofit `suspend` imzalarıyla `/api/account/*` sözleşmesini tanımlar.
 - `login` ve `refresh-token` isteklerinde mobil token gövdesi için mevcut global `X-Platform: mobile` davranışı kullanılır.
-- `refresh-token` imzası `AuthApi` içinde sözleşme bütünlüğü için bulunur; 401 otomatik yenileme M0'daki ayrı, authenticator içermeyen `RefreshTokenApi` üzerinden çalışmaya devam eder.
+- `refresh-token` imzası `AuthService` içinde sözleşme bütünlüğü için bulunur; 401 otomatik yenileme M0'daki ayrı, authenticator içermeyen `RefreshTokenApi` üzerinden çalışmaya devam eder.
 - Başarı tipleri endpoint'e özel olur: register `202 RegistrationVerificationResponseDto`, login/refresh `200 AuthResponseDto`, diğerleri `200 MessageResponseDto`.
-- Retrofit dışı HTTP/status/error dönüşümü Task 1.3'te repository sorumluluğunda kalır; `AuthApi` içine iş mantığı eklenmez.
+- Retrofit dışı HTTP/status/error dönüşümü Task 1.3'te repository sorumluluğunda kalır; `AuthService` içine iş mantığı eklenmez.
 
 ---
 
-### Task 1.2: DTO + Domain Model + Mapper
+### Task 1.2: DTO + Model + Mapper
 
 **Tahmini Süre:** 1 saat
 **Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
 - [x] Request/Response DTO'ları (LoginRequest, RegisterRequest, AuthResponse...)
-- [x] Domain model (`AuthUser`, `Tokens`)
-- [x] DTO ↔ domain mapper'lar
+- [x] Data modelleri (`AuthUser`, `Tokens`, `RegistrationResult`) → `data/models/`
+- [x] DTO → model mapper'lar → `data/mapper/`
 
 **Plan:**
-- `features/auth/data/remote/dto/` altında `Dto` son ekli request modelleri oluşturulur: login, register, verify email, resend verification, forgot password ve reset password.
+- Tüm auth DTO'ları `data/models/auth/` altında `Dto` son ekiyle oluşturulur (request + response birlikte): login, register, verify email, resend verification, forgot password, reset password.
 - Response modelleri backend ile birebir eşleşir: auth (`accessToken`, nullable `refreshToken`, `id`, `username`, `email`, `role`), registration verification ve message.
-- `AuthUser` saf domain modeli `id`, `username`, `email`, `role`; `Tokens` modeli access/refresh token taşır. Android/Retrofit/serialization bağımlılığı domain'e sızmaz.
+- `AuthUser` data modeli `id`, `username`, `email`, `role`; `Tokens` modeli access/refresh token taşır (`data/models/`). Bu modeller serialization annotation taşımaz, DTO'lardan ayrıdır.
 - Mapper'lar data katmanında tutulur. `AuthResponseDto`, kullanıcı ve token modellerine ayrı map edilir; mobil login/refresh için boş veya null refresh token geçersiz sözleşme kabul edilir.
-- Mevcut placeholder repository constructor kullanımları yalnızca yeni domain modelini derletecek kadar uyarlanır; API çağrısı ve token kaydetme Task 1.3'e bırakılır.
+- Mevcut placeholder repository constructor kullanımları yalnızca yeni data modelini derletecek kadar uyarlanır; API çağrısı ve token kaydetme Task 1.3'e bırakılır.
 
 #### Task 1.1–1.2 Uygulama Sırası
 
 1. Backend alan/status sözleşmesini DTO'lara sabitle.
-2. Domain modellerini ve tek yönlü DTO → domain mapper'ları oluştur.
-3. `AuthApi` endpoint imzalarını DTO tiplerine bağla.
+2. Data modellerini (`data/models/`) ve tek yönlü DTO → model mapper'larını (`data/mapper/`) oluştur.
+3. `AuthService` endpoint imzalarını DTO tiplerine bağla.
 4. M0 refresh DTO/API ayrımını koruyup isim çakışmalarını temizle.
 5. Serialization, mapper ve endpoint path/header testlerini ekle.
 6. `testDebugUnitTest`, `lintDebug` ve `assembleDebug` çalıştır.
 
 #### Etki Alanı ve Riskler
 
-- `AuthUser` alan değişikliği mevcut placeholder `AuthRepositoryImpl` ve use case imzalarını etkiler; davranış eklemeden derleme uyumu sağlanır.
+- `AuthUser` alan değişikliği `AuthRepositoryImpl` imzalarını etkiler; davranış eklemeden derleme uyumu sağlanır.
 - `refresh-token` iki Retrofit client tarafından temsil edilir; testler path/body/header sözleşmesinin ayrışmasını engeller.
 - Backend `refreshToken` alanı web yanıtında nullable, mobil yanıtta zorunludur; null kontrolü mapper/repository sınırında yapılır.
 - Backend mesajları doğrudan UI metni kabul edilmez; yerelleştirme Task 1.7–1.10 ekranlarında yapılır.
@@ -432,7 +389,7 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 - [x] Yedi endpoint doğru HTTP methodu, path ve DTO tipiyle tanımlı.
 - [x] DTO JSON alanları backend örnekleriyle serialize/deserialize oluyor.
 - [x] Auth mapper kullanıcı ve token alanlarını kayıpsız dönüştürüyor.
-- [x] Domain paketinde Android, Retrofit veya serialization importu yok.
+- [x] `data/models` modellerinde Retrofit veya serialization importu yok (DTO'lardan ayrı).
 - [x] M0 `TokenAuthenticatorTest` regresyonsuz geçiyor.
 - [x] Unit test, lint ve debug build başarılı.
 
@@ -444,80 +401,80 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 **Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [x] `AuthRepository` (domain interface)
+- [x] `AuthRepository` (data/repository interface)
 - [x] `AuthRepositoryImpl` (data) — Api çağrıları + `ApiResult` sarmalama + token saklama entegrasyonu
 
 **Plan:**
-- `AuthRepository` tüm auth işlemlerini `ApiResult` ile sunar; Retrofit DTO'ları domain/UI katmanına sızmaz.
+- `AuthRepository` tüm auth işlemlerini `ApiResult` ile sunar; Retrofit DTO'ları UI katmanına sızmaz.
 - `login(email, password)` başarılı yanıttan `AuthUser` üretir, access/refresh token çiftini dönüşten önce `TokenStore`'a atomik olarak kaydeder ve UI'a token döndürmez.
 - `register(username, email, password, confirmPassword)` backend'in gerçek request sözleşmesine geçirilir ve `RegistrationResult(requiresEmailVerification)` döndürür.
 - Verify, resend, forgot ve reset işlemleri başarıda `Unit` döndürür; backend mesajları doğrudan UI metni olarak kullanılmaz.
 - Ortak `ApiCallExecutor`, `HttpException` gövdesini `ErrorParser` ile `ApiResult.Error`'a çevirir; ağ/bilinmeyen hatalara güvenli fallback uygular ve coroutine cancellation'ı yutmaz.
-- `AuthModule`, Retrofit'ten `AuthApi` üretir ve `AuthRepositoryImpl` bağlamasını Hilt'e ekler.
+- `core/di/AuthModule`, Retrofit'ten `AuthService` üretir ve `AuthRepositoryImpl` bağlamasını Hilt'e ekler.
 
 ---
 
 ### Task 1.4: Auth UseCase'ler
 
 **Tahmini Süre:** 1 saat
-**Durum:** ✅ Tamamlandı
+**Durum:** ❌ **Kaldırıldı (Step 2 tamamlandı)**
 
-**Yapılacaklar:**
-- [x] `LoginUseCase`, `RegisterUseCase`
-- [x] `VerifyEmailUseCase`, `ResendVerificationUseCase`
-- [x] `ForgotPasswordUseCase`, `ResetPasswordUseCase`
+> **Mimari kararı (mentör):** UseCase/domain katmanı tamamen kaldırıldı. ViewModel doğrudan `AuthRepository`'yi (data katmanı) çağırır. Bu task artık geçerli değil; referans için bırakıldı.
+
+**Eski maddeler (artık kodda yok):**
+- ~~`LoginUseCase`, `RegisterUseCase`~~
+- ~~`VerifyEmailUseCase`, `ResendVerificationUseCase`~~
+- ~~`ForgotPasswordUseCase`, `ResetPasswordUseCase`~~
 
 **Plan:**
 - Altı use case yalnız domain repository sözleşmesini dışarı açar; Retrofit, DTO, `TokenStore` veya Android bağımlılığı içermez.
 - Login use case `ApiResult<AuthUser>`, register use case `ApiResult<RegistrationResult>`, mesaj tabanlı dört işlem `ApiResult<Unit>` döndürür.
 - Parametreler backend sözleşmesiyle kayıpsız taşınır; UI validation ve kullanıcıya gösterilecek yerelleştirilmiş metinler Task 1.7–1.10 ViewModel'lerinde kalır.
 
-#### Task 1.3–1.4 RFC-Lite Uygulama Planı
+#### Task 1.3 RFC-Lite Uygulama Planı
 
-**Amaç:** Auth data/domain sınırını gerçek backend çağrılarıyla tamamlamak, başarılı login oturumunu güvenle saklamak ve ekranların kullanacağı tek amaçlı use case'leri hazırlamak.
+**Amaç:** Auth veri sınırını gerçek backend çağrılarıyla tamamlamak ve başarılı login oturumunu güvenle saklamak. (UseCase/domain katmanı yoktur; ViewModel doğrudan repository çağırır.)
 
 **Teknik Strateji:**
-- **Pattern:** Repository + use case; tekrar eden HTTP hata dönüşümü için ortak executor.
-- **State:** Token oturumu `TokenStore`'da; repository ve use case stateless.
-- **Constraints:** Backend değişikliği yok, şifre kalıcı depoya yazılmaz, cancellation yeniden fırlatılır, domain'de Retrofit/serialization importu olmaz.
+- **Pattern:** Repository; tekrar eden HTTP hata dönüşümü için ortak executor.
+- **State:** Token oturumu `TokenStore`'da; repository stateless.
+- **Constraints:** Backend değişikliği yok, şifre kalıcı depoya yazılmaz, cancellation yeniden fırlatılır, `data/models` modellerine Retrofit/serialization sızmaz.
 
 **Dosya Değişiklikleri:**
 
 | Aksiyon | Dosya | Amaç |
 |:--|:--|:--|
 | Yeni | `core/network/ApiCallExecutor.kt` | Ortak HTTP/ağ hata dönüşümü |
-| Yeni | `features/auth/domain/model/RegistrationResult.kt` | Kayıt sonucunu domain'de temsil etme |
-| Değiştir | `features/auth/domain/repository/AuthRepository.kt` | Altı kullanıcı auth operasyonunun `ApiResult` sözleşmesi |
-| Değiştir | `features/auth/data/repository/AuthRepositoryImpl.kt` | API çağrıları, mapper ve token saklama |
-| Yeni | `features/auth/di/AuthModule.kt` | `AuthApi` provider ve repository binding |
-| Değiştir/Yeni | `features/auth/domain/usecase/*.kt` | Altı use case'in nihai imzaları |
+| Yeni | `data/models/auth/RegistrationResult.kt` | Kayıt sonucunu temsil etme |
+| Yeni | `data/repository/AuthRepository.kt` | Altı kullanıcı auth operasyonunun `ApiResult` sözleşmesi (interface) |
+| Yeni | `data/repository/AuthRepositoryImpl.kt` | API çağrıları, mapper ve token saklama |
+| Yeni | `core/di/AuthModule.kt` | `AuthService` provider ve repository binding |
 | Yeni | `core/network/ApiCallExecutorTest.kt` | HTTP, network ve cancellation testleri |
-| Yeni | `features/auth/data/repository/AuthRepositoryImplTest.kt` | Request, mapping, hata ve token testleri |
-| Yeni | `features/auth/domain/usecase/AuthUseCasesTest.kt` | Use case parametre/result aktarım testleri |
+| Yeni | `data/repository/AuthRepositoryImplTest.kt` | Request, mapping, hata ve token testleri |
 
 **Uygulama Sırası:**
-1. Repository, executor ve use case davranış testlerini kırmızı aşamada ekle.
+1. Repository ve executor davranış testlerini kırmızı aşamada ekle.
 2. `ApiCallExecutor` ile ortak hata sınırını oluştur.
-3. Domain sonuç modelini ve repository imzalarını düzelt.
+3. Data sonuç modelini ve repository imzalarını düzelt.
 4. `AuthRepositoryImpl` içinde yedi endpoint'i bağla; login token kaydını başarı koşulu yap.
-5. Hilt `AuthModule` ve altı use case'i tamamla.
+5. Hilt `AuthModule`'ü tamamla.
 6. Hedef testleri, tüm unit testleri, lint ve debug build'i çalıştır.
 
 **Etki Alanı ve Riskler:**
-- Mevcut `LoginUseCase` ve `RegisterUseCase` dönüş/imza değişiklikleri gelecekteki Task 1.7–1.9 ViewModel sözleşmelerini belirler; henüz bağlı ekran olmadığı için mevcut runtime kırılımı yoktur.
+- `AuthRepository` dönüş/imza değişiklikleri gelecekteki Task 1.7–1.9 ViewModel sözleşmelerini belirler; henüz bağlı ekran olmadığı için mevcut runtime kırılımı yoktur.
 - Altı repository metodu tek hata dönüştürücü olmadan shotgun surgery üretir; `ApiCallExecutor` sonraki feature repository'lerinde de kullanılacak ortak sınırdır.
-- Refresh-token kullanıcı use case'i değildir; M0 `TokenAuthenticator` üzerinden otomatik yönetilmeye devam eder.
+- Refresh-token kullanıcı işlemi değildir; M0 `TokenAuthenticator` üzerinden otomatik yönetilmeye devam eder.
 - Token kaydı başarısızsa login başarı sayılmaz; yarım oturumla Home'a geçiş engellenir.
 - `401`, `403`, `409` ve `422` kodları `ApiResult.Error.code` ile korunur; alan hataları `validationErrors` üzerinden ViewModel'e taşınır.
-- Verify-email use case MVP akışında doğrudan kullanılmasa da Task 10.6 app-link doğrulaması için sözleşmede tutulur.
+- Verify-email işlemi MVP akışında doğrudan kullanılmasa da Task 10.6 app-link doğrulaması için repository sözleşmesinde tutulur.
 
 **Doğrulama Standardı:**
 - [x] Login başarılıysa kullanıcı map edilir ve tokenlar tam bir kez saklanır.
 - [x] Login/API/token saklama hatasında sahte başarı veya yarım oturum oluşmaz.
 - [x] Register request'i username/email/password/confirmPassword alanlarını eksiksiz taşır.
-- [x] Altı use case doğru repository metoduna tüm parametreleri kayıpsız iletir.
+- [x] Altı repository metodu tüm parametreleri kayıpsız iletir.
 - [x] HTTP status, backend validation detayları ve ağ hataları doğru `ApiResult.Error` üretir.
-- [x] Cancellation yutulmaz; domain paketine data/framework bağımlılığı girmez.
+- [x] Cancellation yutulmaz; `data/models` modeline framework bağımlılığı girmez.
 - [x] Hilt graph derlenir; unit test, lint ve debug build başarılıdır.
 
 ---
@@ -525,23 +482,137 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 ### Task 1.5: Splash Ekranı
 
 **Tahmini Süre:** 1 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [ ] **Splash** — token kontrolü → Home veya Onboarding/Login yönlendirmesi
-- [ ] `SplashViewModel` + UiState
+- [x] **Splash** — token kontrolü → Home veya Onboarding/Login yönlendirmesi
+- [x] `SplashViewModel` + UiState
+
+**Plan:**
+- Splash yerel `SessionState` ve onboarding görülme bilgisini birlikte gözlemler; başlangıç verileri hazır olana kadar loading durumunda kalır.
+- `SignedIn` → Home, `SignedOut + onboarding görülmedi` → Onboarding, `SignedOut + onboarding görüldü` → Login kararı verilir.
+- Token geçerliliği için Splash'ta ağ isteği yapılmaz; şifrelenmiş token çifti oturum varlığını belirler, süresi dolmuş token ilk korumalı istekte M0 `TokenAuthenticator` tarafından yenilenir.
+- Navigation tek seferlik destination etkisiyle çalışır; hedefe geçerken Splash back stack'ten inclusive kaldırılır ve geri tuşuyla Splash'a dönülmez.
+- Mevcut sabit `600ms` gecikme yerine ViewModel başlangıcından itibaren minimum `1000ms` görünürlük kapısı kullanılır; veri daha geç gelirse ek süre bindirilmez. Ekran veri okunurken OmniFlow wordmark/brand işareti ve loading göstergesini light/dark palette uygun gösterir.
+
+#### Task 1.5 RFC-Lite Uygulama Planı
+
+**Amaç:** Uygulama açılışında yerel oturum ve onboarding durumunu deterministik biçimde çözerek kullanıcıyı doğru başlangıç ekranına yönlendirmek.
+
+**Teknik Strateji:**
+- **Pattern:** Hilt ViewModel + tek yönlü `StateFlow<SplashUiState>` + navigation callback.
+- **State:** `Loading` veya hedef destination; Composable yalnız state render eder ve navigation etkisini iletir.
+- **Constraints:** Splash'ta ağ çağrısı yok, minimum görünürlük `1000ms`, token/şifre loglanmaz, Task 1.6 dışında onboarding flag yazılmaz, mevcut auth refresh akışı korunur.
+
+**Dosya Değişiklikleri:**
+
+| Aksiyon | Dosya | Amaç |
+|:--|:--|:--|
+| Yeni | `core/preferences/OnboardingStore.kt` | Onboarding durumunu data katmanından soyutlama |
+| Değiştir | `data/local/datastore/PreferencesManager.kt` | `OnboardingStore` sözleşmesini uygulama |
+| Değiştir | `core/di/AppModule.kt` | Onboarding store Hilt binding'i |
+| Yeni | `ui/auth/splash/SplashUiState.kt` | Loading ve launch destination modeli |
+| Yeni | `ui/auth/splash/SplashViewModel.kt` | Session/onboarding akışlarını birleştirme |
+| Değiştir | `ui/auth/splash/SplashScreen.kt` | Brand loading görünümü ve state tüketimi |
+| Değiştir | `core/navigation/OmniFlowNavHost.kt` | Destination eşleme ve back-stack temizliği |
+| Değiştir | `res/values/strings.xml` | Splash erişilebilir metinleri |
+| Yeni | `ui/auth/splash/SplashViewModelTest.kt` | Dört yönlendirme/loading senaryosu |
+
+**Mimari Sınır:**
+- Değişiklik beşten fazla dosyaya yayılır; `OnboardingStore` soyutlaması ViewModel'in doğrudan DataStore sınıfına bağlanmasını önler ve Task 1.6'nın okuma/yazma ihtiyacını tek sözleşmede toplar.
+- `SplashDestination` navigation route string'i taşımaz; route eşleme yalnız `OmniFlowNavHost` içinde kalır.
+
+**Uygulama Sırası:**
+1. Splash ViewModel'in loading ve üç destination davranışını testlerle kırmızı aşamada sabitle.
+2. `OnboardingStore` sözleşmesini ve mevcut `PreferencesManager` adaptasyonunu ekle.
+3. `SplashUiState` ile ViewModel akış birleştirme mantığını uygula.
+4. Splash Composable'ını state-driven brand/loading görünümüne dönüştür.
+5. NavHost destination eşlemesini inclusive back-stack temizliğiyle bağla.
+6. Hedef testleri, tüm unit testleri, lint ve debug build'i çalıştır; bağlı telefonda üç launch yolunu kontrol et.
+
+**Etki Alanı ve Riskler:**
+- Task 1.6 tamamlanana kadar onboarding placeholder'ı flag'i değiştirmez; signed-out kullanıcı her yeniden açılışta Onboarding görür. Flag yazma sorumluluğu Task 1.6'da kalır.
+- Yerelde token çifti varsa Splash Home'a geçer; refresh başarısız olursa mevcut authenticator oturumu temizler, sonraki global session navigation davranışı Splash kapsamı dışındadır.
+- `Unknown` session state navigation üretmez; erken Login/Home sıçraması ve çift navigation engellenir.
+- NavHost callback değişikliği yalnız Splash çağrı noktasını etkiler; diğer route sözleşmeleri korunur.
+
+**Doğrulama Standardı:**
+- [x] `Unknown` session durumunda Splash loading'de kalır ve navigation üretmez.
+- [x] Hazır destination minimum `1000ms` dolmadan navigation üretmez.
+- [x] `SignedIn` doğrudan Home destination üretir.
+- [x] `SignedOut` kullanıcı onboarding flag'ine göre Onboarding veya Login'e gider.
+- [x] Navigation yalnız bir kez çalışır ve Splash geri yığından kaldırılır.
+- [x] Splash light/dark temada wordmark ve progress göstergesini okunabilir gösterir.
+- [x] ViewModel doğrudan DataStore/Android navigation bağımlılığı taşımaz.
+- [x] Hilt graph derlenir; unit test, lint ve debug build başarılıdır.
 
 ---
 
 ### Task 1.6: Onboarding Ekranı
 
 **Tahmini Süre:** 1.5 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [ ] **Onboarding** (3 ekran, swipe)
-- [ ] "görüldü" flag'i DataStore'da (bir kez gösterim)
-- [ ] ViewModel + UiState
+- [x] **Onboarding** (3 ekran, swipe)
+- [x] "görüldü" flag'i DataStore'da (bir kez gösterim)
+- [x] ViewModel + UiState
+
+**Plan:**
+- **Development notu:** Debug build'de görsel geliştirme süresince onboarding her uygulama açılışında zorunlu gösterilir; release build kalıcı `onboardingSeen` flag'ini kullanmaya devam eder.
+- Üç sayfa sırasıyla OmniFlow ürün değerini, route planning + explore/fork özelliklerini ve Live Trip + paylaşım/topluluk deneyimini anlatır.
+- İlk iki sayfada swipe, “Next” ve “Skip” aksiyonları bulunur. Son sayfada “Get Started” Register'a, “Skip” Login'e yönlendirir.
+- Onboarding yalnız çıkış aksiyonunda `OnboardingStore.setOnboardingSeen(true)` başarılı olduktan sonra kapanır; yalnız sayfaları gezmek flag'i değiştirmez.
+- Flag yazımı sırasında butonlar kilitlenir. Yazma hatasında navigation yapılmaz, kullanıcıya tekrar deneyebileceği yerelleştirilmiş hata gösterilir.
+- Login/Register'a geçerken Onboarding back stack'ten inclusive kaldırılır; Splash sonraki açılışta flag üzerinden doğrudan Login'i seçer.
+
+#### Task 1.6 RFC-Lite Uygulama Planı
+
+**Amaç:** İlk kullanıcıya OmniFlow'un üç temel değer alanını kısa, swipe edilebilir bir akışla anlatmak ve tamamlanma durumunu kalıcı olarak saklamak.
+
+**Teknik Strateji:**
+- **Pattern:** Data-driven `HorizontalPager` + Hilt ViewModel + `StateFlow<OnboardingUiState>` + tek seferlik navigation effect.
+- **State:** Aktif sayfa, kayıt/loading durumu ve hata; sayfa içerikleri immutable UI modelleridir.
+- **Constraints:** Yeni görsel/dependency paketi yok, metinler string resource'ta, flag yalnız kullanıcı çıkışında yazılır, mevcut `OnboardingStore` yeniden kullanılır.
+
+**Dosya Değişiklikleri:**
+
+| Aksiyon | Dosya | Amaç |
+|:--|:--|:--|
+| Yeni | `ui/auth/onboarding/OnboardingUiState.kt` | Sayfa, loading, hata ve destination modelleri |
+| Yeni | `ui/auth/onboarding/OnboardingViewModel.kt` | Sayfa state'i ve flag/navigation orkestrasyonu |
+| Değiştir | `ui/auth/onboarding/OnboardingScreen.kt` | Üç sayfalı pager, göstergeler ve CTA'lar |
+| Değiştir | `core/navigation/OmniFlowNavHost.kt` | Onboarding destination eşleme ve back-stack temizliği |
+| Değiştir | `res/values/strings.xml` | Başlık, açıklama, aksiyon ve hata metinleri |
+| Yeni | `ui/auth/onboarding/OnboardingViewModelTest.kt` | Page state, persistence, hata ve çift tıklama testleri |
+
+**Mimari Sınır:**
+- Altı dosyalık etki UI, state, navigation ve kaynak katmanlarına dağılır; üç ayrı ekran kopyalamak yerine data-driven page modeli ortak pager kabuğunu korur.
+- ViewModel Compose `PagerState` veya route string'i bilmez; UI page değişimini bildirir, navigation eşlemesi NavHost'ta kalır.
+
+**Uygulama Sırası:**
+1. Sayfa değişimi, flag-before-navigation, hata ve duplicate action davranışlarını testlerle kırmızı aşamada sabitle.
+2. `OnboardingUiState`, page modeli ve ViewModel'i uygula.
+3. Mevcut placeholder'ı üç sayfalı responsive `HorizontalPager` ile değiştir.
+4. Page indicator, Next/Skip/Get Started aksiyonlarını loading ve erişilebilirlik durumlarıyla bağla.
+5. Navigation effect'lerini Login/Register route'larına inclusive back-stack temizliğiyle eşle.
+6. Hedef testleri, tüm unit testleri, lint ve debug build'i çalıştır; bağlı telefonda swipe, skip, register ve yeniden açılış yollarını doğrula.
+
+**Etki Alanı ve Riskler:**
+- Task 1.5 Splash artık onboarding flag'ini tüketiyor; yanlış erken yazım onboarding'in kalıcı atlanmasına yol açacağından persistence yalnız açık çıkış aksiyonunda yapılır.
+- DataStore yazımı başarısızken navigation yapılırsa sonraki açılışta onboarding tekrar görünür; bu nedenle yazma başarı koşuludur.
+- Hızlı çift tıklama iki DataStore yazımı ve iki navigation üretebilir; ViewModel `isSaving` kapısıyla tekrarları reddeder.
+- Onboarding ekranı sistem geri tuşuyla kapanırsa flag yazılmaz; kullanıcı bir sonraki signed-out açılışta onboarding'i tekrar görür.
+
+**Doğrulama Standardı:**
+- [x] Üç sayfa swipe ve “Next” ile doğru sırada gezilir; indicator aktif sayfayı gösterir.
+- [x] “Skip” flag'i yazdıktan sonra Login'e gider.
+- [x] Son sayfadaki “Get Started” flag'i yazdıktan sonra Register'a gider.
+- [x] Flag yazma hatasında navigation oluşmaz ve tekrar deneme mümkün olur.
+- [x] Hızlı tekrar aksiyonu tek flag yazımı ve tek navigation üretir.
+- [x] Onboarding route'u çıkış sonrası back stack'te kalmaz; yeniden açılış Login'e yönlenir.
+- [x] Light/dark tema, font ölçekleme ve erişilebilir semantics ile içerik okunabilir kalır.
+- [x] Hilt graph derlenir; unit test, lint ve debug build başarılıdır.
 
 ---
 
@@ -1983,7 +2054,7 @@ Lokal para birimi ana, kullanıcının para birimi ikincil gösterilir.
 
 ### Çalışma Disiplini
 
-- **Her feature aynı zincirle:** data (Api+DTO+Repo+mapper) → domain (model+UseCase) → ui (ViewModel+Composable). Önce data/domain, sonra UI.
+- **Katman zinciri:** Veri işi merkezi `data/`'da (Api servisi + request/response DTO + repository [interface+impl] + local). Feature'lar (`ui/<feature>/`) **sadece UI**: Screen + ViewModel + UiState + UiModel + Event + Mapper. **UseCase/domain katmanı yok** — ViewModel doğrudan repository çağırır; Mapper, response DTO'sunu UiModel'e çevirir. Ortak component'ler `ui-components/`'ta.
 - **State:** Her ekran tek bir `UiState` (loading/data/error) ile yönetilir; ViewModel `StateFlow` döner.
 - **Hata yönetimi:** `ApiResult.Error` → `UiText` → kullanıcıya gösterim. 401 otomatik refresh (M0).
 - **Görsel:** Coil ile lazy görsel; placeholder/hata state'leri design system component'lerinden.

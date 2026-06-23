@@ -1,7 +1,7 @@
 package com.omniflow.core.network.interceptors
 
 import com.omniflow.core.auth.TokenStore
-import com.omniflow.core.data.remote.dto.RefreshTokenRequestDto
+import com.omniflow.data.models.auth.RefreshTokenRequestDto
 import com.omniflow.core.network.RefreshTokenApi
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator

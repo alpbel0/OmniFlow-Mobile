@@ -1,6 +1,6 @@
 package com.omniflow.core.auth
 
-import com.omniflow.core.data.local.datastore.PreferencesManager
+import com.omniflow.data.local.datastore.PreferencesManager
 import com.omniflow.core.di.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
