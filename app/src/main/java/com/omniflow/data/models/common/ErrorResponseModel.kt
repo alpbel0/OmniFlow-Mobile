@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ErrorResponse(
     @SerialName("message") val message: String,
-    @SerialName("errors") val errors: List<ValidationErrorDetail> = emptyList(),
+    @SerialName("errors") val errors: List<ValidationErrorDetail>? = null,
 )
 
 @Serializable

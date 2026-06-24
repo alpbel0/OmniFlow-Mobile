@@ -1,11 +1,25 @@
 package com.omniflow.core.navigation
 
+import com.omniflow.ui.auth.login.LOGIN_EMAIL_KEY
+import com.omniflow.ui.auth.verifyemail.VERIFY_EMAIL_KEY
+import com.omniflow.ui.auth.verifyemail.VERIFY_EMAIL_SOURCE_KEY
+import com.omniflow.ui.auth.verifyemail.VerifyEmailSource
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 sealed class Routes(val route: String) {
     data object Splash : Routes("splash")
     data object Onboarding : Routes("onboarding")
-    data object Login : Routes("login")
+    data object Login : Routes("login?$LOGIN_EMAIL_KEY={$LOGIN_EMAIL_KEY}") {
+        fun createRoute(email: String = ""): String = "login?$LOGIN_EMAIL_KEY=${urlEncode(email)}"
+    }
     data object Register : Routes("register")
-    data object VerifyEmail : Routes("verify_email")
+    data object VerifyEmail : Routes(
+        "verify_email/{$VERIFY_EMAIL_KEY}/{$VERIFY_EMAIL_SOURCE_KEY}",
+    ) {
+        fun createRoute(email: String, source: VerifyEmailSource): String =
+            "verify_email/${urlEncode(email)}/${source.name}"
+    }
     data object ResetPassword : Routes("reset_password")
     data object Home : Routes("home")
     data object Trips : Routes("trips")
@@ -13,6 +27,9 @@ sealed class Routes(val route: String) {
     data object Social : Routes("social")
     data object Notifications : Routes("notifications")
     data object Profile : Routes("profile")
-}
 
-const val VERIFY_EMAIL_ADDRESS_KEY = "verify_email_address"
+    companion object {
+        private fun urlEncode(value: String): String =
+            URLEncoder.encode(value, StandardCharsets.UTF_8.name()).replace("+", "%20")
+    }
+}

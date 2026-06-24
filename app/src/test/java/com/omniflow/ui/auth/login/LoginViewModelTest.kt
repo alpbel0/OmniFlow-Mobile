@@ -1,7 +1,9 @@
 package com.omniflow.ui.auth.login
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.omniflow.core.network.ApiResult
+import com.omniflow.core.auth.PendingAuthCredentialsStore
 import com.omniflow.data.models.auth.AuthUser
 import com.omniflow.data.repository.AuthRepository
 import io.mockk.coEvery
@@ -30,7 +32,11 @@ class LoginViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         authRepository = mockk()
-        viewModel = LoginViewModel(authRepository)
+        viewModel = LoginViewModel(
+            authRepository,
+            PendingAuthCredentialsStore(),
+            SavedStateHandle(),
+        )
     }
 
     @After
@@ -45,6 +51,18 @@ class LoginViewModelTest {
         assertEquals("", state.password)
         assertEquals(false, state.isLoading)
         assertEquals(false, state.isPasswordVisible)
+    }
+
+    @Test
+    fun `saved verification email prefills login without password`() {
+        viewModel = LoginViewModel(
+            authRepository,
+            PendingAuthCredentialsStore(),
+            SavedStateHandle(mapOf(LOGIN_EMAIL_KEY to "user@example.com")),
+        )
+
+        assertEquals("user@example.com", viewModel.uiState.value.email)
+        assertEquals("", viewModel.uiState.value.password)
     }
 
     @Test

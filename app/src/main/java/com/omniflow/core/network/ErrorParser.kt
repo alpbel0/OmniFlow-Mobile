@@ -19,7 +19,7 @@ class ErrorParser(
             onSuccess = { errorResponse ->
                 ParsedApiError(
                     message = UiText.DynamicString(errorResponse.message),
-                    validationErrors = errorResponse.errors,
+                    validationErrors = errorResponse.errors.orEmpty(),
                 )
             },
             onFailure = {

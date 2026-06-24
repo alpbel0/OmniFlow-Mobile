@@ -1,6 +1,7 @@
 package com.omniflow.data.remote
 
 import com.omniflow.core.common.Constants
+import com.omniflow.data.models.auth.ChangeVerificationEmailRequestDto
 import com.omniflow.data.models.auth.RefreshTokenRequestDto
 import com.omniflow.data.models.auth.ForgotPasswordRequestDto
 import com.omniflow.data.models.auth.LoginRequestDto
@@ -32,6 +33,11 @@ interface AuthService {
     @POST("api/account/resend-verification")
     suspend fun resendVerification(
         @Body request: ResendVerificationRequestDto,
+    ): MessageResponseDto
+
+    @POST("api/account/change-verification-email")
+    suspend fun changeVerificationEmail(
+        @Body request: ChangeVerificationEmailRequestDto,
     ): MessageResponseDto
 
     @POST("api/account/forgot-password")

@@ -1,6 +1,8 @@
 package com.omniflow.ui.auth.register
 
 import app.cash.turbine.test
+import com.omniflow.core.auth.PendingAuthCredentials
+import com.omniflow.core.auth.PendingAuthCredentialsStore
 import com.omniflow.core.common.UiText
 import com.omniflow.core.network.ApiResult
 import com.omniflow.data.models.auth.RegistrationResult
@@ -27,13 +29,15 @@ class RegisterViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var authRepository: AuthRepository
+    private lateinit var credentialsStore: PendingAuthCredentialsStore
     private lateinit var viewModel: RegisterViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         authRepository = mockk()
-        viewModel = RegisterViewModel(authRepository)
+        credentialsStore = PendingAuthCredentialsStore()
+        viewModel = RegisterViewModel(authRepository, credentialsStore)
     }
 
     @After
@@ -85,6 +89,10 @@ class RegisterViewModelTest {
             assertEquals(RegisterEffect.NavigateToVerifyEmail("user@test.com"), awaitItem())
         }
         assertFalse(viewModel.uiState.value.isLoading)
+        assertEquals(
+            PendingAuthCredentials("user@test.com", "ValidPass1!"),
+            credentialsStore.get(),
+        )
     }
 
     @Test

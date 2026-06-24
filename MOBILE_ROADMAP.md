@@ -710,19 +710,79 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 
 ### Task 1.9: Verify Email Info Ekranı
 
-**Tahmini Süre:** 1 saat
-**Durum:** [ ] Bekliyor
+**Tahmini Süre:** 3 saat
+**Durum:** 🟡 Uygulandı — fiziksel cihaz kurulumu/Compose QA, Xiaomi `INSTALL_FAILED_USER_RESTRICTED` nedeniyle bekliyor
 
 > **Akış kararı:** Backend email doğrulamayı **zorunlu** kılar (login, doğrulanmamış kullanıcıya `403` döner). Maildeki doğrulama linki **web frontend'ine** iner (`FrontendVerifyUrl`), mobil app'e değil. Bu yüzden bu ekran bir **"doğrula → app'e dön → giriş yap" köprüsüdür**. **Polling yapılmaz**; doğrulamayı login'in 403'ü garanti eder. (Linkin doğrudan app'te açılması ayrı bir iş → `Task 10.6`.)
 
+#### Amaç
+
+Figma'daki `Verify Email / Default`, `Error - Not Verified`, `Resend Success + Cooldown` ve `Button Loading` durumlarını Compose ile uygulamak; resend, mail uygulaması ve kullanıcı tetiklemeli doğrulama sonrası login akışını güvenli ve test edilebilir hale getirmek.
+
+#### Teknik Strateji
+
+- `VerifyEmailViewModel`, `VerifyEmailUiState` ve tek seferlik `VerifyEmailEffect` kullanılacak; ViewModel doğrudan `AuthRepository` çağıracak.
+- Kayıt/Login parolası navigation state'e veya diske yazılmayacak. Sessiz login için parola yalnızca process-memory içinde yaşayan `PendingAuthCredentialsStore` içinde tutulacak ve başarı/iptalde temizlenecek.
+- Email hassas parola bilgisinden ayrılarak `SavedStateHandle` ile Login'e taşınacak. Verify ekranından "Login'e dön" veya credential-missing fallback sonrasında Login email alanı otomatik dolu açılacak.
+- `@Singleton` store process death sonrasında korunmaz. Process ölümü sonrası parola kaybolursa sessiz login denenmeyecek; `SavedStateHandle` ile kurtarılan email ön-dolgulu Login açılıp kullanıcıdan yalnızca parola yeniden istenecek.
+- Register kaynağında ilk `60 sn` cooldown ekran açılışında başlayacak; Login `403` kaynağında resend hemen aktif olacak. Başarılı resend sonrası cooldown yeniden `60 sn` olacak.
+- Backend `429`, ağ ve beklenmeyen resend hataları kalıcı kutu yerine yaklaşık 3 saniyelik hata snackbar'ına; başarı kısa süreli başarı snackbar'ına dönüşecek.
+- Doğrulama hatası için sabit yükseklik ayrılacak; state değişiminde iki ana butonun konumu oynamayacak.
+- Herhangi bir loading sırasında doğrulama, mail açma ve resend aksiyonları birlikte kilitlenecek.
+- Uzun email iki satırla sınırlandırılıp ellipsis uygulanacak. Mail intent'i çözülemezse hata snackbar'ı gösterilecek.
+- Sistem geri tuşu doğal olarak akışın geldiği ekrana dönecek: Register kaynağı Register'a, Login kaynağı Login'e. "Yanlış email? Değiştir" aynı davranışı kullanacak; "Login'e dön" Login'e tekil geçiş yapacak.
+
+#### Dosya Değişiklikleri
+
+| Aksiyon | Dosya | Amaç |
+|:--|:--|:--|
+| Yeni | `core/auth/PendingAuthCredentialsStore.kt` | Parolayı yalnızca süreç belleğinde kısa süre tutmak ve deterministik temizlemek |
+| Yeni | `ui/auth/verifyemail/VerifyEmailUiState.kt` | Email, kaynak, loading, cooldown ve inline doğrulama hata state'leri |
+| Yeni | `ui/auth/verifyemail/VerifyEmailViewModel.kt` | Resend, sayaç, doğrulama sonrası login ve effect yönetimi |
+| Değiştir | `ui/auth/verifyemail/VerifyEmailScreen.kt` | Figma uyumlu responsive UI, sabit hata alanı, snackbar ve mail intent'i |
+| Değiştir | `ui/auth/register/RegisterViewModel.kt` ve `ui/auth/login/LoginViewModel.kt` | Verify öncesi geçici credential hazırlamak; Login açılışında taşınan email'i state'e uygulamak |
+| Değiştir | `core/navigation/OmniFlowNavHost.kt` ve `Routes.kt` | Email/kaynak bilgisini `SavedStateHandle` ile taşıma, Login ön-dolumu ve doğru back-stack temizliği |
+| Değiştir | `res/values/strings.xml` | Verify email metinleri, cooldown, başarı ve hata kopyaları |
+| Yeni | `test/.../VerifyEmailViewModelTest.kt` | State, cooldown, 200/403/429/ağ hatası ve çift tıklama testleri |
+| Yeni | `androidTest/.../VerifyEmailScreenTest.kt` | Default/error/loading/cooldown görünümü ve sabit layout testi |
+
+> **Blast radius:** Register ve Login yalnızca geçici credential köprüsü ile etkilenir; mevcut repository/API sözleşmesi değişmez. Store soyutlaması, credential bilgisinin birden fazla ViewModel ve navigation callback'ine dağılmasını önler.
+
+#### Uygulama Sırası
+
+1. ViewModel unit testlerini kırmızı yazarak default state, kaynak bazlı cooldown ve API sonuç sözleşmesini sabitle.
+2. Process-memory credential store ile UiState/Effect modellerini oluştur; disk ve navigation üzerinden parola taşınmadığını test et.
+3. VerifyEmailViewModel içinde 60 saniyelik sayaç, resend başarı/hata ve kullanıcı tetiklemeli login akışını uygula.
+4. Figma node'ları `1:731`, `1:754`, `1:778`, `1:803` temel alınarak ekranı ve tüm durumları Compose'a taşı.
+5. Register/Login kaynaklarını ve back-stack davranışını NavHost'a bağla; "Login'e dön" ve process-death fallback'ini Login email ön-dolumuyla tamamla.
+6. Unit, Compose, build ve fiziksel cihaz QA kapılarını çalıştır; sonuçları bu task altında kaydet.
+
+#### Doğrulama Standartları
+
+- [ ] `VerifyEmailViewModelTest`: ilk cooldown, sayaç bitişi, resend success, `429`, ağ hatası, login `200/403` ve credential-missing fallback geçer.
+- [ ] `LoginViewModelTest`: Verify ekranından dönüşte email ön-dolumu ve process death sonrası parolanın geri yüklenmemesi geçer.
+- [ ] `VerifyEmailScreenTest`: email gösterimi, spinner/disabled durumları, sabit hata alanı ve snackbar tetikleri geçer.
+- [ ] `./gradlew testDebugUnitTest assembleDebug` başarılıdır.
+- [ ] `./gradlew connectedDebugAndroidTest` fiziksel cihazda çalışır veya cihaz kaynaklı engel açıkça belgelenir.
+- [ ] 393dp referansta Figma ile; dar/uzun ekran ve uzun email ile taşma olmadan görsel QA yapılır.
+- [ ] Mail uygulaması olan ve olmayan cihaz senaryoları; Register/Login kaynaklı geri navigasyon ayrı ayrı doğrulanır.
+
 **Yapılacaklar:**
-- [ ] **Verify Email Info** — "**{email}** adresine doğrulama linki gönderdik" (email bir önceki ekrandan state ile taşınır)
-- [ ] **Mail uygulamasını aç** butonu (`ACTION_MAIN` + `CATEGORY_APP_EMAIL` intent)
-- [ ] **Tekrar gönder** — cooldown / geri sayımlı (backend rate-limit ile uyumlu); resend hatası → snackbar
-- [ ] Spam/junk klasörü uyarısı (gri yardım metni)
-- [ ] **"Doğruladım, giriş yap"** butonu → kayıtlı email/şifre ile sessiz login dener: `200` → Home, `403` → "Email henüz doğrulanmadı" uyarısı (ekranda kalır). Otomatik poll YOK; tetikleyici hep kullanıcı aksiyonu
-- [ ] "Yanlış email mi? Değiştir" → Register'a dön
-- [ ] ViewModel + UiState
+- [x] **Verify Email Info** — "**{email}** adresine doğrulama linki gönderdik" (email bir önceki ekrandan state ile taşınır)
+- [x] **Mail uygulamasını aç** butonu (`ACTION_MAIN` + `CATEGORY_APP_EMAIL` intent); handler yoksa hata snackbar'ı
+- [x] **Tekrar gönder** — backend ile uyumlu `60 sn` cooldown / geri sayım; başarı ve hata → kısa süreli snackbar
+- [x] Spam/junk klasörü uyarısı (gri yardım metni)
+- [x] **"Doğruladım, giriş yap"** butonu → process-memory credential varsa sessiz login dener: `200` → Home, `403` → rezerve inline alanda "Email henüz doğrulanmadı"; credential yoksa Login `SavedStateHandle` üzerinden email ön-dolgulu açılır. Otomatik poll YOK
+- [x] **"Login'e dön"** → Login ekranı kayıt sırasında kullanılan email otomatik doldurulmuş halde açılır; parola hiçbir zaman ön-doldurulmaz veya kalıcılaştırılmaz
+- [x] "Yanlış email mi? Değiştir" → geldiği Register/Login ekranına dön
+- [x] ViewModel + UiState + tek seferlik Effect; tüm aksiyonlarda ortak loading kilidi
+
+**Uygulama Notu (2026-06-24):**
+- Figma node'ları `1:731`, `1:754`, `1:778`, `1:803` temel alınarak default, doğrulanmamış, resend/cooldown ve loading durumları uygulandı.
+- `PendingAuthCredentialsStore` parolayı yalnızca process-memory'de tutar; email `SavedStateHandle` üzerinden taşınır. Process death sonrası Login email ön-dolgulu, parola boş açılır.
+- `VerifyEmailScreen`, `VerifyEmailContent`, `VerifyEmailVisuals` ve `VerifyEmailActions` olarak düz ekran dosyalarına ayrıldı; en büyük yeni üretim dosyası 162 satırdır.
+- `testDebugUnitTest`: **47 test, 0 failure, 0 error**. `assembleDebug` ve `compileDebugAndroidTestKotlin` başarılı.
+- `VerifyEmailScreenTest` fiziksel Xiaomi `2312DRA50G` üzerinde başlatılmak istendi; test APK ve debug APK kurulumu cihaz tarafından `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user` ile engellendi. USB üzerinden yükleme izni açıldıktan sonra cihaz UI QA tekrar çalıştırılmalı.
 
 ---
 

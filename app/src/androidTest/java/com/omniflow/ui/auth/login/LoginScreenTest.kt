@@ -1,12 +1,14 @@
 package com.omniflow.ui.auth.login
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.lifecycle.SavedStateHandle
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.omniflow.core.designsystem.theme.OmniFlowTheme
 import com.omniflow.core.network.ApiResult
+import com.omniflow.core.auth.PendingAuthCredentialsStore
 import com.omniflow.data.models.auth.AuthUser
 import com.omniflow.data.models.auth.RegistrationResult
 import com.omniflow.data.repository.AuthRepository
@@ -21,7 +23,11 @@ class LoginScreenTest {
     @Test
     fun loginScreenShowsActionsAndCompletesValidLogin() {
         var loginClicked = false
-        val viewModel = LoginViewModel(TestAuthRepository())
+        val viewModel = LoginViewModel(
+            TestAuthRepository(),
+            PendingAuthCredentialsStore(),
+            SavedStateHandle(),
+        )
         viewModel.onEmailChanged("user@example.com")
         viewModel.onPasswordChanged("Secret123!")
 
@@ -62,6 +68,11 @@ private class TestAuthRepository : AuthRepository {
 
     override suspend fun verifyEmail(email: String, token: String): ApiResult<Unit> = unexpectedCall()
     override suspend fun resendVerification(email: String): ApiResult<Unit> = unexpectedCall()
+    override suspend fun changeVerificationEmail(
+        oldEmail: String,
+        newEmail: String,
+        password: String,
+    ): ApiResult<Unit> = unexpectedCall()
     override suspend fun forgotPassword(email: String): ApiResult<Unit> = unexpectedCall()
     override suspend fun resetPassword(
         email: String,

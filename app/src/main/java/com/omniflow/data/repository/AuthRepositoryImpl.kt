@@ -6,6 +6,7 @@ import com.omniflow.core.network.ApiResult
 import com.omniflow.data.mapper.toAuthUser
 import com.omniflow.data.mapper.toTokens
 import com.omniflow.data.models.auth.AuthUser
+import com.omniflow.data.models.auth.ChangeVerificationEmailRequestDto
 import com.omniflow.data.models.auth.RegistrationResult
 import com.omniflow.data.models.auth.ForgotPasswordRequestDto
 import com.omniflow.data.models.auth.LoginRequestDto
@@ -54,6 +55,19 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun resendVerification(email: String): ApiResult<Unit> {
         return apiCallExecutor.execute {
             authService.resendVerification(ResendVerificationRequestDto(email))
+            Unit
+        }
+    }
+
+    override suspend fun changeVerificationEmail(
+        oldEmail: String,
+        newEmail: String,
+        password: String,
+    ): ApiResult<Unit> {
+        return apiCallExecutor.execute {
+            authService.changeVerificationEmail(
+                ChangeVerificationEmailRequestDto(oldEmail, newEmail, password),
+            )
             Unit
         }
     }

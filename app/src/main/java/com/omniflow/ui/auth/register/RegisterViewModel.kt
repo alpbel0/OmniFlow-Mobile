@@ -3,6 +3,7 @@ package com.omniflow.ui.auth.register
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.omniflow.R
+import com.omniflow.core.auth.PendingAuthCredentialsStore
 import com.omniflow.core.common.UiText
 import com.omniflow.core.network.ApiResult
 import com.omniflow.data.repository.AuthRepository
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val credentialsStore: PendingAuthCredentialsStore,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUiState())
@@ -92,6 +94,7 @@ class RegisterViewModel @Inject constructor(
                 )
             ) {
                 is ApiResult.Success -> {
+                    credentialsStore.save(state.email.trim(), state.password)
                     _uiState.update { it.copy(isLoading = false) }
                     _effects.send(RegisterEffect.NavigateToVerifyEmail(state.email.trim()))
                 }

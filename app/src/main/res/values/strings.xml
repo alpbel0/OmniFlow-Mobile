@@ -65,4 +65,26 @@
     <string name="register_error_password_weak">Password does not meet all requirements.</string>
     <string name="register_error_confirm_required">Confirm your password.</string>
     <string name="register_error_password_mismatch">Passwords do not match.</string>
+    <string name="verify_email_title">Email\'ini doğrula</string>
+    <string name="verify_email_delivery">%1$s adresine bir doğrulama linki gönderdik.</string>
+    <string name="verify_email_direction">Maildeki linke tıkla, sonra buraya dönüp giriş yap.</string>
+    <string name="verify_email_confirm">Doğruladım, giriş yap</string>
+    <string name="verify_email_open_mail">Mail uygulamasını aç</string>
+    <string name="verify_email_resend_prompt">Mail gelmedi mi?</string>
+    <string name="verify_email_resend">Tekrar gönder</string>
+    <string name="verify_email_resend_countdown">%1$d sn sonra tekrar gönder</string>
+    <string name="verify_email_spam_help">Gelen kutunda yoksa spam/junk klasörünü kontrol et.</string>
+    <string name="verify_email_change_prompt">Yanlış email mi?</string>
+    <string name="verify_email_change">Değiştir</string>
+    <string name="verify_email_back_login">Login\'e dön</string>
+    <string name="verify_email_not_verified">Email henüz doğrulanmadı.</string>
+    <string name="verify_email_resend_success">Mail tekrar gönderildi.</string>
+    <string name="verify_email_resend_error">Tekrar gönderilemedi, biraz sonra dene.</string>
+    <string name="verify_email_mail_app_missing">Mail uygulaması bulunamadı.</string>
+    <string name="verify_email_new_email">New email</string>
+    <string name="verify_email_update_email">Update email</string>
+    <string name="verify_email_cancel_change">Cancel</string>
+    <string name="verify_email_change_success">Verification email sent to the new address.</string>
+    <string name="verify_email_change_same_email">New email must be different from current email.</string>
+    <string name="verify_email_change_rate_limited">Too many attempts. Try again shortly.</string>
 </resources>

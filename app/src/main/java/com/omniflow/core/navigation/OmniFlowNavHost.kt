@@ -11,14 +11,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.omniflow.uicomponents.EmptyState
 import com.omniflow.ui.auth.login.LoginScreen
+import com.omniflow.ui.auth.login.LOGIN_EMAIL_KEY
 import com.omniflow.ui.auth.onboarding.OnboardingScreen
 import com.omniflow.ui.auth.register.RegisterScreen
 import com.omniflow.ui.auth.resetpassword.ResetPasswordScreen
 import com.omniflow.ui.auth.splash.SplashScreen
 import com.omniflow.ui.auth.splash.SplashDestination
 import com.omniflow.ui.auth.verifyemail.VerifyEmailScreen
+import com.omniflow.ui.auth.verifyemail.VERIFY_EMAIL_KEY
+import com.omniflow.ui.auth.verifyemail.VERIFY_EMAIL_SOURCE_KEY
+import com.omniflow.ui.auth.verifyemail.VerifyEmailSource
 import com.omniflow.ui.home.HomeScreen
 import com.omniflow.ui.notifications.NotificationsScreen
 import com.omniflow.ui.profile.ProfileScreen
@@ -58,14 +65,22 @@ fun OmniFlowNavHost() {
                 OnboardingScreen(
                     paddingValues = innerPadding,
                     onLoginClick = {
-                        navController.navigate(Routes.Login.route) {
+                        navController.navigate(Routes.Login.createRoute()) {
                             popUpTo(Routes.Onboarding.route) { inclusive = true }
                             launchSingleTop = true
                         }
                     },
                 )
             }
-            composable(Routes.Login.route) {
+            composable(
+                route = Routes.Login.route,
+                arguments = listOf(
+                    navArgument(LOGIN_EMAIL_KEY) {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    },
+                ),
+            ) {
                 LoginScreen(
                     paddingValues = innerPadding,
                     onLoginSuccess = {
@@ -75,34 +90,36 @@ fun OmniFlowNavHost() {
                     },
                     onRegisterClick = { navController.navigate(Routes.Register.route) },
                     onForgotPasswordClick = { navController.navigate(Routes.ResetPassword.route) },
-                    onVerifyEmailClick = { navController.navigate(Routes.VerifyEmail.route) },
+                    onVerifyEmailClick = { email ->
+                        navController.navigateToVerifyEmail(email, VerifyEmailSource.LOGIN)
+                    },
                 )
             }
             composable(Routes.Register.route) {
                 RegisterScreen(
                     paddingValues = innerPadding,
                     onRegisterSuccess = { email ->
-                        navController.currentBackStackEntry
-                            ?.savedStateHandle
-                            ?.set(VERIFY_EMAIL_ADDRESS_KEY, email)
-                        navController.navigate(Routes.VerifyEmail.route)
+                        navController.navigateToVerifyEmail(email, VerifyEmailSource.REGISTER)
                     },
                     onLoginClick = { navController.popBackStack() },
                 )
             }
-            composable(Routes.VerifyEmail.route) {
-                val email = navController.previousBackStackEntry
-                    ?.savedStateHandle
-                    ?.get<String>(VERIFY_EMAIL_ADDRESS_KEY)
-                    .orEmpty()
+            composable(
+                route = Routes.VerifyEmail.route,
+                arguments = listOf(
+                    navArgument(VERIFY_EMAIL_KEY) { type = NavType.StringType },
+                    navArgument(VERIFY_EMAIL_SOURCE_KEY) { type = NavType.StringType },
+                ),
+            ) {
                 VerifyEmailScreen(
                     paddingValues = innerPadding,
-                    email = email,
-                    onContinue = {
+                    onNavigateHome = {
                         navController.navigate(Routes.Home.route) {
-                            popUpTo(Routes.Splash.route) { inclusive = true }
+                            popUpTo(Routes.Login.route) { inclusive = true }
                         }
                     },
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateLogin = { email -> navController.navigateToPrefilledLogin(email) },
                 )
             }
             composable(Routes.ResetPassword.route) {
@@ -163,5 +180,19 @@ private val SplashDestination.route: String
     get() = when (this) {
         SplashDestination.Home -> Routes.Home.route
         SplashDestination.Onboarding -> Routes.Onboarding.route
-        SplashDestination.Login -> Routes.Login.route
+        SplashDestination.Login -> Routes.Login.createRoute()
     }
+
+private fun NavHostController.navigateToVerifyEmail(
+    email: String,
+    source: VerifyEmailSource,
+) {
+    navigate(Routes.VerifyEmail.createRoute(email, source))
+}
+
+private fun NavHostController.navigateToPrefilledLogin(email: String) {
+    navigate(Routes.Login.createRoute(email)) {
+        popUpTo(Routes.Login.route) { inclusive = true }
+        launchSingleTop = true
+    }
+}

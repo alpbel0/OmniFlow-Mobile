@@ -16,6 +16,11 @@ interface AuthRepository {
 
     suspend fun verifyEmail(email: String, token: String): ApiResult<Unit>
     suspend fun resendVerification(email: String): ApiResult<Unit>
+    suspend fun changeVerificationEmail(
+        oldEmail: String,
+        newEmail: String,
+        password: String,
+    ): ApiResult<Unit>
     suspend fun forgotPassword(email: String): ApiResult<Unit>
     suspend fun resetPassword(email: String, token: String, newPassword: String): ApiResult<Unit>
 }

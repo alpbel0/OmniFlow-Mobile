@@ -18,6 +18,7 @@ class AuthServiceContractTest {
                 "api/account/refresh-token",
                 "api/account/verify-email",
                 "api/account/resend-verification",
+                "api/account/change-verification-email",
                 "api/account/forgot-password",
                 "api/account/reset-password",
             ),

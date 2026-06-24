@@ -1,47 +1,95 @@
 package com.omniflow.ui.auth.verifyemail
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.omniflow.uicomponents.OmniButton
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.omniflow.R
+import kotlinx.coroutines.launch
 
 @Composable
 fun VerifyEmailScreen(
     paddingValues: PaddingValues,
-    email: String = "",
-    onContinue: () -> Unit,
+    onNavigateHome: () -> Unit,
+    onNavigateBack: () -> Unit,
+    onNavigateLogin: (String) -> Unit,
+    viewModel: VerifyEmailViewModel = hiltViewModel(),
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(
-            text = "Verify your email",
-            style = MaterialTheme.typography.headlineMedium,
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    var snackbarIsError by remember { mutableStateOf(false) }
+
+    LaunchedEffect(viewModel) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                VerifyEmailEffect.NavigateHome -> onNavigateHome()
+                VerifyEmailEffect.NavigateBack -> onNavigateBack()
+                is VerifyEmailEffect.NavigateLogin -> onNavigateLogin(effect.email)
+                VerifyEmailEffect.OpenMailApp -> {
+                    try {
+                        context.startActivity(createEmailAppIntent(context))
+                    } catch (_: ActivityNotFoundException) {
+                        snackbarIsError = true
+                        launch {
+                            snackbarHostState.showSnackbar(
+                                context.getString(R.string.verify_email_mail_app_missing),
+                            )
+                        }
+                    }
+                }
+                is VerifyEmailEffect.ShowSnackbar -> {
+                    snackbarIsError = effect.isError
+                    launch { snackbarHostState.showSnackbar(effect.message.resolve(context)) }
+                }
+            }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        VerifyEmailContent(
+            state = state,
+            paddingValues = paddingValues,
+            onVerifiedLoginClick = viewModel::onVerifiedLoginClicked,
+            onOpenMailClick = viewModel::onOpenMailClicked,
+            onResendClick = viewModel::onResendClicked,
+            onChangeEmailClick = viewModel::onChangeEmailClicked,
+            onNewEmailChange = viewModel::onNewEmailChanged,
+            onSubmitEmailChangeClick = viewModel::onSubmitEmailChangeClicked,
+            onCancelEmailChangeClick = viewModel::onCancelEmailChangeClicked,
+            onBackToLoginClick = viewModel::onBackToLoginClicked,
         )
-        Text(
-            text = if (email.isBlank()) {
-                "Email verification flow is scaffolded and ready for backend integration."
-            } else {
-                "We sent a verification link to $email."
-            },
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(vertical = 16.dp),
-        )
-        OmniButton(text = "Continue", onClick = onContinue)
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 24.dp, vertical = 130.dp),
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = if (snackbarIsError) VerifyError else VerifySuccess,
+                contentColor = Color.White,
+                shape = RoundedCornerShape(14.dp),
+            )
+        }
     }
 }

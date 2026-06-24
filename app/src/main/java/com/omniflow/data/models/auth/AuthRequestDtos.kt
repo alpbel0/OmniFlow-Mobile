@@ -28,6 +28,13 @@ data class ResendVerificationRequestDto(
 )
 
 @Serializable
+data class ChangeVerificationEmailRequestDto(
+    val oldEmail: String,
+    val newEmail: String,
+    val password: String,
+)
+
+@Serializable
 data class ForgotPasswordRequestDto(
     val email: String,
 )

@@ -71,7 +71,7 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onRegisterClick: () -> Unit,
     onForgotPasswordClick: () -> Unit,
-    onVerifyEmailClick: () -> Unit,
+    onVerifyEmailClick: (String) -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -92,7 +92,7 @@ fun LoginScreen(
                     onForgotPasswordClick()
                 }
                 is LoginEffect.NavigateToVerifyEmail -> {
-                    onVerifyEmailClick()
+                    onVerifyEmailClick(effect.email)
                 }
             }
         }
