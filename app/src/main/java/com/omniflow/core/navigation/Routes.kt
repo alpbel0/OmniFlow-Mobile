@@ -14,3 +14,5 @@ sealed class Routes(val route: String) {
     data object Notifications : Routes("notifications")
     data object Profile : Routes("profile")
 }
+
+const val VERIFY_EMAIL_ADDRESS_KEY = "verify_email_address"

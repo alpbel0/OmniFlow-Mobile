@@ -28,7 +28,7 @@ android {
         buildConfigField(
             "String",
             "API_BASE_URL",
-            "\"https://omniflow-backend-g2d2gnfgexdfgbam.westeurope-01.azurewebsites.net/\"",
+            "\"https://omniflow-backend-dmh5e8c7caaxd0cw.spaincentral-01.azurewebsites.net/\"",
         )
     }
 

@@ -17,6 +17,7 @@ import com.omniflow.uicomponents.OmniButton
 @Composable
 fun VerifyEmailScreen(
     paddingValues: PaddingValues,
+    email: String = "",
     onContinue: () -> Unit,
 ) {
     Column(
@@ -32,7 +33,11 @@ fun VerifyEmailScreen(
             style = MaterialTheme.typography.headlineMedium,
         )
         Text(
-            text = "Email verification flow is scaffolded and ready for backend integration.",
+            text = if (email.isBlank()) {
+                "Email verification flow is scaffolded and ready for backend integration."
+            } else {
+                "We sent a verification link to $email."
+            },
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(vertical = 16.dp),

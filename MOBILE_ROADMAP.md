@@ -2,7 +2,7 @@
 
 **Proje:** OmniFlow Mobile — Android (Kotlin) uygulaması
 **Mimari:** Jetpack Compose + MVVM + katmanlı yapı (core / data / ui — feature bazlı UI, merkezi data, UseCase/domain yok)
-**Backend:** ASP.NET Core 8.0 API (ayrı repo) — `https://omniflow-backend-...azurewebsites.net`
+**Backend:** ASP.NET Core 8.0 API (ayrı repo) — `https://omniflow-backend-dmh5e8c7caaxd0cw.spaincentral-01.azurewebsites.net/`
 **Bu roadmap'in mantığı:** Önce **mevcut backend'e karşı çalışan tam bir mobil MVP** (M0–M6), sonra **backend gerektiren ileri özellikler** (M7–M14). Backend gerektiren her madde, `BACKEND_ROADMAP_V2.md`'deki task'a **⛔ Bağımlılık** etiketiyle bağlanır.
 
 > **Yapı:** Bu roadmap, `BACKEND_ROADMAP_MVP.md` ile aynı kırılım disiplinini kullanır: her **Milestone (M)** → numaralı **Task**'lara bölünür. Her Task'ın kendi **Tahmini Süre**, **Durum** ve **Yapılacaklar** (checklist) alanı vardır. Task numarası `{milestone}.{task}` biçimindedir (örn. `Task 3.5`).
@@ -692,12 +692,19 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 ### Task 1.8: Register Ekranı
 
 **Tahmini Süre:** 1.5 saat
-**Durum:** [ ] Bekliyor
+**Durum:** 🟡 Uygulandı — canlı Azure kayıt akışı ve cihaz UI QA bekliyor
 
 **Yapılacaklar:**
-- [ ] **Register** — username/email/şifre/şifre tekrar → 202 + "verify email" ekranına
-- [ ] 422 → alan bazlı hata; duplicate email → inline
-- [ ] ViewModel + UiState
+- [x] **Register** — username/email/şifre/şifre tekrar → 202 + "verify email" ekranına
+- [x] 422 → `field/code` ile alan bazlı hata; duplicate email/username `400` → ilgili alanda inline
+- [x] `RegisterViewModel` + `RegisterUiState` + tek seferlik navigation effect'leri
+- [x] Canlı şifre checklist'i — 8+ karakter, büyük/küçük harf, rakam ve özel karakter
+- [x] Kesin CTA sırası — Create account → divider → disabled Google → Log in
+- [x] `verticalScroll` + `imePadding`; scroll içinde `weight` kullanılmıyor
+- [x] Başarılı kayıtta email `SavedStateHandle` ile Verify Email akışına taşınıyor
+- [x] Unit testler, Android test kaynak derlemesi ve debug build başarılı; APK bağlı Xiaomi cihaza kuruldu
+- [ ] Canlı Azure `202/400/422` akışı bağlı telefonda doğrulandı
+- [ ] Register Compose cihaz testi tamamlandı (Xiaomi instrumentation/idling çalışması 90 sn timeout oldu)
 
 ---
 
@@ -753,6 +760,7 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 ### Test (Minimal)
 
 - [x] `LoginViewModel` unit testi (başarılı giriş, hatalı kimlik, validation)
+- [x] `RegisterViewModel` unit testi (validation, checklist, 202 effect, 400 duplicate, 422 field mapping)
 
 ---
 

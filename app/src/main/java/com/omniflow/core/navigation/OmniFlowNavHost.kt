@@ -81,13 +81,23 @@ fun OmniFlowNavHost() {
             composable(Routes.Register.route) {
                 RegisterScreen(
                     paddingValues = innerPadding,
-                    onRegisterSuccess = { navController.navigate(Routes.VerifyEmail.route) },
-                    onLoginClick = { navController.navigate(Routes.Login.route) },
+                    onRegisterSuccess = { email ->
+                        navController.currentBackStackEntry
+                            ?.savedStateHandle
+                            ?.set(VERIFY_EMAIL_ADDRESS_KEY, email)
+                        navController.navigate(Routes.VerifyEmail.route)
+                    },
+                    onLoginClick = { navController.popBackStack() },
                 )
             }
             composable(Routes.VerifyEmail.route) {
+                val email = navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.get<String>(VERIFY_EMAIL_ADDRESS_KEY)
+                    .orEmpty()
                 VerifyEmailScreen(
                     paddingValues = innerPadding,
+                    email = email,
                     onContinue = {
                         navController.navigate(Routes.Home.route) {
                             popUpTo(Routes.Splash.route) { inclusive = true }
