@@ -1,18 +1,30 @@
 package com.omniflow.core.designsystem.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.omniflow.R
 
+// plus_jakarta_sans.ttf tek bir VARIABLE font dosyasıdır. Her ağırlık için
+// "wght" eksenini açıkça vermezsek Compose hep aynı (regular) instance'ı kullanıp
+// Bold/SemiBold'u sahte (algoritmik) kalınlaştırır → Figma'daki gerçek ağırlıktan farklı görünür.
+@OptIn(ExperimentalTextApi::class)
+private fun jakarta(weight: Int) = Font(
+    resId = R.font.plus_jakarta_sans,
+    weight = FontWeight(weight),
+    variationSettings = FontVariation.Settings(FontVariation.weight(weight)),
+)
+
 private val PlusJakartaSans = FontFamily(
-    Font(R.font.plus_jakarta_sans, FontWeight.Normal),
-    Font(R.font.plus_jakarta_sans, FontWeight.Medium),
-    Font(R.font.plus_jakarta_sans, FontWeight.SemiBold),
-    Font(R.font.plus_jakarta_sans, FontWeight.Bold),
+    jakarta(400), // Normal
+    jakarta(500), // Medium
+    jakarta(600), // SemiBold
+    jakarta(700), // Bold
 )
 
 val OmniFlowTypography = Typography(

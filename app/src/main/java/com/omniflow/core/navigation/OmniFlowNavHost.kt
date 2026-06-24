@@ -70,11 +70,12 @@ fun OmniFlowNavHost() {
                     paddingValues = innerPadding,
                     onLoginSuccess = {
                         navController.navigate(Routes.Home.route) {
-                            popUpTo(Routes.Splash.route) { inclusive = true }
+                            popUpTo(Routes.Login.route) { inclusive = true }
                         }
                     },
                     onRegisterClick = { navController.navigate(Routes.Register.route) },
                     onForgotPasswordClick = { navController.navigate(Routes.ResetPassword.route) },
+                    onVerifyEmailClick = { navController.navigate(Routes.VerifyEmail.route) },
                 )
             }
             composable(Routes.Register.route) {

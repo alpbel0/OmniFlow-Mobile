@@ -619,13 +619,73 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 ### Task 1.7: Login Ekranı
 
 **Tahmini Süre:** 1.5 saat
-**Durum:** [ ] Bekliyor
+**Durum:** 🟡 Uygulandı — canlı Azure login cihaz QA bekliyor
 
 **Yapılacaklar:**
-- [ ] **Login** — email/şifre, hata gösterimi, "forgot password" linki
-- [ ] Yanlış kimlik → inline "Email veya şifre hatalı" (401)
-- [ ] Başarıda token saklanır → Home
-- [ ] `LoginViewModel` + UiState
+- [x] **Login** — email/şifre, hata gösterimi, "forgot password" linki
+- [x] Yanlış kimlik → inline "Email veya şifre hatalı" (401)
+- [x] Başarıda token saklanır → Home
+- [x] `LoginViewModel` + UiState
+
+**Plan:**
+- Login ekranı controlled state kullanır; email, şifre, şifre görünürlüğü, alan hataları, genel hata ve loading `LoginUiState` içinde tutulur.
+- `LoginViewModel` doğrudan `AuthRepository.login` çağırır. Başarılı repository sonucu tokenların kaydedildiği anlamına gelir; ViewModel tek seferlik Home navigation effect'i üretir.
+- Boş/geçersiz email ve boş şifre istemci tarafında doğrulanır. Alan düzenlenince ilgili hata temizlenir; loading sırasında alanlar ve tekrar submit devre dışıdır.
+- `401` sabit, yerelleştirilmiş yanlış kimlik mesajına; `403` doğrulanmamış email mesajına; ağ ve beklenmeyen hatalar güvenli genel mesaja dönüştürülür. `403` mesajı yanında Verify Email ekranına geçiş aksiyonu sunulur; backend metni doğrudan UI kopyası yapılmaz.
+- Şifre maskeli başlar ve görünürlük kontrolü sunar. Email klavyesi, password IME action ve klavye submit davranışı bağlanır.
+- Forgot Password ve Create Account mevcut route'lara gider. Başarılı login Home'a geçerken Login route'u inclusive temizlenir; geri tuşuyla Login'e dönüş engellenir.
+- Görsel uygulama sağlanan 393×852 Login referansını responsive Compose yerleşimine çevirir: `#F5F7F8` zemin, sağ üst mavi glow, 52 dp logo, ortalanmış başlık/alt başlık, 345 dp maksimum form genişliği, 58 dp alan/buton yüksekliği ve 18 dp radius.
+- Tasarımdaki divider ve Google CTA görsel olarak eklenir. Backend B1 ve mobil M7 tamamlanana kadar buton tasarım renklerini koruyan disabled durumda gösterilir; tıklanabilir sahte/no-op auth aksiyonu üretilmez.
+
+#### Task 1.7 RFC-Lite Uygulama Planı
+
+**Amaç:** Email/şifre girişini canlı auth repository'sine bağlamak; validation, loading, hata ve başarılı Home geçişini deterministik hale getirmek.
+
+**Teknik Strateji:**
+- **Pattern:** Unidirectional UI state + one-shot navigation effect; ViewModel doğrudan repository kullanır.
+- **State:** Form ve request durumu `LoginUiState`; navigation buffered effect akışı.
+- **Constraints:** UseCase yok, backend değişikliği yok, şifre persist/log edilmez, çift submit engellenir, backend hata metni doğrudan gösterilmez.
+
+**Dosya Değişiklikleri:**
+
+| Aksiyon | Dosya | Amaç |
+|:--|:--|:--|
+| Yeni | `ui/auth/login/LoginUiState.kt` | Form, validation, loading ve effect sözleşmesi |
+| Yeni | `ui/auth/login/LoginViewModel.kt` | Validation, repository çağrısı ve hata eşleme |
+| Değiştir | `ui/auth/login/LoginScreen.kt` | State-driven form, password visibility, inline hata ve loading UI |
+| Değiştir | `uicomponents/OmniTextField.kt` | Geriye uyumlu trailing icon ve IME action desteği |
+| Değiştir | `core/navigation/OmniFlowNavHost.kt` | Başarılı login back-stack temizliği |
+| Değiştir | `res/values/strings.xml` | Yerelleştirilebilir login metinleri ve hata mesajları |
+| Yeni | `test/.../ui/auth/login/LoginViewModelTest.kt` | State, validation, sonuç ve duplicate submit testleri |
+
+**Uygulama Sırası:**
+1. ViewModel validation, success, `401`, `403`, genel hata ve duplicate submit testlerini kırmızı aşamada ekle.
+2. `LoginUiState`, effect ve `LoginViewModel` repository entegrasyonunu uygula.
+3. Ortak text field'i password visibility ve IME ihtiyaçlarını destekleyecek şekilde genişlet; yeni `trailingIcon` ve `keyboardActions` parametrelerine geriye uyumlu varsayılanlar ver.
+4. Login ekranını state-driven, responsive ve erişilebilir Compose formuna dönüştür.
+5. Home, Register ve Forgot Password navigation davranışlarını ve back stack'i bağla.
+6. Task 1.7 checkbox/durumunu güncelle; unit test, debug build ve bağlı telefonda uçtan uca login doğrulaması yap.
+
+**Etki Alanı ve Riskler:**
+- `OmniTextField` ortak bileşendir; `trailingIcon = null` ve `keyboardActions = KeyboardActions.Default` varsayılanlarıyla Register ve Reset Password çağrıları kırılmamalıdır.
+- Repository başarıdan önce token kaydeder; ViewModel'in ayrıca token yazması çift kayıt ve tutarsız oturum üretir.
+- Backend `403` doğrulanmamış, askıya alınmış veya başka forbidden durumlar döndürebilir; Task 1.7 inline hata ve Verify Email geçişi sunar, email doğrulama köprüsünün tam davranışı Task 1.9'da tamamlanır.
+- Splash ve Onboarding Login'e geçerken kendilerini zaten yığından siler. Bu nedenle başarılı girişte `popUpTo(Routes.Login.route) { inclusive = true }` zorunludur; mevcut `popUpTo(Splash)` Login'i yığında bırakır.
+- Task 1.10 tamamlanana kadar Forgot Password mevcut reset placeholder route'una gider; login task'ı reset akışını genişletmez.
+
+**Doğrulama Standardı:**
+- [x] Geçersiz form repository çağrısı yapmaz ve doğru alan hatalarını gösterir.
+- [x] Loading sırasında form kilitlenir; hızlı tekrar yalnız bir login isteği üretir.
+- [x] `401` ve `403` ayrı, yerelleştirilmiş inline mesajlara dönüşür.
+- [x] `403` durumunda Verify Email aksiyonu görünür ve doğru route'a gider.
+- [x] Ağ/bilinmeyen hata güvenli mesaj gösterir; kullanıcı düzenleyip yeniden deneyebilir.
+- [x] Başarılı login token kaydından sonra Home'a yalnız bir kez gider ve Login back stack'ten kalkar.
+- [x] Şifre varsayılan maskeli, görünürlük kontrolü ve IME submit erişilebilir çalışır.
+- [x] Register/Forgot bağlantıları doğru route'a gider; mevcut ekranlar ortak bileşen değişiminden etkilenmez.
+- [x] Login → Home geçişinden sonra sistem geri tuşu Login'e dönmez.
+- [x] Tasarım 393×852 referansına sadık, küçük/büyük telefon ve klavye açık durumunda taşmasızdır; divider ve Google CTA M7'ye kadar disabled gösterilir.
+- [x] Unit test, Android test derleme ve debug build başarılı; APK bağlı telefona kuruldu.
+- [ ] Canlı Azure login akışı bağlı telefonda doğrulandı. (Agent ortamında Azure hostname DNS çözümlemesi engellendi.)
 
 ---
 
@@ -692,7 +752,7 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 
 ### Test (Minimal)
 
-- [ ] `LoginViewModel` unit testi (başarılı giriş, hatalı kimlik, validation)
+- [x] `LoginViewModel` unit testi (başarılı giriş, hatalı kimlik, validation)
 
 ---
 
