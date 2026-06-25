@@ -1,0 +1,149 @@
+package com.omniflow.core.designsystem.theme
+
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
+private object DimensTokens {
+    val authContentMaxWidth = 345.dp
+    val authControlHeight = 58.dp
+    val authLogoMedium = 52.dp
+    val authLogoRadius = 18.dp
+    val authGlowLarge = 220.dp
+    val authGlowMedium = 300.dp
+    val authIconContainer = 96.dp
+    val authIconLarge = 48.dp
+    val authLogoSmall = 44.dp
+    val authLogoSmallRadius = 14.dp
+    val authLogoInnerOuter = 22.dp
+    val authLogoInner = 14.dp
+    val googleIconSize = 18.dp
+    val checklistIconSize = 16.dp
+    val loadingIndicatorSize = 36.dp
+    val progressStrokeWidth = 2.dp
+    val buttonShadowElevation = 28.dp
+    val dividerLineWidth = 98.dp
+    val hairline = 1.dp
+    val loginGlowOffsetX = 77.dp
+    val loginGlowOffsetY = (-70).dp
+    val loginDividerOffsetY = 539.dp
+    val loginDividerTextOffsetX = 109.dp
+    val loginDividerTextWidth = 100.dp
+    val loginFooterOffsetX = 87.dp
+    val loginFooterOffsetY = 727.dp
+    val loginFooterPromptWidth = 154.dp
+    val loginFooterRegisterWidth = 57.dp
+    val loginFooterRegisterOffsetX = 154.dp
+    val loginFooterTextHeight = 18.dp
+    val registerGlowOffsetX = 96.dp
+    val registerGlowOffsetY = (-120).dp
+    val authFrameMaxWidth = 393.dp
+    val authFrameHeight = 852.dp
+    val authLargeGlow = 320.dp
+    val verifyGlowOffsetX = 115.dp
+    val verifyGlowOffsetY = (-132).dp
+    val verifyLogoOffsetX = 24.dp
+    val verifyLogoOffsetY = 58.dp
+    val verifyHeroOffsetY = 126.dp
+    val verifyCopyOffsetX = 24.dp
+    val verifyCopyOffsetY = 246.dp
+    val verifyActionsOffsetX = 24.dp
+    val verifyActionsOffsetY = 430.dp
+    val verifyFooterOffsetX = 24.dp
+    val verifyFooterOffsetY = 744.dp
+    val verifyContentEndPadding = 48.dp
+    val snackbarVerticalPadding = 130.dp
+    val snackbarShapeRadius = 14.dp
+    val sentCheckBadgeSize = 26.dp
+    val splashTopGlowSize = 260.dp
+    val splashTopGlowOffset = 72.dp
+    val splashBottomGlowOffsetX = (-88).dp
+    val splashBrandLogoSize = 104.dp
+    val splashBrandLogoRadius = 30.dp
+    val splashProgressWidth = 172.dp
+    val splashProgressThumbWidth = 104.dp
+    val splashProgressHeight = 8.dp
+    val splashProgressTravel = 276.dp
+    val onboardingHeroShadeHeight = 180.dp
+    val onboardingTopStartPadding = 28.dp
+    val onboardingTopEndPadding = 20.dp
+    val onboardingCardRadius = 30.dp
+    val onboardingIndicatorActiveWidth = 28.dp
+    val onboardingIndicatorDotSize = 8.dp
+    val onboardingIndicatorGap = 8.dp
+    val onboardingIndicatorHeight = 12.dp
+}
+
+@Immutable
+data class OmniFlowDimens(
+    val authContentMaxWidth: Dp = DimensTokens.authContentMaxWidth,
+    val authControlHeight: Dp = DimensTokens.authControlHeight,
+    val authLogoMedium: Dp = DimensTokens.authLogoMedium,
+    val authLogoRadius: Dp = DimensTokens.authLogoRadius,
+    val authGlowLarge: Dp = DimensTokens.authGlowLarge,
+    val authGlowMedium: Dp = DimensTokens.authGlowMedium,
+    val authIconContainer: Dp = DimensTokens.authIconContainer,
+    val authIconLarge: Dp = DimensTokens.authIconLarge,
+    val authLogoSmall: Dp = DimensTokens.authLogoSmall,
+    val authLogoSmallRadius: Dp = DimensTokens.authLogoSmallRadius,
+    val authLogoInnerOuter: Dp = DimensTokens.authLogoInnerOuter,
+    val authLogoInner: Dp = DimensTokens.authLogoInner,
+    val googleIconSize: Dp = DimensTokens.googleIconSize,
+    val checklistIconSize: Dp = DimensTokens.checklistIconSize,
+    val loadingIndicatorSize: Dp = DimensTokens.loadingIndicatorSize,
+    val progressStrokeWidth: Dp = DimensTokens.progressStrokeWidth,
+    val buttonShadowElevation: Dp = DimensTokens.buttonShadowElevation,
+    val dividerLineWidth: Dp = DimensTokens.dividerLineWidth,
+    val hairline: Dp = DimensTokens.hairline,
+    val loginGlowOffsetX: Dp = DimensTokens.loginGlowOffsetX,
+    val loginGlowOffsetY: Dp = DimensTokens.loginGlowOffsetY,
+    val loginDividerOffsetY: Dp = DimensTokens.loginDividerOffsetY,
+    val loginDividerTextOffsetX: Dp = DimensTokens.loginDividerTextOffsetX,
+    val loginDividerTextWidth: Dp = DimensTokens.loginDividerTextWidth,
+    val loginFooterOffsetX: Dp = DimensTokens.loginFooterOffsetX,
+    val loginFooterOffsetY: Dp = DimensTokens.loginFooterOffsetY,
+    val loginFooterPromptWidth: Dp = DimensTokens.loginFooterPromptWidth,
+    val loginFooterRegisterWidth: Dp = DimensTokens.loginFooterRegisterWidth,
+    val loginFooterRegisterOffsetX: Dp = DimensTokens.loginFooterRegisterOffsetX,
+    val loginFooterTextHeight: Dp = DimensTokens.loginFooterTextHeight,
+    val registerGlowOffsetX: Dp = DimensTokens.registerGlowOffsetX,
+    val registerGlowOffsetY: Dp = DimensTokens.registerGlowOffsetY,
+    val authFrameMaxWidth: Dp = DimensTokens.authFrameMaxWidth,
+    val authFrameHeight: Dp = DimensTokens.authFrameHeight,
+    val authLargeGlow: Dp = DimensTokens.authLargeGlow,
+    val verifyGlowOffsetX: Dp = DimensTokens.verifyGlowOffsetX,
+    val verifyGlowOffsetY: Dp = DimensTokens.verifyGlowOffsetY,
+    val verifyLogoOffsetX: Dp = DimensTokens.verifyLogoOffsetX,
+    val verifyLogoOffsetY: Dp = DimensTokens.verifyLogoOffsetY,
+    val verifyHeroOffsetY: Dp = DimensTokens.verifyHeroOffsetY,
+    val verifyCopyOffsetX: Dp = DimensTokens.verifyCopyOffsetX,
+    val verifyCopyOffsetY: Dp = DimensTokens.verifyCopyOffsetY,
+    val verifyActionsOffsetX: Dp = DimensTokens.verifyActionsOffsetX,
+    val verifyActionsOffsetY: Dp = DimensTokens.verifyActionsOffsetY,
+    val verifyFooterOffsetX: Dp = DimensTokens.verifyFooterOffsetX,
+    val verifyFooterOffsetY: Dp = DimensTokens.verifyFooterOffsetY,
+    val verifyContentEndPadding: Dp = DimensTokens.verifyContentEndPadding,
+    val snackbarVerticalPadding: Dp = DimensTokens.snackbarVerticalPadding,
+    val snackbarShapeRadius: Dp = DimensTokens.snackbarShapeRadius,
+    val sentCheckBadgeSize: Dp = DimensTokens.sentCheckBadgeSize,
+    val splashTopGlowSize: Dp = DimensTokens.splashTopGlowSize,
+    val splashTopGlowOffset: Dp = DimensTokens.splashTopGlowOffset,
+    val splashBottomGlowOffsetX: Dp = DimensTokens.splashBottomGlowOffsetX,
+    val splashBrandLogoSize: Dp = DimensTokens.splashBrandLogoSize,
+    val splashBrandLogoRadius: Dp = DimensTokens.splashBrandLogoRadius,
+    val splashProgressWidth: Dp = DimensTokens.splashProgressWidth,
+    val splashProgressThumbWidth: Dp = DimensTokens.splashProgressThumbWidth,
+    val splashProgressHeight: Dp = DimensTokens.splashProgressHeight,
+    val splashProgressTravel: Dp = DimensTokens.splashProgressTravel,
+    val onboardingHeroShadeHeight: Dp = DimensTokens.onboardingHeroShadeHeight,
+    val onboardingTopStartPadding: Dp = DimensTokens.onboardingTopStartPadding,
+    val onboardingTopEndPadding: Dp = DimensTokens.onboardingTopEndPadding,
+    val onboardingCardRadius: Dp = DimensTokens.onboardingCardRadius,
+    val onboardingIndicatorActiveWidth: Dp = DimensTokens.onboardingIndicatorActiveWidth,
+    val onboardingIndicatorDotSize: Dp = DimensTokens.onboardingIndicatorDotSize,
+    val onboardingIndicatorGap: Dp = DimensTokens.onboardingIndicatorGap,
+    val onboardingIndicatorHeight: Dp = DimensTokens.onboardingIndicatorHeight,
+)
+
+internal val LocalOmniFlowDimens = staticCompositionLocalOf { OmniFlowDimens() }

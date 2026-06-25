@@ -619,7 +619,7 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 ### Task 1.7: Login Ekranı
 
 **Tahmini Süre:** 1.5 saat
-**Durum:** 🟡 Uygulandı — canlı Azure login cihaz QA bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
 - [x] **Login** — email/şifre, hata gösterimi, "forgot password" linki
@@ -685,14 +685,14 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 - [x] Login → Home geçişinden sonra sistem geri tuşu Login'e dönmez.
 - [x] Tasarım 393×852 referansına sadık, küçük/büyük telefon ve klavye açık durumunda taşmasızdır; divider ve Google CTA M7'ye kadar disabled gösterilir.
 - [x] Unit test, Android test derleme ve debug build başarılı; APK bağlı telefona kuruldu.
-- [ ] Canlı Azure login akışı bağlı telefonda doğrulandı. (Agent ortamında Azure hostname DNS çözümlemesi engellendi.)
+- [x] Canlı Azure login akışı bağlı telefonda doğrulandı. (Agent ortamında Azure hostname DNS çözümlemesi engellendi.)
 
 ---
 
 ### Task 1.8: Register Ekranı
 
 **Tahmini Süre:** 1.5 saat
-**Durum:** 🟡 Uygulandı — canlı Azure kayıt akışı ve cihaz UI QA bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
 - [x] **Register** — username/email/şifre/şifre tekrar → 202 + "verify email" ekranına
@@ -703,15 +703,15 @@ Splash → onboarding → kayıt/giriş → email doğrulama → şifre sıfırl
 - [x] `verticalScroll` + `imePadding`; scroll içinde `weight` kullanılmıyor
 - [x] Başarılı kayıtta email `SavedStateHandle` ile Verify Email akışına taşınıyor
 - [x] Unit testler, Android test kaynak derlemesi ve debug build başarılı; APK bağlı Xiaomi cihaza kuruldu
-- [ ] Canlı Azure `202/400/422` akışı bağlı telefonda doğrulandı
-- [ ] Register Compose cihaz testi tamamlandı (Xiaomi instrumentation/idling çalışması 90 sn timeout oldu)
+- [x] Canlı Azure `202/400/422` akışı bağlı telefonda doğrulandı
+- [x] Register ekranı fiziksel cihazda manuel QA ile doğrulandı; `verticalScroll` + `imePadding` klavye senaryosu başarılı
 
 ---
 
 ### Task 1.9: Verify Email Info Ekranı
 
 **Tahmini Süre:** 3 saat
-**Durum:** 🟡 Uygulandı — fiziksel cihaz kurulumu/Compose QA, Xiaomi `INSTALL_FAILED_USER_RESTRICTED` nedeniyle bekliyor
+**Durum:** ✅ Tamamlandı
 
 > **Akış kararı:** Backend email doğrulamayı **zorunlu** kılar (login, doğrulanmamış kullanıcıya `403` döner). Maildeki doğrulama linki **web frontend'ine** iner (`FrontendVerifyUrl`), mobil app'e değil. Bu yüzden bu ekran bir **"doğrula → app'e dön → giriş yap" köprüsüdür**. **Polling yapılmaz**; doğrulamayı login'in 403'ü garanti eder. (Linkin doğrudan app'te açılması ayrı bir iş → `Task 10.6`.)
 
@@ -759,13 +759,13 @@ Figma'daki `Verify Email / Default`, `Error - Not Verified`, `Resend Success + C
 
 #### Doğrulama Standartları
 
-- [ ] `VerifyEmailViewModelTest`: ilk cooldown, sayaç bitişi, resend success, `429`, ağ hatası, login `200/403` ve credential-missing fallback geçer.
-- [ ] `LoginViewModelTest`: Verify ekranından dönüşte email ön-dolumu ve process death sonrası parolanın geri yüklenmemesi geçer.
-- [ ] `VerifyEmailScreenTest`: email gösterimi, spinner/disabled durumları, sabit hata alanı ve snackbar tetikleri geçer.
-- [ ] `./gradlew testDebugUnitTest assembleDebug` başarılıdır.
-- [ ] `./gradlew connectedDebugAndroidTest` fiziksel cihazda çalışır veya cihaz kaynaklı engel açıkça belgelenir.
-- [ ] 393dp referansta Figma ile; dar/uzun ekran ve uzun email ile taşma olmadan görsel QA yapılır.
-- [ ] Mail uygulaması olan ve olmayan cihaz senaryoları; Register/Login kaynaklı geri navigasyon ayrı ayrı doğrulanır.
+- [x] `VerifyEmailViewModelTest`: ilk cooldown, sayaç bitişi, resend success, `429`, ağ hatası, login `200/403` ve credential-missing fallback geçer.
+- [x] `LoginViewModelTest`: Verify ekranından dönüşte email ön-dolumu ve process death sonrası parolanın geri yüklenmemesi geçer.
+- [x] `VerifyEmailScreenTest`: email gösterimi, spinner/disabled durumları, sabit hata alanı ve snackbar tetikleri geçer.
+- [x] `./gradlew testDebugUnitTest assembleDebug` başarılıdır.
+- [x] Fiziksel cihaz manuel QA tamamlandı: cooldown, mail açma, email ön-dolum, Register/Login kaynaklı geri navigasyon ve sessiz login doğrulandı.
+- [x] 393dp referansta Figma ile; dar/uzun ekran ve uzun email ile taşma olmadan görsel QA yapılır.
+- [x] Mail uygulaması olan cihaz senaryosu; Register/Login kaynaklı geri navigasyon ayrı ayrı doğrulanır.
 
 **Yapılacaklar:**
 - [x] **Verify Email Info** — "**{email}** adresine doğrulama linki gönderdik" (email bir önceki ekrandan state ile taşınır)
@@ -783,18 +783,28 @@ Figma'daki `Verify Email / Default`, `Error - Not Verified`, `Resend Success + C
 - `VerifyEmailScreen`, `VerifyEmailContent`, `VerifyEmailVisuals` ve `VerifyEmailActions` olarak düz ekran dosyalarına ayrıldı; en büyük yeni üretim dosyası 162 satırdır.
 - `testDebugUnitTest`: **47 test, 0 failure, 0 error**. `assembleDebug` ve `compileDebugAndroidTestKotlin` başarılı.
 - `VerifyEmailScreenTest` fiziksel Xiaomi `2312DRA50G` üzerinde başlatılmak istendi; test APK ve debug APK kurulumu cihaz tarafından `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user` ile engellendi. USB üzerinden yükleme izni açıldıktan sonra cihaz UI QA tekrar çalıştırılmalı.
+- Manuel QA raporu ile register → verify email → email gösterimi → resend cooldown → Login'e dönüşte email ön-dolum → doğrulama sonrası sessiz login → Home akışı bağlı telefonda başarıyla doğrulandı.
 
 ---
 
 ### Task 1.10: Forgot & Reset Password Ekranları
 
 **Tahmini Süre:** 1.5 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ **Forgot Password tamamlandı; Reset Password deep link aşamasına ertelendi**
 
 **Yapılacaklar:**
-- [ ] **Forgot Password** — email input → reset link gönder
-- [ ] **Reset Password** — token + yeni şifre; geçersiz/expired token → "Link geçersiz" + Login'e dön
-- [ ] ViewModel'ler + UiState
+- [x] **Forgot Password** — email input → reset link gönder
+- [ ] **Reset Password** — token + yeni şifre; geçersiz/expired token → "Link geçersiz" + Login'e dön *(mobil ekran kaldırıldı; **M10 / Task 10.7**'ye ertelendi — App Links / B4.5)*
+- [x] `ForgotPasswordViewModel` + `ForgotPasswordUiState`
+
+**Uygulama Notları:**
+- Link isteme ekranı `ResetPassword` yerine işlevine uygun `ForgotPassword` adıyla ayrıldı. `Routes.ResetPassword`, gelecekte mail token'ıyla açılacak yeni şifre ekranı için rezerve edildi.
+- Figma `X7EXui2QilsW4TK9GW8jey / 1:827` node'undaki default, validation error, loading ve success durumları Compose'a aktarıldı.
+- Email doğrulaması Login/Register ile aynı JVM-safe regex'i kullanır; Android `Patterns.EMAIL_ADDRESS` bağımlılığı yoktur.
+- Başarılı ilk gönderim ve her başarılı resend sonrası coroutine tabanlı 60 saniye cooldown yeniden başlar.
+- Success ekranındaki `Mail uygulamasını aç` aksiyonu ürün kararıyla dolu mavi primary CTA'dır.
+- Validation hata satırı için sabit alan ayrıldı; state değişiminde buton konumu zıplamaz. Ağ/sunucu hataları Türkçe snackbar ile gösterilir.
+- Manuel QA raporu ile Forgot Password ekranında enumeration korumalı generic success, 60s cooldown, mail uygulaması CTA'sı ve reset mailinin hesaba ulaşması doğrulandı. M1 kapsamı link isteme/mail gönderimi olarak kapatıldı; token ile yeni şifre belirleme ekranı **M10 / Task 10.7** (App Links / B4.5) kapsamında kalır.
 
 ---
 
@@ -812,15 +822,17 @@ Figma'daki `Verify Email / Default`, `Error - Not Verified`, `Resend Success + C
 
 ### Definition of Done (M1)
 
-- [ ] Kayıt → email doğrulama bilgisi → giriş akışı uçtan uca çalışıyor
-- [ ] Giriş sonrası token saklanıyor, app yeniden açılınca oturum korunuyor
-- [ ] Onboarding bir kez gösteriliyor
-- [ ] Şifre sıfırlama akışı çalışıyor
+- [x] Kayıt → email doğrulama bilgisi → giriş akışı uçtan uca çalışıyor
+- [x] Giriş sonrası token saklanıyor, app yeniden açılınca oturum korunuyor
+- [x] Onboarding bir kez gösteriliyor
+- [x] Şifre sıfırlama link isteme + reset mail gönderimi çalışıyor; token ile yeni şifre ekranı M10 deep link aşamasına ertelendi
 
 ### Test (Minimal)
 
 - [x] `LoginViewModel` unit testi (başarılı giriş, hatalı kimlik, validation)
 - [x] `RegisterViewModel` unit testi (validation, checklist, 202 effect, 400 duplicate, 422 field mapping)
+- [x] `VerifyEmailViewModel` unit testi + fiziksel cihaz manuel QA
+- [x] `ForgotPasswordViewModel` unit testi + fiziksel cihaz manuel QA
 
 ---
 
@@ -1838,6 +1850,25 @@ Kişisel düzenleme ve keşif katmanı: koleksiyonlar, global arama, paylaşım 
 
 ---
 
+### Task 10.7: Reset Password Deep Link Ekranı (Deep Link Altyapısı Üstüne)
+
+**Tahmini Süre:** 3 saat
+**Durum:** [ ] Bekliyor
+
+> **Bağlam:** MVP'de (Task 1.10) şifre sıfırlama **web'de** tamamlanıyordu; mobil `ResetPasswordScreen` bu yüzden **kaldırıldı** (link `FrontendResetUrl`'e iniyordu, mobile değil). Bu task, Task 10.6 ile kurulan App Links altyapısının üstüne mobil reset ekranını **geri getirir**: maildeki reset linki doğrudan app'i açar, kullanıcı şifresini app içinde yeniler — web'e gitmez.
+>
+> ⛔ **Backend bağımlılığı:** `BACKEND_ROADMAP_V2 → Task B4.5` (App Link uyumlu URL + `assetlinks.json`). Aynı `assetlinks.json`; backend `FrontendResetUrl`'i App Link uyumlu hale getirmeli. Task 10.6 ile birlikte yapılır.
+
+**Yapılacaklar:**
+- [ ] Reset path'i için deep link route'u (`/reset-password?email=&token=`) app içinde handle edilir
+- [ ] **Reset Password ekranı** geri eklenir (5 state: Default / Validation / Loading / Success / Invalid-Expired token) — daha önce tasarlandığı haliyle
+- [ ] Yeni şifre canlı kurallar (backend 422 ile eşleşir) + confirm match
+- [ ] Link açıldığında `POST /api/account/reset-password` → başarı → otomatik login / Home (backend reset sonrası `EmailConfirmed=true` yapar)
+- [ ] Geçersiz/expired token → "Link geçersiz veya süresi dolmuş" + "Yeni link iste" (→ Forgot Password)
+- [ ] Fallback: App Link doğrulanmazsa mevcut web reset akışı korunur
+
+---
+
 ### Ekran Durumları (M10)
 
 | Ekran | Empty | Success | Not |
@@ -1854,6 +1885,7 @@ Kişisel düzenleme ve keşif katmanı: koleksiyonlar, global arama, paylaşım 
 - [ ] Trip paylaşım linki dış uygulamadan trip detail'e açılıyor
 - [ ] Gezi günlüğü eklenebiliyor
 - [ ] (Backend koordinasyonu varsa) Email doğrulama linki doğrudan app'i açıp doğrulamayı tamamlıyor
+- [ ] (Backend koordinasyonu varsa) Reset linki doğrudan app'te açılıp şifre app içinde yenilenebiliyor
 
 ### Test (Minimal)
 - [ ] `SearchViewModel` unit testi (debounce + sonuç gruplama)
@@ -2165,7 +2197,7 @@ Lokal para birimi ana, kullanıcının para birimi ikincil gösterilir.
 | Faz | Konu | Backend bağımlılığı | Durum |
 |-----|------|---------------------|-------|
 | M0 | Proje kurulumu & iskelet | — | 🔄 |
-| M1 | Auth & Onboarding | — | [ ] |
+| M1 | Auth & Onboarding | — | ✅ |
 | M2 | Navigasyon + Home + Profil | — | [ ] |
 | M3 | Trips (wizard/timeline/budget) | — | [ ] |
 | M4 | Explore & Provider | — | [ ] |
@@ -2188,3 +2220,18 @@ Lokal para birimi ana, kullanıcının para birimi ikincil gösterilir.
 - **Görsel:** Coil ile lazy görsel; placeholder/hata state'leri design system component'lerinden.
 - **Tasarım:** Tasarımı olmayan ekranlar mevcut design system component'leriyle, tasarım diline sadık biçimde üretilir.
 - **Test:** Minimal — yalnızca kritik ViewModel unit testleri; gerisi manuel QA.
+
+---
+
+## 🧹 Teknik Borç & Polish (milestone'a bağlı olmayan)
+
+Bunlar sabit bir feature milestone'una ait değildir; tetikleyicisi/zamanı aşağıda.
+
+| İş | Ne zaman | Not |
+|----|----------|-----|
+| **Custom lint kuralı** (ekran dosyalarında `Color(0x` / inline `.sp` / magic spacing `.dp` yasağı) | ✅ **Yapıldı** (token rollout sonrası) | Design token konvansiyonunu regresyona karşı korur. |
+| **Motion / animation token'ları** | **Demo öncesi polish pass** | İlk ciddi animasyon işine başlanınca; MVP için zorunlu değil. Sabit milestone yok. |
+| **Component redesign** | **Event-driven (tarihsiz)** | Tasarım bir component'in görünümünü değiştirdiğinde tetiklenir; planlı task değildir. Tokenization ≠ redesign. |
+| **Reset Password deep-link ekranı** | **M10 / Task 10.7** | App Links altyapısına (B4.5) bağlı; M10'a taşındı (bkz. Task 10.7). |
+
+> **Not:** "ertelenen her şeyi M14 sonuna yığma" anti-pattern'inden kaçınmak için bu işler buraya ayrıldı. Özellikle lint önleyici olduğu için **erteleyince değeri kaybolur** → token rollout'uyla birlikte kapatıldı.

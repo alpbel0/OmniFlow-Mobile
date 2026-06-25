@@ -15,11 +15,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.omniflow.uicomponents.EmptyState
+import com.omniflow.ui.auth.forgotpassword.ForgotPasswordScreen
 import com.omniflow.ui.auth.login.LoginScreen
 import com.omniflow.ui.auth.login.LOGIN_EMAIL_KEY
 import com.omniflow.ui.auth.onboarding.OnboardingScreen
 import com.omniflow.ui.auth.register.RegisterScreen
-import com.omniflow.ui.auth.resetpassword.ResetPasswordScreen
 import com.omniflow.ui.auth.splash.SplashScreen
 import com.omniflow.ui.auth.splash.SplashDestination
 import com.omniflow.ui.auth.verifyemail.VerifyEmailScreen
@@ -89,7 +89,7 @@ fun OmniFlowNavHost() {
                         }
                     },
                     onRegisterClick = { navController.navigate(Routes.Register.route) },
-                    onForgotPasswordClick = { navController.navigate(Routes.ResetPassword.route) },
+                    onForgotPasswordClick = { navController.navigate(Routes.ForgotPassword.route) },
                     onVerifyEmailClick = { email ->
                         navController.navigateToVerifyEmail(email, VerifyEmailSource.LOGIN)
                     },
@@ -122,10 +122,10 @@ fun OmniFlowNavHost() {
                     onNavigateLogin = { email -> navController.navigateToPrefilledLogin(email) },
                 )
             }
-            composable(Routes.ResetPassword.route) {
-                ResetPasswordScreen(
+            composable(Routes.ForgotPassword.route) {
+                ForgotPasswordScreen(
                     paddingValues = innerPadding,
-                    onContinue = { navController.popBackStack() },
+                    onLoginClick = { navController.popBackStack() },
                 )
             }
             composable(Routes.Home.route) {

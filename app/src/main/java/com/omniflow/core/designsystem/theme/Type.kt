@@ -29,17 +29,17 @@ private val PlusJakartaSans = FontFamily(
 
 val OmniFlowTypography = Typography(
     displaySmall = omniTextStyle(FontWeight.Bold, 36.sp, 44.sp),
-    headlineLarge = omniTextStyle(FontWeight.Bold, 32.sp, 40.sp),
+    headlineLarge = omniTextStyle(FontWeight.Bold, 31.sp, 38.sp),
     headlineMedium = omniTextStyle(FontWeight.Bold, 28.sp, 36.sp),
     headlineSmall = omniTextStyle(FontWeight.SemiBold, 24.sp, 32.sp),
     titleLarge = omniTextStyle(FontWeight.SemiBold, 22.sp, 28.sp),
     titleMedium = omniTextStyle(FontWeight.SemiBold, 16.sp, 24.sp),
-    titleSmall = omniTextStyle(FontWeight.SemiBold, 14.sp, 20.sp),
+    titleSmall = omniTextStyle(FontWeight.SemiBold, 14.sp, 18.sp),
     bodyLarge = omniTextStyle(FontWeight.Normal, 16.sp, 24.sp),
-    bodyMedium = omniTextStyle(FontWeight.Normal, 14.sp, 20.sp),
-    bodySmall = omniTextStyle(FontWeight.Normal, 12.sp, 16.sp),
-    labelLarge = omniTextStyle(FontWeight.SemiBold, 14.sp, 20.sp),
-    labelMedium = omniTextStyle(FontWeight.Medium, 12.sp, 16.sp),
+    bodyMedium = omniTextStyle(FontWeight.Normal, 15.sp, 22.sp),
+    bodySmall = omniTextStyle(FontWeight.Normal, 13.sp, 18.sp),
+    labelLarge = omniTextStyle(FontWeight.SemiBold, 15.sp, 20.sp),
+    labelMedium = omniTextStyle(FontWeight.Medium, 13.sp, 16.sp),
     labelSmall = omniTextStyle(FontWeight.Medium, 11.sp, 16.sp),
 )
 

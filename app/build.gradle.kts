@@ -66,6 +66,8 @@ kotlin {
 }
 
 dependencies {
+    lintChecks(project(":lint-rules"))
+
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
 

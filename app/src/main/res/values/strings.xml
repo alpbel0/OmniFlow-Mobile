@@ -87,4 +87,22 @@
     <string name="verify_email_change_success">Verification email sent to the new address.</string>
     <string name="verify_email_change_same_email">New email must be different from current email.</string>
     <string name="verify_email_change_rate_limited">Too many attempts. Try again shortly.</string>
+    <string name="forgot_password_title">Şifreni mi unuttun?</string>
+    <string name="forgot_password_description">Email adresini gir, sana bir sıfırlama linki gönderelim.</string>
+    <string name="forgot_password_email_label">Email</string>
+    <string name="forgot_password_email_placeholder">Email adresin</string>
+    <string name="forgot_password_send">Sıfırlama linki gönder</string>
+    <string name="forgot_password_error_email_invalid">Geçerli bir email gir</string>
+    <string name="forgot_password_send_error">Gönderilemedi, tekrar dene.</string>
+    <string name="forgot_password_resend_success">Sıfırlama linki tekrar gönderildi.</string>
+    <string name="forgot_password_success_title">Link gönderildi</string>
+    <string name="forgot_password_success_prefix">Eğer </string>
+    <string name="forgot_password_success_suffix"> kayıtlıysa, sıfırlama linkini gönderdik.</string>
+    <string name="forgot_password_success_direction">Maildeki linkle şifreni güvenle yenileyebilirsin.</string>
+    <string name="forgot_password_open_mail">Mail uygulamasını aç</string>
+    <string name="forgot_password_resend">Tekrar gönder</string>
+    <string name="forgot_password_resend_countdown">Tekrar gönder (%1$ds)</string>
+    <string name="forgot_password_spam_help">Gelen kutunda yoksa spam/junk klasörünü kontrol et.</string>
+    <string name="forgot_password_footer_prefix">Şifreni hatırladın mı? </string>
+    <string name="forgot_password_footer_action">Login\'e dön</string>
 </resources>

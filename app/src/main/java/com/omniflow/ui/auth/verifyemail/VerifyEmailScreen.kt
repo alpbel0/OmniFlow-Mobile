@@ -1,12 +1,11 @@
 package com.omniflow.ui.auth.verifyemail
 
 import android.content.ActivityNotFoundException
-import android.content.Intent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -18,12 +17,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.omniflow.R
+import com.omniflow.core.designsystem.theme.OmniTokens
 import kotlinx.coroutines.launch
 
 @Composable
@@ -38,6 +36,7 @@ fun VerifyEmailScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     var snackbarIsError by remember { mutableStateOf(false) }
+    val colors = OmniTokens.colors
 
     LaunchedEffect(viewModel) {
         viewModel.effects.collect { effect ->
@@ -82,13 +81,13 @@ fun VerifyEmailScreen(
             hostState = snackbarHostState,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = 24.dp, vertical = 130.dp),
+                .padding(horizontal = OmniTokens.spacing.xl, vertical = OmniTokens.dimens.snackbarVerticalPadding),
         ) { data ->
             Snackbar(
                 snackbarData = data,
-                containerColor = if (snackbarIsError) VerifyError else VerifySuccess,
-                contentColor = Color.White,
-                shape = RoundedCornerShape(14.dp),
+                containerColor = if (snackbarIsError) MaterialTheme.colorScheme.error else colors.success,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = MaterialTheme.shapes.small,
             )
         }
     }

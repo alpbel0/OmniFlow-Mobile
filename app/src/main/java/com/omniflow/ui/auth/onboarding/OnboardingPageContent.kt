@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -46,9 +45,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.omniflow.R
+import com.omniflow.core.designsystem.theme.OmniTokens
 import kotlin.math.roundToInt
 
 @Composable
@@ -64,6 +62,9 @@ fun OnboardingPageContent(
     onCardToggle: () -> Unit,
     onPrimaryClick: () -> Unit,
 ) {
+    val colors = OmniTokens.colors
+    val spacing = OmniTokens.spacing
+
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(page.imageRes),
@@ -74,10 +75,10 @@ fun OnboardingPageContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp)
+                .height(OmniTokens.dimens.onboardingHeroShadeHeight)
                 .background(
                     Brush.verticalGradient(
-                        listOf(Color(0x8A0A1C2E), Color.Transparent),
+                        listOf(colors.heroShade, Color.Transparent),
                     ),
                 ),
         )
@@ -94,7 +95,7 @@ fun OnboardingPageContent(
             onPrimaryClick = onPrimaryClick,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = 24.dp, vertical = 26.dp),
+                .padding(horizontal = spacing.xl, vertical = spacing.xl + spacing.tiny),
         )
     }
 }
@@ -105,24 +106,26 @@ private fun OnboardingTopBar(
     isSaving: Boolean,
     onSkip: () -> Unit,
 ) {
+    val spacing = OmniTokens.spacing
+    val colorScheme = MaterialTheme.colorScheme
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 28.dp, top = 16.dp, end = 20.dp),
+            .padding(start = OmniTokens.dimens.onboardingTopStartPadding, top = spacing.base, end = OmniTokens.dimens.onboardingTopEndPadding),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = stringResource(page.heroTitleRes),
-            color = Color.White,
-            fontSize = 32.sp,
-            lineHeight = 40.sp,
+            color = colorScheme.onPrimary,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
         )
         TextButton(onClick = onSkip, enabled = !isSaving) {
             Text(
                 text = stringResource(R.string.onboarding_skip),
-                color = Color.White.copy(alpha = if (isSaving) 0.55f else 0.92f),
+                color = colorScheme.onPrimary.copy(alpha = if (isSaving) 0.55f else 0.92f),
                 style = MaterialTheme.typography.labelLarge,
             )
         }
@@ -142,33 +145,34 @@ private fun OnboardingCard(
     onPrimaryClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val colors = OmniTokens.colors
+    val spacing = OmniTokens.spacing
+    val colorScheme = MaterialTheme.colorScheme
+    val cardShape = MaterialTheme.shapes.extraLarge
+
     Column(
         modifier = modifier
-            .widthIn(max = 345.dp)
+            .widthIn(max = OmniTokens.dimens.authContentMaxWidth)
             .fillMaxWidth()
             .animateContentSize(animationSpec = tween(CARD_ANIMATION_DURATION_MS))
-            .shadow(20.dp, RoundedCornerShape(30.dp), ambientColor = CardShadow)
-            .clip(RoundedCornerShape(30.dp))
-            .background(Color.White.copy(alpha = 0.98f))
+            .shadow(spacing.l, cardShape, ambientColor = colors.cardShadow)
+            .clip(cardShape)
+            .background(colorScheme.surface.copy(alpha = 0.98f))
             .clickable(enabled = !isSaving, onClick = onToggle)
-            .padding(horizontal = 28.dp, vertical = 24.dp),
+            .padding(horizontal = OmniTokens.dimens.onboardingTopStartPadding, vertical = spacing.xl),
     ) {
         Text(
             text = stringResource(page.eyebrowRes),
-            color = MaterialTheme.colorScheme.primary,
-            fontSize = 13.sp,
-            lineHeight = 16.sp,
+            color = colorScheme.primary,
+            style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
-            letterSpacing = 0.52.sp,
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(spacing.s + spacing.tiny))
         Text(
             text = stringResource(page.titleRes),
-            color = CardTitle,
-            fontSize = 27.sp,
-            lineHeight = 32.sp,
+            color = colorScheme.onSurface,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            letterSpacing = (-0.54).sp,
         )
         AnimatedVisibility(
             visible = isExpanded,
@@ -176,29 +180,28 @@ private fun OnboardingCard(
             exit = fadeOut(tween(CARD_ANIMATION_DURATION_MS)) + shrinkVertically(),
         ) {
             Column {
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(spacing.s + spacing.tiny))
                 Text(
                     text = stringResource(page.bodyRes),
-                    color = CardBody,
-                    fontSize = 14.sp,
-                    lineHeight = 21.sp,
+                    color = colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(spacing.s + spacing.tiny))
         PageIndicator(
             pagerProgress = pagerProgress,
             pageCount = pageCount,
         )
         if (showPersistenceError) {
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(spacing.s + spacing.tiny))
             Text(
                 text = stringResource(R.string.onboarding_persistence_error),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
             )
         }
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(spacing.base - spacing.tiny))
         OnboardingPrimaryButton(
             text = stringResource(
                 if (pageIndex == pageCount - 1) {
@@ -219,27 +222,29 @@ private fun OnboardingPrimaryButton(
     loading: Boolean,
     onClick: () -> Unit,
 ) {
+    val spacing = OmniTokens.spacing
+
     Button(
         onClick = onClick,
         enabled = !loading,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 58.dp),
-        shape = RoundedCornerShape(20.dp),
+            .heightIn(min = OmniTokens.dimens.authControlHeight),
+        shape = MaterialTheme.shapes.large,
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
     ) {
         if (loading) {
             CircularProgressIndicator(
-                modifier = Modifier.size(20.dp),
-                color = Color.White,
-                strokeWidth = 2.dp,
+                modifier = Modifier.size(spacing.l),
+                color = MaterialTheme.colorScheme.onPrimary,
+                strokeWidth = spacing.tiny,
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(spacing.s))
         }
         Text(
             text = text,
-            color = Color.White,
-            fontSize = 17.sp,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
         )
@@ -248,6 +253,9 @@ private fun OnboardingPrimaryButton(
 
 @Composable
 private fun PageIndicator(pagerProgress: Float, pageCount: Int) {
+    val colors = OmniTokens.colors
+    val indicatorStep = OmniTokens.dimens.onboardingIndicatorActiveWidth + OmniTokens.dimens.onboardingIndicatorGap
+    val indicatorDotOffset = (OmniTokens.dimens.onboardingIndicatorActiveWidth - OmniTokens.dimens.onboardingIndicatorDotSize) / 2
     val currentPage = pagerProgress.roundToInt().coerceIn(0, pageCount - 1)
     val description = stringResource(
         R.string.onboarding_page_description,
@@ -256,39 +264,29 @@ private fun PageIndicator(pagerProgress: Float, pageCount: Int) {
     )
     Box(
         modifier = Modifier
-            .width(IndicatorActiveWidth * pageCount + IndicatorGap * (pageCount - 1))
-            .height(12.dp)
+            .width(OmniTokens.dimens.onboardingIndicatorActiveWidth * pageCount + OmniTokens.dimens.onboardingIndicatorGap * (pageCount - 1))
+            .height(OmniTokens.dimens.onboardingIndicatorHeight)
             .semantics { contentDescription = description },
     ) {
         repeat(pageCount) { index ->
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .offset(x = IndicatorStep * index + IndicatorDotOffset)
-                    .size(IndicatorDotSize)
+                    .offset(x = indicatorStep * index + indicatorDotOffset)
+                    .size(OmniTokens.dimens.onboardingIndicatorDotSize)
                     .clip(CircleShape)
-                    .background(IndicatorInactive),
+                    .background(colors.indicatorInactive),
             )
         }
         Box(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .offset(x = IndicatorStep * pagerProgress)
-                .width(IndicatorActiveWidth)
-                .height(IndicatorDotSize)
+                .offset(x = indicatorStep * pagerProgress)
+                .width(OmniTokens.dimens.onboardingIndicatorActiveWidth)
+                .height(OmniTokens.dimens.onboardingIndicatorDotSize)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary),
         )
     }
 }
-
-private val CardTitle = Color(0xFF102033)
-private val CardBody = Color(0xFF6F7F95)
-private val IndicatorInactive = Color(0xFFDCECFF)
-private val CardShadow = Color(0x1F0D1F33)
-private val IndicatorActiveWidth = 28.dp
-private val IndicatorDotSize = 8.dp
-private val IndicatorGap = 8.dp
-private val IndicatorStep = IndicatorActiveWidth + IndicatorGap
-private val IndicatorDotOffset = (IndicatorActiveWidth - IndicatorDotSize) / 2
 private const val CARD_ANIMATION_DURATION_MS = 280

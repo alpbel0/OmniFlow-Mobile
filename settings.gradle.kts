@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "omniflow-mobile"
 include(":app")
+include(":lint-rules")

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.omniflow.R
 import com.omniflow.core.auth.PendingAuthCredentialsStore
+import com.omniflow.core.common.EmailValidator
 import com.omniflow.core.common.UiText
 import com.omniflow.core.network.ApiResult
 import com.omniflow.data.repository.AuthRepository
@@ -45,8 +46,6 @@ class VerifyEmailViewModel @Inject constructor(
 
     private val _effects = Channel<VerifyEmailEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
-
-    private val emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$".toRegex()
 
     private var cooldownJob: Job? = null
 
@@ -140,7 +139,7 @@ class VerifyEmailViewModel @Inject constructor(
         val newEmail = state.newEmailInput.trim()
         val validationError = when {
             newEmail.isBlank() -> UiText.StringResource(R.string.login_error_email_required)
-            !emailRegex.matches(newEmail) -> UiText.StringResource(R.string.login_error_email_invalid)
+            !EmailValidator.isValid(newEmail) -> UiText.StringResource(R.string.login_error_email_invalid)
             newEmail.equals(state.email, ignoreCase = true) ->
                 UiText.StringResource(R.string.verify_email_change_same_email)
             else -> null

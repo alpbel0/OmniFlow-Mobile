@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -18,8 +17,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.Dp
+import com.omniflow.core.designsystem.theme.OmniTokens
 
 @Composable
 fun OmniButton(
@@ -29,22 +28,24 @@ fun OmniButton(
     enabled: Boolean = true,
     loading: Boolean = false,
     containerColor: Color = MaterialTheme.colorScheme.primary,
-    shape: Shape = RoundedCornerShape(18.dp),
-    fontSize: Int = 17,
+    shape: Shape = MaterialTheme.shapes.medium,
     fontWeight: FontWeight = FontWeight.Bold,
-    shadowElevation: Int = 28,
+    shadowElevation: Dp? = null,
 ) {
+    val tokens = OmniTokens
+    val resolvedShadowElevation = shadowElevation ?: tokens.dimens.buttonShadowElevation
+
     Button(
         onClick = onClick,
         enabled = enabled && !loading,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 58.dp)
+            .heightIn(min = OmniTokens.dimens.authControlHeight)
             .shadow(
-                elevation = if (enabled && !loading) shadowElevation.dp else 0.dp,
+                elevation = if (enabled && !loading) resolvedShadowElevation else tokens.spacing.none,
                 shape = shape,
-                ambientColor = Color(0x2E005CC7),
-                spotColor = Color(0x2E005CC7)
+                ambientColor = tokens.colors.buttonShadow,
+                spotColor = tokens.colors.buttonShadow,
             ),
         shape = shape,
         colors = ButtonDefaults.buttonColors(
@@ -55,13 +56,13 @@ fun OmniButton(
         ),
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(tokens.spacing.s),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (loading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(18.dp),
-                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(OmniTokens.dimens.googleIconSize),
+                    strokeWidth = OmniTokens.dimens.progressStrokeWidth,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             }
@@ -69,7 +70,6 @@ fun OmniButton(
                 text = text,
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = fontWeight,
-                    fontSize = fontSize.sp
                 )
             )
         }

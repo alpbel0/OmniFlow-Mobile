@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -24,9 +23,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import com.omniflow.R
 import com.omniflow.core.common.asString
+import com.omniflow.core.designsystem.theme.OmniTokens
 import com.omniflow.uicomponents.OmniButton
 
 @Composable
@@ -44,11 +43,12 @@ internal fun RegisterContent(
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
+    val spacing = OmniTokens.spacing
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(RegisterBackground)
+            .background(MaterialTheme.colorScheme.background)
             .padding(paddingValues),
     ) {
         RegisterGlow()
@@ -57,10 +57,10 @@ internal fun RegisterContent(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .imePadding()
-                .padding(horizontal = 24.dp, vertical = 28.dp),
+                .padding(horizontal = spacing.xl, vertical = spacing.xxl - spacing.xs),
         ) {
             RegisterHeader()
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(spacing.xxl - spacing.xs))
             RegisterField(
                 label = stringResource(R.string.register_username),
                 value = state.username,
@@ -120,10 +120,10 @@ internal fun RegisterContent(
                     text = error.resolve(context),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 12.dp),
+                    modifier = Modifier.padding(top = spacing.m),
                 )
             }
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(spacing.xl - spacing.tiny))
             OmniButton(
                 text = stringResource(R.string.register_action),
                 onClick = {
@@ -132,13 +132,12 @@ internal fun RegisterContent(
                 },
                 loading = state.isLoading,
                 enabled = !state.isLoading,
-                containerColor = RegisterBlue,
-                shape = RoundedCornerShape(18.dp),
-                shadowElevation = 14,
+                containerColor = MaterialTheme.colorScheme.primary,
+                shape = MaterialTheme.shapes.medium,
             )
             RegisterSocialLogin()
             RegisterFooter(enabled = !state.isLoading, onLoginClick = onLoginClick)
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(spacing.xl))
         }
     }
 }

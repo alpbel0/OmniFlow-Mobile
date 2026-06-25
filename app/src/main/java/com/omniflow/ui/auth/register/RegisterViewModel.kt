@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.omniflow.R
 import com.omniflow.core.auth.PendingAuthCredentialsStore
+import com.omniflow.core.common.EmailValidator
 import com.omniflow.core.common.UiText
 import com.omniflow.core.network.ApiResult
 import com.omniflow.data.repository.AuthRepository
@@ -28,7 +29,6 @@ class RegisterViewModel @Inject constructor(
     private val _effects = Channel<RegisterEffect>(Channel.BUFFERED)
     val effects = _effects.receiveAsFlow()
 
-    private val emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$".toRegex()
     private val usernameRegex = "^[A-Za-z0-9_.-]{3,50}\$".toRegex()
 
     fun onUsernameChanged(username: String) {
@@ -127,7 +127,7 @@ class RegisterViewModel @Inject constructor(
         }
         val emailValidation = when {
             email.isBlank() -> UiText.StringResource(R.string.register_error_email_required)
-            !emailRegex.matches(email.trim()) -> UiText.StringResource(R.string.register_error_email_invalid)
+            !EmailValidator.isValid(email) -> UiText.StringResource(R.string.register_error_email_invalid)
             else -> null
         }
         val passwordValidation = when {

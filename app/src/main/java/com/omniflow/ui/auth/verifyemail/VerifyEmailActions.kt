@@ -12,24 +12,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.omniflow.R
 import com.omniflow.core.common.asString
+import com.omniflow.core.designsystem.theme.OmniTokens
 import com.omniflow.uicomponents.OmniButton
 import com.omniflow.uicomponents.OmniTextField
 
@@ -41,58 +39,57 @@ internal fun VerificationActions(
     onResendClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.fillMaxWidth().padding(end = 48.dp)) {
+    val colors = OmniTokens.colors
+    val spacing = OmniTokens.spacing
+    val colorScheme = MaterialTheme.colorScheme
+
+    Column(modifier = modifier.fillMaxWidth().padding(end = OmniTokens.dimens.verifyContentEndPadding)) {
         OmniButton(
             text = stringResource(R.string.verify_email_confirm),
             onClick = onVerifiedLoginClick,
             enabled = !state.isLoading,
             loading = state.isVerifying,
-            containerColor = VerifyBlue,
-            shape = RoundedCornerShape(20.dp),
-            fontSize = 16,
+            containerColor = colorScheme.primary,
+            shape = MaterialTheme.shapes.large,
             fontWeight = FontWeight.SemiBold,
-            shadowElevation = 22,
         )
-        Spacer(Modifier.height(12.dp))
-        Box(modifier = Modifier.fillMaxWidth().height(18.dp), contentAlignment = Alignment.Center) {
+        Spacer(Modifier.height(spacing.m))
+        Box(modifier = Modifier.fillMaxWidth().height(OmniTokens.dimens.loginFooterTextHeight), contentAlignment = Alignment.Center) {
             Text(
                 text = state.verificationError?.asString().orEmpty(),
-                color = VerifyError,
-                fontSize = 12.sp,
-                lineHeight = 18.sp,
+                color = colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(spacing.m))
         Button(
             onClick = onOpenMailClick,
             enabled = !state.isLoading,
-            modifier = Modifier.fillMaxWidth().height(58.dp),
-            shape = RoundedCornerShape(18.dp),
-            border = BorderStroke(1.dp, VerifyBorder),
+            modifier = Modifier.fillMaxWidth().height(OmniTokens.dimens.authControlHeight),
+            shape = MaterialTheme.shapes.medium,
+            border = BorderStroke(OmniTokens.dimens.hairline, colors.fieldBorder),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White,
-                contentColor = VerifyTextPrimary,
-                disabledContainerColor = Color.White.copy(alpha = 0.55f),
-                disabledContentColor = VerifyTextPrimary.copy(alpha = 0.45f),
+                containerColor = colorScheme.surface,
+                contentColor = colorScheme.onSurface,
+                disabledContainerColor = colorScheme.surface.copy(alpha = 0.55f),
+                disabledContentColor = colorScheme.onSurface.copy(alpha = 0.45f),
             ),
         ) {
             Text(
                 text = stringResource(R.string.verify_email_open_mail),
-                fontSize = 15.sp,
-                lineHeight = 22.sp,
+                style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold,
             )
         }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(spacing.m))
         ResendRow(state, onResendClick)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(spacing.m))
         Text(
             text = stringResource(R.string.verify_email_spam_help),
-            color = VerifyTextSecondary,
-            fontSize = 12.sp,
-            lineHeight = 18.sp,
+            color = colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -101,16 +98,17 @@ internal fun VerificationActions(
 
 @Composable
 private fun ResendRow(state: VerifyEmailUiState, onResendClick: () -> Unit) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Row(
-        modifier = Modifier.fillMaxWidth().height(20.dp),
+        modifier = Modifier.fillMaxWidth().height(OmniTokens.spacing.l),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = stringResource(R.string.verify_email_resend_prompt) + " ",
-            color = VerifyTextSecondary,
-            fontSize = 13.sp,
-            lineHeight = 20.sp,
+            color = colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelMedium,
         )
         Text(
             text = if (state.cooldownSeconds > 0) {
@@ -118,9 +116,8 @@ private fun ResendRow(state: VerifyEmailUiState, onResendClick: () -> Unit) {
             } else {
                 stringResource(R.string.verify_email_resend)
             },
-            color = if (state.canResend) VerifyBlue else VerifyTextSecondary,
-            fontSize = 13.sp,
-            lineHeight = 20.sp,
+            color = if (state.canResend) colorScheme.primary else colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.clickable(enabled = state.canResend, onClick = onResendClick),
         )
@@ -137,10 +134,13 @@ internal fun FooterLinks(
     onBackToLoginClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val spacing = OmniTokens.spacing
+    val colorScheme = MaterialTheme.colorScheme
+
     Column(
-        modifier = modifier.fillMaxWidth().padding(end = 48.dp),
+        modifier = modifier.fillMaxWidth().padding(end = OmniTokens.dimens.verifyContentEndPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(spacing.s - spacing.tiny),
     ) {
         if (state.isChangingEmail) {
             OmniTextField(
@@ -158,23 +158,20 @@ internal fun FooterLinks(
                     onDone = { onSubmitEmailChangeClick() },
                 ),
             )
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(spacing.s - spacing.tiny))
             OmniButton(
                 text = stringResource(R.string.verify_email_update_email),
                 onClick = onSubmitEmailChangeClick,
                 enabled = !state.isLoading,
                 loading = state.isUpdatingEmail,
-                containerColor = VerifyBlue,
-                shape = RoundedCornerShape(18.dp),
-                fontSize = 14,
+                containerColor = colorScheme.primary,
+                shape = MaterialTheme.shapes.medium,
                 fontWeight = FontWeight.SemiBold,
-                shadowElevation = 14,
             )
             Text(
                 text = stringResource(R.string.verify_email_cancel_change),
-                color = VerifyTextSecondary,
-                fontSize = 13.sp,
-                lineHeight = 20.sp,
+                color = colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clickable(enabled = !state.isLoading, onClick = onCancelEmailChangeClick),
             )
@@ -182,15 +179,13 @@ internal fun FooterLinks(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = stringResource(R.string.verify_email_change_prompt) + " ",
-                    color = VerifyTextSecondary,
-                    fontSize = 13.sp,
-                    lineHeight = 20.sp,
+                    color = colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelMedium,
                 )
                 Text(
                     text = stringResource(R.string.verify_email_change),
-                    color = VerifyBlue,
-                    fontSize = 13.sp,
-                    lineHeight = 20.sp,
+                    color = colorScheme.primary,
+                    style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.clickable(enabled = !state.isLoading, onClick = onChangeEmailClick),
                 )
@@ -198,9 +193,8 @@ internal fun FooterLinks(
         }
         Text(
             text = stringResource(R.string.verify_email_back_login),
-            color = VerifyBlue,
-            fontSize = 13.sp,
-            lineHeight = 20.sp,
+            color = colorScheme.primary,
+            style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.clickable(enabled = !state.isLoading, onClick = onBackToLoginClick),
         )

@@ -13,13 +13,13 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import com.omniflow.core.designsystem.theme.OmniTokens
 
 @Composable
 fun VerifyEmailContent(
@@ -34,19 +34,22 @@ fun VerifyEmailContent(
     onCancelEmailChangeClick: () -> Unit,
     onBackToLoginClick: () -> Unit,
 ) {
+    val colors = OmniTokens.colors
+    val spacing = OmniTokens.spacing
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(VerifyBackground)
+            .background(MaterialTheme.colorScheme.background)
             .padding(bottom = paddingValues.calculateBottomPadding()),
     ) {
         Box(
             modifier = Modifier
-                .size(320.dp)
+                .size(OmniTokens.dimens.authLargeGlow)
                 .align(Alignment.TopEnd)
-                .offset(x = 115.dp, y = (-132).dp)
-                .blur(50.dp, BlurredEdgeTreatment.Unbounded)
-                .background(VerifyGlow, CircleShape),
+                .offset(x = OmniTokens.dimens.verifyGlowOffsetX, y = OmniTokens.dimens.verifyGlowOffsetY)
+                .blur(spacing.section - spacing.s + spacing.tiny, BlurredEdgeTreatment.Unbounded)
+                .background(colors.glow, CircleShape),
         )
         Box(
             modifier = Modifier
@@ -56,19 +59,19 @@ fun VerifyEmailContent(
         ) {
             Box(
                 modifier = Modifier
-                    .widthIn(max = 393.dp)
+                    .widthIn(max = OmniTokens.dimens.authFrameMaxWidth)
                     .fillMaxWidth()
-                    .height(852.dp),
+                    .height(OmniTokens.dimens.authFrameHeight),
             ) {
-                VerifyLogo(Modifier.offset(x = 24.dp, y = 58.dp))
-                EmailHero(Modifier.align(Alignment.TopCenter).offset(y = 126.dp))
-                VerificationCopy(state.email, Modifier.offset(x = 24.dp, y = 246.dp))
+                VerifyLogo(Modifier.offset(x = OmniTokens.dimens.verifyLogoOffsetX, y = OmniTokens.dimens.verifyLogoOffsetY))
+                EmailHero(Modifier.align(Alignment.TopCenter).offset(y = OmniTokens.dimens.verifyHeroOffsetY))
+                VerificationCopy(state.email, Modifier.offset(x = OmniTokens.dimens.verifyCopyOffsetX, y = OmniTokens.dimens.verifyCopyOffsetY))
                 VerificationActions(
                     state = state,
                     onVerifiedLoginClick = onVerifiedLoginClick,
                     onOpenMailClick = onOpenMailClick,
                     onResendClick = onResendClick,
-                    modifier = Modifier.offset(x = 24.dp, y = 430.dp),
+                    modifier = Modifier.offset(x = OmniTokens.dimens.verifyActionsOffsetX, y = OmniTokens.dimens.verifyActionsOffsetY),
                 )
                 FooterLinks(
                     state = state,
@@ -77,18 +80,9 @@ fun VerifyEmailContent(
                     onSubmitEmailChangeClick = onSubmitEmailChangeClick,
                     onCancelEmailChangeClick = onCancelEmailChangeClick,
                     onBackToLoginClick = onBackToLoginClick,
-                    modifier = Modifier.offset(x = 24.dp, y = 744.dp),
+                    modifier = Modifier.offset(x = OmniTokens.dimens.verifyFooterOffsetX, y = OmniTokens.dimens.verifyFooterOffsetY),
                 )
             }
         }
     }
 }
-
-internal val VerifyBlue = Color(0xFF007BFF)
-internal val VerifyBackground = Color(0xFFF5F7F8)
-internal val VerifyGlow = Color(0x1F007BFF)
-internal val VerifyTextPrimary = Color(0xFF0F172A)
-internal val VerifyTextSecondary = Color(0xFF6F7F95)
-internal val VerifyBorder = Color(0xFFD8E2EF)
-internal val VerifyError = Color(0xFFD14343)
-internal val VerifySuccess = Color(0xFF16865C)

@@ -28,6 +28,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,51 +47,51 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.omniflow.R
+import com.omniflow.core.designsystem.theme.OmniTokens
 import com.omniflow.uicomponents.OmniTextField
 
 @Composable
 internal fun RegisterHeader() {
+    val colors = OmniTokens.colors
+    val spacing = OmniTokens.spacing
+    val colorScheme = MaterialTheme.colorScheme
+
     Box(
         modifier = Modifier
-            .size(52.dp)
-            .shadow(12.dp, RoundedCornerShape(18.dp))
+            .size(OmniTokens.dimens.authLogoMedium)
+            .shadow(spacing.m, MaterialTheme.shapes.medium)
             .background(
                 Brush.linearGradient(
-                    colors = listOf(RegisterBlue, Color(0xFF4DB3FF)),
+                    colors = listOf(colorScheme.primary, colors.logoGradientEnd),
                     start = Offset.Zero,
                     end = Offset(52f, 52f),
                 ),
-                RoundedCornerShape(18.dp),
+                MaterialTheme.shapes.medium,
             ),
         contentAlignment = Alignment.Center,
     ) {
-        Box(Modifier.size(22.dp).background(Color.White, CircleShape))
-        Box(Modifier.size(14.dp).background(RegisterBlue, CircleShape))
+        Box(Modifier.size(OmniTokens.dimens.authLogoInnerOuter).background(colorScheme.onPrimary, CircleShape))
+        Box(Modifier.size(OmniTokens.dimens.authLogoInner).background(colorScheme.primary, CircleShape))
     }
-    Spacer(Modifier.height(28.dp))
+    Spacer(Modifier.height(spacing.xxl - spacing.xs))
     Text(
         text = stringResource(R.string.register_title),
-        color = RegisterTextPrimary,
-        fontSize = 32.sp,
-        lineHeight = 40.sp,
+        color = colorScheme.onBackground,
+        style = MaterialTheme.typography.headlineLarge,
         fontWeight = FontWeight.Bold,
     )
-    Spacer(Modifier.height(8.dp))
+    Spacer(Modifier.height(spacing.s))
     Text(
         text = stringResource(R.string.register_subtitle),
-        color = RegisterTextSecondary,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
+        color = colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.bodyLarge,
     )
-    Spacer(Modifier.height(12.dp))
+    Spacer(Modifier.height(spacing.m))
     Text(
         text = stringResource(R.string.register_verification_hint),
-        color = RegisterBlue,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
+        color = colorScheme.primary,
+        style = MaterialTheme.typography.bodyMedium,
     )
 }
 
@@ -104,20 +105,23 @@ internal fun RegisterField(
     keyboardActions: KeyboardActions,
     enabled: Boolean,
 ) {
+    val colors = OmniTokens.colors
+    val colorScheme = MaterialTheme.colorScheme
+
     FieldLabel(label)
     OmniTextField(
         value = value,
         onValueChange = onValueChange,
         label = null,
         placeholder = label,
-        placeholderColor = RegisterTextSecondary,
+        placeholderColor = colorScheme.onSurfaceVariant,
         enabled = enabled,
         errorMessage = error,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        shape = RoundedCornerShape(18.dp),
-        focusedBorderColor = RegisterBlue,
-        unfocusedBorderColor = RegisterBorder,
+        shape = MaterialTheme.shapes.medium,
+        focusedBorderColor = colorScheme.primary,
+        unfocusedBorderColor = colors.fieldBorder,
     )
 }
 
@@ -133,13 +137,16 @@ internal fun RegisterPasswordField(
     imeAction: ImeAction,
     onImeAction: () -> Unit,
 ) {
+    val colors = OmniTokens.colors
+    val colorScheme = MaterialTheme.colorScheme
+
     FieldLabel(label)
     OmniTextField(
         value = value,
         onValueChange = onValueChange,
         label = null,
         placeholder = label,
-        placeholderColor = RegisterTextSecondary,
+        placeholderColor = colorScheme.onSurfaceVariant,
         enabled = enabled,
         errorMessage = error,
         visualTransformation = if (isVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -148,7 +155,7 @@ internal fun RegisterPasswordField(
                 Icon(
                     imageVector = if (isVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
                     contentDescription = null,
-                    tint = RegisterTextSecondary,
+                    tint = colorScheme.onSurfaceVariant,
                 )
             }
         },
@@ -161,40 +168,46 @@ internal fun RegisterPasswordField(
         } else {
             KeyboardActions(onNext = { onImeAction() })
         },
-        shape = RoundedCornerShape(18.dp),
-        focusedBorderColor = RegisterBlue,
-        unfocusedBorderColor = RegisterBorder,
+        shape = MaterialTheme.shapes.medium,
+        focusedBorderColor = colorScheme.primary,
+        unfocusedBorderColor = colors.fieldBorder,
     )
 }
 
 @Composable
 private fun FieldLabel(label: String) {
+    val spacing = OmniTokens.spacing
+
     Text(
         text = label,
-        color = RegisterTextPrimary,
-        fontSize = 15.sp,
+        color = MaterialTheme.colorScheme.onBackground,
+        style = MaterialTheme.typography.labelLarge,
         fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(top = 18.dp, bottom = 8.dp),
+        modifier = Modifier.padding(top = spacing.l - spacing.tiny, bottom = spacing.s),
     )
 }
 
 @Composable
 internal fun PasswordChecklist(requirements: PasswordRequirements) {
+    val colors = OmniTokens.colors
+    val spacing = OmniTokens.spacing
+    val colorScheme = MaterialTheme.colorScheme
+
     Column(
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier.padding(top = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(spacing.s - spacing.tiny),
+        modifier = Modifier.padding(top = spacing.base - spacing.tiny),
     ) {
         requirements.toUiModels().forEach { item ->
-            val color = if (item.isMet) RequirementMet else RegisterTextSecondary
+            val color = if (item.isMet) colors.success else colorScheme.onSurfaceVariant
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = if (item.isMet) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
                     contentDescription = null,
                     tint = color,
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(OmniTokens.dimens.checklistIconSize),
                 )
-                Spacer(Modifier.width(8.dp))
-                Text(text = stringResource(item.labelRes), color = color, fontSize = 13.sp)
+                Spacer(Modifier.width(spacing.s))
+                Text(text = stringResource(item.labelRes), color = color, style = MaterialTheme.typography.labelMedium)
             }
         }
     }
@@ -202,40 +215,44 @@ internal fun PasswordChecklist(requirements: PasswordRequirements) {
 
 @Composable
 internal fun RegisterSocialLogin() {
+    val colors = OmniTokens.colors
+    val spacing = OmniTokens.spacing
+    val colorScheme = MaterialTheme.colorScheme
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(top = 28.dp, bottom = 20.dp),
+        modifier = Modifier.padding(top = spacing.xxl - spacing.xs, bottom = spacing.l),
     ) {
-        HorizontalDivider(Modifier.weight(1f), color = RegisterDivider)
+        HorizontalDivider(Modifier.weight(1f), color = colors.divider)
         Text(
             text = stringResource(R.string.register_social_divider),
-            color = RegisterTextSecondary,
-            fontSize = 13.sp,
-            modifier = Modifier.padding(horizontal = 12.dp),
+            color = colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(horizontal = spacing.m),
         )
-        HorizontalDivider(Modifier.weight(1f), color = RegisterDivider)
+        HorizontalDivider(Modifier.weight(1f), color = colors.divider)
     }
     OutlinedButton(
         onClick = {},
         enabled = false,
-        modifier = Modifier.fillMaxWidth().height(58.dp),
-        shape = RoundedCornerShape(18.dp),
-        border = BorderStroke(1.dp, RegisterBorder),
+        modifier = Modifier.fillMaxWidth().height(OmniTokens.dimens.authControlHeight),
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(OmniTokens.dimens.hairline, colors.fieldBorder),
         colors = ButtonDefaults.outlinedButtonColors(
-            disabledContainerColor = Color.White,
-            disabledContentColor = RegisterTextPrimary,
+            disabledContainerColor = colorScheme.surface,
+            disabledContentColor = colorScheme.onSurface,
         ),
     ) {
         Icon(
             painter = painterResource(R.drawable.ic_google_g),
             contentDescription = null,
             tint = Color.Unspecified,
-            modifier = Modifier.size(18.dp),
+            modifier = Modifier.size(OmniTokens.dimens.googleIconSize),
         )
-        Spacer(Modifier.width(10.dp))
+        Spacer(Modifier.width(spacing.s + spacing.tiny))
         Text(
             text = stringResource(R.string.register_continue_google),
-            fontSize = 15.sp,
+            style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.SemiBold,
         )
     }
@@ -243,19 +260,21 @@ internal fun RegisterSocialLogin() {
 
 @Composable
 internal fun RegisterFooter(enabled: Boolean, onLoginClick: () -> Unit) {
+    val spacing = OmniTokens.spacing
+
     Row(
         horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth().padding(top = 28.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = spacing.xxl - spacing.xs),
     ) {
         Text(
             text = stringResource(R.string.register_have_account) + " ",
-            color = RegisterTextSecondary,
-            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.titleSmall,
         )
         Text(
             text = stringResource(R.string.register_login),
-            color = RegisterBlue,
-            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.clickable(enabled = enabled, onClick = onLoginClick),
         )
@@ -264,20 +283,14 @@ internal fun RegisterFooter(enabled: Boolean, onLoginClick: () -> Unit) {
 
 @Composable
 internal fun BoxScope.RegisterGlow() {
+    val colors = OmniTokens.colors
+
     Box(
         Modifier
             .align(Alignment.TopEnd)
-            .offset(x = 96.dp, y = (-120).dp)
-            .size(300.dp)
-            .blur(50.dp, BlurredEdgeTreatment.Unbounded)
-            .background(Color(0x1F007BFF), CircleShape),
+            .offset(x = OmniTokens.dimens.registerGlowOffsetX, y = OmniTokens.dimens.registerGlowOffsetY)
+            .size(OmniTokens.dimens.authGlowMedium)
+            .blur(OmniTokens.spacing.section - OmniTokens.spacing.s + OmniTokens.spacing.tiny, BlurredEdgeTreatment.Unbounded)
+            .background(colors.glow, CircleShape),
     )
 }
-
-internal val RegisterBlue = Color(0xFF007BFF)
-internal val RegisterBackground = Color(0xFFF5F7F8)
-internal val RegisterTextPrimary = Color(0xFF0F172A)
-internal val RegisterTextSecondary = Color(0xFF71829B)
-private val RegisterBorder = Color(0xFFD7E0EA)
-private val RegisterDivider = Color(0xFFE8EEF5)
-private val RequirementMet = Color(0xFF16A34A)

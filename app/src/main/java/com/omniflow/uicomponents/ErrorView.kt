@@ -9,11 +9,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import com.omniflow.R
+import com.omniflow.core.designsystem.theme.OmniTokens
 
 @Composable
 fun ErrorView(
@@ -23,7 +23,7 @@ fun ErrorView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(OmniTokens.spacing.xl),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -36,13 +36,13 @@ fun ErrorView(
             text = message,
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 16.dp),
+            modifier = Modifier.padding(top = OmniTokens.spacing.base),
         )
         if (onRetry != null) {
             OmniButton(
                 text = "Tekrar dene",
                 onClick = onRetry,
-                modifier = Modifier.padding(top = 16.dp),
+                modifier = Modifier.padding(top = OmniTokens.spacing.base),
             )
         }
     }
