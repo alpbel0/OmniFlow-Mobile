@@ -848,14 +848,18 @@ Bottom navigation devreye girer; Home, bildirimler ve tüm profil/sosyal-kullan�
 
 ### Task 2.1: Home Ekranı
 
-**Tahmini Süre:** 3.5 saat
+**Tahmini Süre:** 4 saat
 **Durum:** [ ] Bekliyor
 
 **Yapılacaklar:**
-- [ ] **Home** — aktif/yaklaşan trip kartı, quick actions, featured trips (`GET /explore/featured`), önerilen aksiyonlar
-- [ ] Aktif trip yoksa → "Bir trip planla" CTA kartı
-- [ ] Featured boşsa o bölüm gizlenir
-- [ ] `HomeViewModel` + UiState
+- [ ] **Selam** — "Merhaba {username} 👋" + sağ üstte bildirim zili
+- [ ] **Kompakt arama çubuğu** — "Where can we take you?" → tıklanınca Explore tab'ına yönlendirir, search açık gelir
+- [ ] **Yaklaşan Gezi kartı** — `GET /api/v1/trips` (upcoming/active); birden fazlaysa yatay swipe + dot. Trip yoksa → "İlk gezini planla" CTA kartı
+- [ ] **"İlham Al" destination kartları** — yuvarlak köşeli, full-photo, şehir adı; tıklama → Destination Detail. M2'de **statik liste** (hardcode 5-6 şehir); B4.6 tamamlanınca `GET /api/v1/destinations/trending` ile dinamik yapılır *(⛔ Tam dinamik: Bağımlılık B4.6)*
+- [ ] **Featured trips** — `GET /explore/featured` yatay carousel → Trip Detail. Boşsa bölüm gizlenir
+- [ ] **Topluluktan** — `GET /api/v1/feed` ilk 2 öğesi preview olarak
+- [ ] Floating pill bottom nav devreye girer: Home · Explore · **[+ CREATE]** · Trips · Community (raised mavi buton ortada, label yok)
+- [ ] `HomeViewModel` + `HomeUiState` + `HomeUiModel`
 
 ---
 
@@ -885,12 +889,18 @@ Bottom navigation devreye girer; Home, bildirimler ve tüm profil/sosyal-kullan�
 
 ### Task 2.4: Edit Profile + Foto Yükleme
 
-**Tahmini Süre:** 2 saat
+**Tahmini Süre:** 2.5 saat
 **Durum:** [ ] Bekliyor
 
+> ⛔ **Bağımlılık: B0.5** (Konum + Seyahat Stili alanları için backend hazır olmalı)
+
 **Yapılacaklar:**
-- [ ] **Edit Profile** — bio + profil fotoğrafı yükleme (`PUT /users/me`, `POST /users/me/profile-photo`, media upload)
-- [ ] Foto yükleme sırasında foto alanında loading; başarıda snackbar
+- [ ] **Edit Profile** — profil fotoğrafı, bio, konum, seyahat stili (`PUT /api/v1/users/me`, `POST /api/v1/users/me/profile-photo`)
+- [ ] **Kullanıcı adı** read-only gösterilir (🔒), düzenlenemez
+- [ ] **Konum** — tek satır text field (ör. "İstanbul, Türkiye")
+- [ ] **Seyahat Stili** — multi-select chip'ler: `Macera · Kültür · Sahil · Şehir · Doğa · Gastronomi`; seçili = mavi, seçilmemiş = outline
+- [ ] Foto yükleme sırasında avatar üzerinde loading overlay; başarıda snackbar
+- [ ] `[Kaydet]` butonu değişiklik yokken disabled
 - [ ] ViewModel + UiState
 
 ---
@@ -924,8 +934,14 @@ Bottom navigation devreye girer; Home, bildirimler ve tüm profil/sosyal-kullan�
 **Tahmini Süre:** 1 saat
 **Durum:** [ ] Bekliyor
 
+> **Entry point kararı:** Community tab (👥) M2'de bu ekranı doğrudan gösterir — M5'te tam Community Feed yapılana kadar placeholder görevi görür. M5 tamamlanınca Community tab'ının içine "Gezginler" alt bölümü olarak taşınır.
+
 **Yapılacaklar:**
-- [ ] **Suggested Follows** + **Top Contributors** — sıralı kullanıcı listesi
+- [ ] **Community tab** → M2'de doğrudan bu ekrana yönlenir (NavHost'ta Community route = GezginleriKesfet)
+- [ ] **Suggested Follows** — yatay scroll kart listesi (avatar + şehir + karma + "Takip Et")
+- [ ] **Top Contributors** — sıralı dikey liste, #1 altın sol border, madalya/numara rozeti
+- [ ] "Takip Et" optimistic toggle (takip ediyorsun / takip et)
+- [ ] M5'te Community Feed gelince bu ekran sub-screen'e düşer; route değişikliği o milestone'da yapılır
 
 ---
 

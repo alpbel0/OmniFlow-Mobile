@@ -182,6 +182,21 @@ Bottom tab yapisinda temel 5 ana alan onerilir:
 
 Admin kullanicilar icin buna ek olarak panel girisi `Profile` icinden acilabilir.
 
+### Tasarım Kararları (M2)
+
+Bottom tab'ın kesinleşen hali:
+
+```
+Home    Explore    [ + CREATE ]    Trips    Community
+```
+
+- **4 sekme + ortada raised Create butonu.** Sekmeler **sadece ikon** (text label yok); aktif = dolu ikon + mavi, pasif = çizgi ikon + gri.
+- Ortadaki `+` → doğrudan **Create Trip wizard**'ı açar; 56dp mavi daire, bottom nav pill'in 8dp üstüne çıkar.
+- Bottom nav **floating pill** stili: tam genişlik değil, kenarlarda ~16dp boşluk bırakarak havada asılı görünür; hafif gölge.
+- **Profile sekme değil** → ana sekme sayfalarının **sağ üstünde avatar** olarak durur (tıkla → Profile; admin de oradan).
+- **Notifications sekme değil** → ana sekme sayfalarının **sağ üstünde zil ikonu**.
+- **Üst bar kuralı:** Ana sekme sayfalarında (Home/Explore/Trips/Community) sağ üstte **zil + avatar**. Detay/alt sayfalarda üst bar bağlamsaldır: sol üstte **← geri**, sağ üstte sayfaya özel aksiyon (zil/avatar burada **yoktur**).
+
 ---
 
 ## 4. Home ve Ana Kullanici Deneyimi
@@ -203,7 +218,34 @@ Admin kullanicilar icin buna ek olarak panel girisi `Profile` icinden acilabilir
 - Aktif trip'i ac
 - Explore'a git
 - Saved trips'e git
-- AI Asistan'a git
+- ~~AI Asistan'a git~~ *(⏸️ askıya alındı — bkz. 4.3; M12'ye ertelendi)*
+
+### Tasarım Kararları (M2)
+
+**Yaklaşım: "Kişisel Seyahat Paneli"**
+Home = "benim ne durumum?" sorusunun cevabı. Keşif işi Explore'a, sosyal içerik Community'ye bırakılır; Home sadece kullanıcıyı karşılar ve durumu özetler.
+
+**Dikey kurgu (yukarıdan aşağı):**
+
+1. **Selam** — "Merhaba {username} 👋" + sağ üstte 🔔
+2. **Kompakt arama çubuğu** — "Where can we take you?" placeholder; **tıklanınca Explore'a gider, search açık**. Veri burada tutulmaz; sadece giriş noktası.
+3. **Yaklaşan Gezi kartı** — kullanıcının aktif/yakın trip'i. Birden fazla varsa **yatay swipe + dot**.
+   - **Öncelik sırası:** şu an seyahatte → en yakın published upcoming → en son draft → (yoksa) boş durum CTA.
+   - **Durum metni:** upcoming → "3 gün sonra başlıyor" · bugün → "Bugün başlıyor" · seyahatte → "Devam ediyor".
+   - Karta tıklama → Trip Detail açar (Live Trip Mode hook'u M8).
+4. **İlham Al** — yatay kaydırmalı **Destination kartları** (yuvarlak köşeli, full-photo, şehir adı altta, ok ikonu). Tıklama → **Destination Detail** ekranı (bkz. 5.5). M2'de statik liste; B4.6 hazır olunca `GET /api/v1/destinations/trending` ile dinamik.
+5. **Öne Çıkan Geziler** — `GET /explore/featured` yatay carousel; kart → public Trip Detail. Rating + kullanıcı adı gösterilir. Boşsa bölüm gizlenir.
+6. **Topluluktan** — 1-2 community post preview ("@selin.k yeni bir gezi paylaştı"). Tıklama → Community Feed veya Post Detail.
+
+**Boş durum (hiç trip yok):**
+Yaklaşan Gezi kartı yerine **"İlk seyahatini planla"** büyük CTA kartı gösterilir. Arama çubuğu + İlham Al + Topluluktan bölümleri yine görünür (boş hissetmez).
+
+**Ekran durumları:**
+- **Loading:** skeleton/shimmer; tam ekran spinner yok.
+- **Kısmi hata:** bir bölüm yüklenmezse sadece o bölüm "tekrar dene" gösterir, geri kalanı çökmez.
+- **Pull-to-refresh:** var.
+
+**AI:** Home'da AI girişi yok (⏸️ askıya alındı — bkz. 4.3).
 
 ## 4.2 Notifications Page
 
@@ -224,7 +266,39 @@ Admin kullanicilar icin buna ek olarak panel girisi `Profile` icinden acilabilir
 - Okundu isaretle
 - Tumunu okundu yap
 
+### Tasarım Kararları (M2)
+
+**Liste kurgusu:**
+- Kronolojik sıra (en yeni üstte), tarih bazlı gruplama yok.
+- **Okunmamış** → mavi arka plan; **okunmuş** → beyaz. Bildirime normal tap yapılınca okundu sayılır ve beyaza döner, ilgili sayfaya (trip/post/profil) gider.
+
+**Kategori filtresi:**
+Listenin üstünde yatay kaydırmalı chip'ler:
+`Tümü · Sosyal · Trip · Hatırlatıcı`
+Chip'ler bir yere **götürmez**, sadece listeyi filtreler.
+
+**Multi-select (Gmail pattern):**
+- **Uzun basış** → seçim modu açılır; bildirimin solunda checkbox belirir.
+- Seçim modunda üstte action bar: `X öğe seçildi | Okundu işaretle | Sil | Tümünü seç`
+- Seçim iptal (geri tuşu veya boş alana tap) → normal moda dön.
+
+**Bildirim satırı formatı:**
+- Sol: tip ikonu (👤 Follow · ⬆️ Upvote · 💬 Comment · 🔁 Fork · 📅 Reminder)
+- Orta: kullanıcı adı + eylem metni (ör. "@selin gezini beğendi") · zaman damgası
+- Sağ (varsa): içerik thumbnail (trip kapağı / post görseli)
+
+**Tap davranışı:**
+- **Avatar veya kullanıcı adına tap** → o kişinin Public Profile sayfası
+- **Satırın geri kalanı / thumbnail'a tap** → ilgili içerik (Trip Detail / Post Detail)
+- **Uzun basış** → seçim modu açılır
+
+**Boş durum:** "Henüz bildirim yok" + ikon; chip filtresi aktifken "Bu kategoride bildirim yok"
+
+**Pull-to-refresh:** var.
+
 ## 4.3 AI Chat / Assistant Page
+
+> ⏸️ **ASKIYA ALINDI.** AI özelliği şu an kapsam dışıdır; `MOBILE_ROADMAP.md → M12` / `BACKEND_ROADMAP_V2 → B6`'ya ertelenmiştir. Backend tarafı da scaffold seviyesinde (henüz uygulanmadı). Bu sayfa ileride ele alınacak; mevcut tasarım/akış kararlarına dahil edilmez. Home ve diğer ekranlarda AI girişi şimdilik gösterilmez.
 
 **Amac:** Kullanicinin AI destekli gezi yardimi almasi. Bu sayfa tam rota ureten bir ekran degil; once ihtiyaci netlestiren, sonra tool-grounded arama ve oneriler sunan yardimci katmandir.
 
@@ -264,6 +338,12 @@ Admin kullanicilar icin buna ek olarak panel girisi `Profile` icinden acilabilir
 - Trip kaydet
 - Trip forkla
 
+### Tasarım Kararları (M3)
+
+- **Üstte:** klasik arama çubuğu + filtre ikonu (Explore'a Home search bar'ından da gelinebilir, o zaman search alanı otomatik açık gelir).
+- **Kategori chips:** yatay kaydırmalı, trip türüne göre (Kültür, Doğa, Sahil, Şehir turu vb.). Home'da değil, burada yaşar.
+- **Soru bazlı slide filter:** "Hangi şehir?" / "Fiyat aralığı?" / "Tür?" eksenlerinde yatay kaydırmalı filtre şeridi — onboarding slide mantığına benzer, kompakt seçim deneyimi. Klasik filtre ikonunun altında oturur.
+
 ## 5.2 Explore Featured Page
 
 **Amac:** One cikan trip'leri gostermek.
@@ -290,6 +370,25 @@ Admin kullanicilar icin buna ek olarak panel girisi `Profile` icinden acilabilir
 
 **Ana aksiyonlar:**
 - Ilgili detail sayfasina git
+
+## 5.5 Destination Detail Page
+
+**Amac:** Bir destinasyona (şehir/ülke) ait genel keşif ekranı. Home'daki "İlham Al" kartlarından ve Explore'dan erişilir.
+
+**Kim gorur:** Authenticated user
+
+**Ana icerik:**
+- Destinasyon adı + hero fotoğraf
+- Bu destinasyona yapılmış public trip'ler (community)
+- Öne çıkan yerler / attractions özeti
+- Destinasyona giden kullanıcı planları
+
+**Ana aksiyonlar:**
+- Public trip detail aç
+- Trip oluştur (bu destinasyonu otomatik doldur)
+- Place detail aç
+
+---
 
 ## 5.4 Place Detail Page
 
@@ -748,6 +847,8 @@ Wizard'in her adimi ayri page olarak ele alinmalidir.
 
 ## 11. Community ve Sosyal Sayfalar
 
+> **M2 geçici kararı:** Community tab (👥) M5'te tam Feed yapılana kadar **"Gezginleri Keşfet" ekranını** (Suggested Follows + Top Contributors) doğrudan gösterir. M5 tamamlanınca Community tab'ı Feed'e geçer; bu ekran "Gezginler" alt bölümü olarak içine taşınır.
+
 ## 11.1 Community Feed Page
 
 **Amac:** Sosyal icerik akisinin ana sayfasi.
@@ -862,6 +963,27 @@ Wizard'in her adimi ayri page olarak ele alinmalidir.
 - Collections'a git
 - Settings'e git
 
+### Tasarım Kararları (M2)
+
+**Header — kompakt layout (sol avatar + sağ bilgi):**
+- Sol: avatar (72dp daire, profil fotoğrafı)
+- Sağ: `@username` (16sp SemiBold) · bio (13sp #6F7F95) · `⭐ 1.240 karma` (13sp)
+- Altında: `[142] Takipçi  [89] Takip` — her ikisi de tıklanabilir → Followers/Following listesi
+- Header altında: `[Profili Düzenle]` full-width outlined buton
+
+**Karma gösterimi:** Sadece sayı (`⭐ 1.240`). Badge/seviye sistemi backend'de yok; şimdilik eklenmez.
+
+**İçerik filtresi:**
+Yatay chip'ler: `Tümü · Geziler · Paylaşımlar`
+- Default: `Tümü` — geziler ve paylaşımlar karma karışık grid/liste halinde gelir
+- `Geziler` chip'ine basınca sadece trip kartları (`GET /api/v1/users/{id}/trips`)
+- `Paylaşımlar` chip'ine basınca sadece postlar (`GET /api/v1/users/me/posts`)
+- Grid: 2 sütun kart (geziler için tam foto kart, postlar için metin kartı)
+
+**Boş durum:** İçerik yoksa chip altında "Henüz içerik paylaşılmadı" + ikon. Chip bazlı: "Bu kategoride içerik yok."
+
+**Top bar:** `← geri` sol · `⚙️ Ayarlar` sağ (Settings sayfasına gider)
+
 ## 12.2 Edit Profile Page
 
 **Amac:** Profil alanlarini guncellemek.
@@ -874,6 +996,19 @@ Wizard'in her adimi ayri page olarak ele alinmalidir.
 
 **Ana aksiyonlar:**
 - Kaydet
+
+### Tasarım Kararları (M2)
+
+**Düzenlenebilir alanlar:**
+- **Profil fotoğrafı:** Ortada büyük avatar (96dp) + "📷 Değiştir" → galeri/kamera → `POST /api/v1/users/me/profile-photo`. Yükleme sırasında avatar üzerinde loading overlay; başarıda snackbar.
+- **Bio:** Çok satırlı text field, max 150 karakter, sayaç gösterilir (`0/150`). `PUT /api/v1/users/me`
+- **Konum:** Tek satır text field, ör. "İstanbul, Türkiye". `PUT /api/v1/users/me` *(⛔ Bağımlılık: B0.5)*
+- **Seyahat Stili:** Multi-select chip'ler (mevcut `TravelStyle` enum'undan): `Macera · Kültür · Sahil · Şehir · Doğa · Gastronomi`. Seçili chip mavi, seçilmemiş outline. `PUT /api/v1/users/me` *(⛔ Bağımlılık: B0.5)*
+
+**Read-only alan:**
+- **Kullanıcı adı:** Gösterilir ama düzenlenemez (`🔒` ikonu + "Değiştirilemez" yardım metni). Backend `UpdateProfileRequest` username güncellemesini desteklemiyor.
+
+**Top bar:** `← geri` sol · `[Kaydet]` text button sağ (aktif değişiklik yoksa disabled)
 
 ## 12.3 Public User Profile Page
 
