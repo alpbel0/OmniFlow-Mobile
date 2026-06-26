@@ -5,6 +5,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.CompositionLocalProvider
 
 private val LightColors = lightColorScheme(
     primary = OmniBlue,
@@ -45,10 +46,18 @@ fun OmniFlowTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
+    val omniFlowColors = if (darkTheme) DarkOmniFlowColors else LightOmniFlowColors
+
     MaterialTheme(
         colorScheme = if (darkTheme) DarkColors else LightColors,
         typography = OmniFlowTypography,
         shapes = OmniFlowShapes,
-        content = content,
-    )
+    ) {
+        CompositionLocalProvider(
+            LocalOmniFlowColors provides omniFlowColors,
+            LocalOmniFlowDimens provides OmniFlowDimens(),
+            LocalOmniFlowSpacing provides OmniFlowSpacing(),
+            content = content,
+        )
+    }
 }

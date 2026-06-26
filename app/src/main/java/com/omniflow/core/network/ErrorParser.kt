@@ -1,8 +1,8 @@
 package com.omniflow.core.network
 
 import com.omniflow.core.common.UiText
-import com.omniflow.core.data.remote.dto.ErrorResponse
-import com.omniflow.core.data.remote.dto.ValidationErrorDetail
+import com.omniflow.data.models.common.ErrorResponse
+import com.omniflow.data.models.common.ValidationErrorDetail
 import kotlinx.serialization.json.Json
 
 class ErrorParser(
@@ -19,7 +19,7 @@ class ErrorParser(
             onSuccess = { errorResponse ->
                 ParsedApiError(
                     message = UiText.DynamicString(errorResponse.message),
-                    validationErrors = errorResponse.errors,
+                    validationErrors = errorResponse.errors.orEmpty(),
                 )
             },
             onFailure = {

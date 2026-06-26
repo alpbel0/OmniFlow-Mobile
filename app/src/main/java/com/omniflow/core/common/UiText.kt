@@ -2,6 +2,8 @@ package com.omniflow.core.common
 
 import android.content.Context
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 
 sealed interface UiText {
     data class DynamicString(val value: String) : UiText
@@ -16,4 +18,9 @@ sealed interface UiText {
             is StringResource -> context.getString(resId, *args.toTypedArray())
         }
     }
+}
+
+@Composable
+fun UiText.asString(): String {
+    return resolve(LocalContext.current)
 }

@@ -11,15 +11,24 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.omniflow.features.auth.ui.login.LoginScreen
-import com.omniflow.features.auth.ui.onboarding.OnboardingScreen
-import com.omniflow.features.auth.ui.register.RegisterScreen
-import com.omniflow.features.auth.ui.resetpassword.ResetPasswordScreen
-import com.omniflow.features.auth.ui.splash.SplashScreen
-import com.omniflow.features.auth.ui.verifyemail.VerifyEmailScreen
-import com.omniflow.features.home.ui.HomeScreen
-import com.omniflow.features.notifications.ui.NotificationsScreen
-import com.omniflow.features.profile.ui.ProfileScreen
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.omniflow.uicomponents.EmptyState
+import com.omniflow.ui.auth.forgotpassword.ForgotPasswordScreen
+import com.omniflow.ui.auth.login.LoginScreen
+import com.omniflow.ui.auth.login.LOGIN_EMAIL_KEY
+import com.omniflow.ui.auth.onboarding.OnboardingScreen
+import com.omniflow.ui.auth.register.RegisterScreen
+import com.omniflow.ui.auth.splash.SplashScreen
+import com.omniflow.ui.auth.splash.SplashDestination
+import com.omniflow.ui.auth.verifyemail.VerifyEmailScreen
+import com.omniflow.ui.auth.verifyemail.VERIFY_EMAIL_KEY
+import com.omniflow.ui.auth.verifyemail.VERIFY_EMAIL_SOURCE_KEY
+import com.omniflow.ui.auth.verifyemail.VerifyEmailSource
+import com.omniflow.ui.home.HomeScreen
+import com.omniflow.ui.notifications.NotificationsScreen
+import com.omniflow.ui.profile.ProfileScreen
 
 @Composable
 fun OmniFlowNavHost() {
@@ -44,49 +53,79 @@ fun OmniFlowNavHost() {
             composable(Routes.Splash.route) {
                 SplashScreen(
                     paddingValues = innerPadding,
-                    onContinue = { navController.navigate(Routes.Onboarding.route) },
+                    onDestination = { destination ->
+                        navController.navigate(destination.route) {
+                            popUpTo(Routes.Splash.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
             composable(Routes.Onboarding.route) {
                 OnboardingScreen(
                     paddingValues = innerPadding,
-                    onLoginClick = { navController.navigate(Routes.Login.route) },
-                    onRegisterClick = { navController.navigate(Routes.Register.route) },
+                    onLoginClick = {
+                        navController.navigate(Routes.Login.createRoute()) {
+                            popUpTo(Routes.Onboarding.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    },
                 )
             }
-            composable(Routes.Login.route) {
+            composable(
+                route = Routes.Login.route,
+                arguments = listOf(
+                    navArgument(LOGIN_EMAIL_KEY) {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    },
+                ),
+            ) {
                 LoginScreen(
                     paddingValues = innerPadding,
                     onLoginSuccess = {
                         navController.navigate(Routes.Home.route) {
-                            popUpTo(Routes.Splash.route) { inclusive = true }
+                            popUpTo(Routes.Login.route) { inclusive = true }
                         }
                     },
                     onRegisterClick = { navController.navigate(Routes.Register.route) },
-                    onForgotPasswordClick = { navController.navigate(Routes.ResetPassword.route) },
+                    onForgotPasswordClick = { navController.navigate(Routes.ForgotPassword.route) },
+                    onVerifyEmailClick = { email ->
+                        navController.navigateToVerifyEmail(email, VerifyEmailSource.LOGIN)
+                    },
                 )
             }
             composable(Routes.Register.route) {
                 RegisterScreen(
                     paddingValues = innerPadding,
-                    onRegisterSuccess = { navController.navigate(Routes.VerifyEmail.route) },
-                    onLoginClick = { navController.navigate(Routes.Login.route) },
+                    onRegisterSuccess = { email ->
+                        navController.navigateToVerifyEmail(email, VerifyEmailSource.REGISTER)
+                    },
+                    onLoginClick = { navController.popBackStack() },
                 )
             }
-            composable(Routes.VerifyEmail.route) {
+            composable(
+                route = Routes.VerifyEmail.route,
+                arguments = listOf(
+                    navArgument(VERIFY_EMAIL_KEY) { type = NavType.StringType },
+                    navArgument(VERIFY_EMAIL_SOURCE_KEY) { type = NavType.StringType },
+                ),
+            ) {
                 VerifyEmailScreen(
                     paddingValues = innerPadding,
-                    onContinue = {
+                    onNavigateHome = {
                         navController.navigate(Routes.Home.route) {
-                            popUpTo(Routes.Splash.route) { inclusive = true }
+                            popUpTo(Routes.Login.route) { inclusive = true }
                         }
                     },
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateLogin = { email -> navController.navigateToPrefilledLogin(email) },
                 )
             }
-            composable(Routes.ResetPassword.route) {
-                ResetPasswordScreen(
+            composable(Routes.ForgotPassword.route) {
+                ForgotPasswordScreen(
                     paddingValues = innerPadding,
-                    onContinue = { navController.popBackStack() },
+                    onLoginClick = { navController.popBackStack() },
                 )
             }
             composable(Routes.Home.route) {
@@ -121,7 +160,7 @@ private fun FeaturePlaceholderScreen(
             .fillMaxSize()
             .padding(paddingValues),
     ) {
-        com.omniflow.core.designsystem.components.EmptyState(
+        EmptyState(
             title = "$name module",
             description = "This screen is ready for the next milestone.",
         )
@@ -136,3 +175,24 @@ private val bottomBarRoutes = setOf(
     Routes.Notifications.route,
     Routes.Profile.route,
 )
+
+private val SplashDestination.route: String
+    get() = when (this) {
+        SplashDestination.Home -> Routes.Home.route
+        SplashDestination.Onboarding -> Routes.Onboarding.route
+        SplashDestination.Login -> Routes.Login.createRoute()
+    }
+
+private fun NavHostController.navigateToVerifyEmail(
+    email: String,
+    source: VerifyEmailSource,
+) {
+    navigate(Routes.VerifyEmail.createRoute(email, source))
+}
+
+private fun NavHostController.navigateToPrefilledLogin(email: String) {
+    navigate(Routes.Login.createRoute(email)) {
+        popUpTo(Routes.Login.route) { inclusive = true }
+        launchSingleTop = true
+    }
+}

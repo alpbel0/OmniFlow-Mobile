@@ -35,4 +35,19 @@ class ErrorParserTest {
         assertEquals("VALIDATION_ERROR", parsed.validationErrors.single().code)
         assertEquals("invalid", parsed.validationErrors.single().attemptedValue)
     }
+
+    @Test
+    fun `parse preserves api exception message when backend sends null errors`() {
+        val body = """
+            {
+              "message": "Username is already taken.",
+              "errors": null
+            }
+        """.trimIndent()
+
+        val parsed = parser.parse(body)
+
+        assertEquals("Username is already taken.", (parsed.message as UiText.DynamicString).value)
+        assertEquals(emptyList<Any>(), parsed.validationErrors)
+    }
 }

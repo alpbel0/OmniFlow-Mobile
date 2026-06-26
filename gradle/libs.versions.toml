@@ -22,6 +22,7 @@ turbine = "1.1.0"
 androidxTestExt = "1.2.1"
 espresso = "3.6.1"
 composeUiTest = "1.7.2"
+androidLint = "31.7.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -59,6 +60,8 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExt" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+android-lint-api = { group = "com.android.tools.lint", name = "lint-api", version.ref = "androidLint" }
+android-lint-checks = { group = "com.android.tools.lint", name = "lint-checks", version.ref = "androidLint" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
