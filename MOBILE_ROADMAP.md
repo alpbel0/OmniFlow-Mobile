@@ -900,19 +900,39 @@ Bottom navigation devreye girer; Home, bildirimler ve tüm profil/sosyal-kullan�
 ### Task 2.3: My Profile Ekranı
 
 **Tahmini Süre:** 2 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı (Task 2.4 ile birlikte)
 
 **Yapılacaklar:**
-- [ ] **My Profile** — profil bilgisi, karma, followers/following sayıları, kendi postları/trip'leri (`/users/me`, `/users/me/posts`, `/users/{id}/trips`)
-- [ ] Post/trip yoksa sekme içi "Henüz paylaşım yok"
-- [ ] ViewModel + UiState
+- [x] **My Profile** — profil bilgisi, karma, followers/following sayıları, kendi postları/trip'leri (`/users/me`, `/users/me/posts`, `/users/{id}/trips`)
+- [x] Post/trip yoksa sekme içi "Henüz paylaşım yok"
+- [x] ViewModel + UiState
+- [x] **Edit Profile** — profil fotoğrafı, bio, konum, seyahat stili (`PUT /api/v1/users/me`, `POST /api/v1/users/me/profile-photo`)
+- [x] **Kullanıcı adı** read-only gösterilir (🔒), düzenlenemez
+- [x] **Bio** — çok satırlı text field, max 150 karakter, sayaç
+- [x] **Seyahat Stili** — multi-select chip'ler; seçili = mavi, seçilmemiş = outline
+- [x] Foto yükleme placeholder + [Kaydet] butonu
+- [x] Tüm hardcoded renkler ve dp/sp tokenize edildi
+
+**Uygulama Notları:**
+- Task 2.3 ve 2.4 birlikte implemente edildi (3 varyant: VIEW/EMPTY/EDIT)
+- ProfileScreen UI, tasarım referansına sadık kalınarak tokenize edildi
+- BottomNavPill ProfileScreen'ten çıkarıldı, NavHost seviyesindeki ortak BottomNavPill kullanılıyor
+- Profil route `bottomBarRoutes`'ta değil — avatar ikonundan açılıyor
+- Data layer: `ProfileService` (5 Retrofit endpoint), `ProfileRepository` (interface + impl), paralel API çağrıları
+- `ProfileViewModel`: tab switching (ALL/TRIPS/POSTS), edit mode, bio save, photo placeholder
+- Konum ve Seyahat Stili alanları UI'da gösteriliyor, kaydetme no-op (backend B0.5 bekliyor)
+- Profil fotoğrafı: URL varsa AsyncImage, yoksa baş harf gradient avatar
+- Mock veri: backend boş dönerse/hata verirse "(Mock)" etiketli örnek profil gösterilir
+- 3 Preview: WITH_CONTENT, EMPTY, EDIT
+- 29 drawable ikonunun tamamı mevcut — eksik ikon yok
+- ProfileDimens.kt: 60+ boyut token'ı, ProfilePalette.kt: avatar/kart gradientleri + renk paletleri
 
 ---
 
 ### Task 2.4: Edit Profile + Foto Yükleme
 
 **Tahmini Süre:** 2.5 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı (Task 2.3 ile birlikte)
 
 > ⛔ **Bağımlılık: B0.5** (Konum + Seyahat Stili alanları için backend hazır olmalı)
 

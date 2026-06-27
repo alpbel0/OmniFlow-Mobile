@@ -56,6 +56,7 @@ fun HomeScreen(
     paddingValues: PaddingValues = PaddingValues(),
     onSearchClick: () -> Unit = {},
     onNotifClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     onTripClick: (String) -> Unit = {},
     onInspirationClick: (String) -> Unit = {},
     onCreateTrip: () -> Unit = {},
@@ -89,6 +90,7 @@ fun HomeScreen(
                     model = contentState.data,
                     onSearchClick = onSearchClick,
                     onNotifClick = onNotifClick,
+                    onProfileClick = onProfileClick,
                     onTripClick = onTripClick,
                     onInspirationClick = onInspirationClick,
                     onCreateTrip = onCreateTrip,
@@ -103,6 +105,7 @@ private fun HomeContent(
     model: HomeUiModel,
     onSearchClick: () -> Unit,
     onNotifClick: () -> Unit,
+    onProfileClick: () -> Unit,
     onTripClick: (String) -> Unit,
     onInspirationClick: (String) -> Unit,
     onCreateTrip: () -> Unit,
@@ -121,6 +124,7 @@ private fun HomeContent(
             profilePhotoUrl = model.profilePhotoUrl,
             hasUnreadNotif = model.hasUnreadNotifications,
             onNotifClick = onNotifClick,
+            onProfileClick = onProfileClick,
         )
 
         Spacer(Modifier.height(s.xs))
@@ -201,6 +205,7 @@ private fun TopBar(
     profilePhotoUrl: String?,
     hasUnreadNotif: Boolean,
     onNotifClick: () -> Unit,
+    onProfileClick: () -> Unit,
 ) {
     val d = HomeDimens
     val tokens = OmniTokens
@@ -227,7 +232,8 @@ private fun TopBar(
                             listOf(HomePalette.avatarGradientStart, HomePalette.avatarGradientEnd),
                         ),
                     )
-                    .border(d.avatarBorderWidth, MaterialTheme.colorScheme.surface, CircleShape),
+                    .border(d.avatarBorderWidth, MaterialTheme.colorScheme.surface, CircleShape)
+                    .clickable(onClick = onProfileClick),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -877,6 +883,7 @@ private fun PreviewHomeScreenVariantA() {
             model = sampleHomeUiModel,
             onSearchClick = {},
             onNotifClick = {},
+            onProfileClick = {},
             onTripClick = {},
             onInspirationClick = {},
             onCreateTrip = {},
@@ -892,6 +899,7 @@ private fun PreviewHomeScreenVariantB() {
             model = sampleEmptyHomeUiModel,
             onSearchClick = {},
             onNotifClick = {},
+            onProfileClick = {},
             onTripClick = {},
             onInspirationClick = {},
             onCreateTrip = {},

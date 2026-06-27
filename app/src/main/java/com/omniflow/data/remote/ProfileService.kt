@@ -1,0 +1,40 @@
+package com.omniflow.data.remote
+
+import com.omniflow.data.models.profile.ProfilePostsPageDto
+import com.omniflow.data.models.profile.ProfileTripsPageDto
+import com.omniflow.data.models.profile.UpdateProfileRequestDto
+import com.omniflow.data.models.profile.UserProfileDto
+import okhttp3.MultipartBody
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Multipart
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Part
+import retrofit2.http.Path
+import retrofit2.http.Query
+
+interface ProfileService {
+    @GET("api/v1/users/me")
+    suspend fun getMyProfile(): UserProfileDto
+
+    @GET("api/v1/users/me/posts")
+    suspend fun getMyPosts(
+        @Query("pageNumber") pageNumber: Int = 1,
+        @Query("pageSize") pageSize: Int = 20,
+    ): ProfilePostsPageDto
+
+    @GET("api/v1/users/{userId}/trips")
+    suspend fun getUserTrips(
+        @Path("userId") userId: String,
+        @Query("pageNumber") pageNumber: Int = 1,
+        @Query("pageSize") pageSize: Int = 20,
+    ): ProfileTripsPageDto
+
+    @PUT("api/v1/users/me")
+    suspend fun updateProfile(@Body request: UpdateProfileRequestDto): UserProfileDto
+
+    @Multipart
+    @POST("api/v1/users/me/profile-photo")
+    suspend fun uploadProfilePhoto(@Part file: MultipartBody.Part): UserProfileDto
+}

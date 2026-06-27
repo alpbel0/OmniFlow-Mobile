@@ -34,6 +34,8 @@ import com.omniflow.ui.notifications.NotificationsScreen
 import com.omniflow.ui.notifications.NotificationsUiState
 import com.omniflow.ui.notifications.NotificationsViewModel
 import com.omniflow.ui.profile.ProfileScreen
+import com.omniflow.ui.profile.ProfileUiState
+import com.omniflow.ui.profile.ProfileViewModel
 import com.omniflow.uicomponents.EmptyState
 
 @Composable
@@ -148,6 +150,7 @@ fun OmniFlowNavHost() {
                     paddingValues = innerPadding,
                     onSearchClick = { navController.navigate(Routes.Explore.route) },
                     onNotifClick = { navController.navigate(Routes.Notifications.route) },
+                    onProfileClick = { navController.navigate(Routes.Profile.route) },
                     onTripClick = { /* TODO M3: navigate to TripDetail */ },
                     onInspirationClick = { /* TODO M4: navigate to DestinationDetail */ },
                     onCreateTrip = { /* TODO M3: navigate to trip wizard */ },
@@ -186,7 +189,26 @@ fun OmniFlowNavHost() {
                 )
             }
             composable(Routes.Profile.route) {
-                ProfileScreen(paddingValues = innerPadding)
+                val viewModel: ProfileViewModel = hiltViewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                ProfileScreen(
+                    uiState = uiState,
+                    paddingValues = innerPadding,
+                    onBack = { navController.popBackStack() },
+                    onSettingsTap = { /* TODO: Settings route */ },
+                    onFollowersTap = { /* TODO M2: Followers route */ },
+                    onFollowingTap = { /* TODO M2: Following route */ },
+                    onEditProfile = { viewModel.onEditProfile() },
+                    onTabChange = { viewModel.onTabChange(it) },
+                    onTripTap = { /* TODO M3: TripDetail */ },
+                    onSaveEdit = { viewModel.onSaveEdit() },
+                    onBioChange = { viewModel.onBioChange(it) },
+                    onLocationChange = { viewModel.onLocationChange(it) },
+                    onStyleToggle = { viewModel.onStyleToggle(it) },
+                    onChangePhoto = { viewModel.onChangePhoto() },
+                    onRetry = { viewModel.retry() },
+                )
             }
         }
     }
