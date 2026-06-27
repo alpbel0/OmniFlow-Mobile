@@ -92,6 +92,78 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getUserProfile(username: String): ApiResult<ProfileContentModel> = coroutineScope {
+        val profileResult = apiCallExecutor.execute { profileService.getUserByUsername(username) }
+
+        val profile = when (profileResult) {
+            is ApiResult.Success -> profileResult.data
+            is ApiResult.Error -> return@coroutineScope ApiResult.Success(
+                mockPublicProfileContent(username).toDataModel().let { mockProfile ->
+                    ProfileContentModel(
+                        profile = mockProfile,
+                        trips = mockProfileContent().trips,
+                        posts = mockProfileContent().posts,
+                    )
+                }
+            )
+            is ApiResult.Loading -> error("Loading is not expected from ApiCallExecutor")
+        }
+
+        val tripsDeferred = async {
+            apiCallExecutor.execute { profileService.getUserTrips(profile.id) }
+        }
+        val postsDeferred = async {
+            apiCallExecutor.execute { profileService.getUserPosts(profile.id) }
+        }
+
+        val trips = (tripsDeferred.await() as? ApiResult.Success)?.data?.data?.map {
+            ProfileTripModel(
+                id = it.id,
+                title = it.title,
+                coverPhotoUrl = it.coverPhotoUrl,
+                upvoteCount = it.upvoteCount,
+                forkCount = it.forkCount,
+            )
+        } ?: emptyList()
+
+        val posts = (postsDeferred.await() as? ApiResult.Success)?.data?.data?.map {
+            ProfilePostModel(
+                id = it.id,
+                username = it.username,
+                content = it.content,
+                photos = it.photos,
+                upvoteCount = it.upvoteCount,
+                commentCount = it.commentCount,
+                createdAt = it.createdAt,
+                profilePhotoUrl = it.profilePhotoUrl,
+            )
+        } ?: emptyList()
+
+        ApiResult.Success(
+            ProfileContentModel(
+                profile = profile.toDataModel(),
+                trips = trips,
+                posts = posts,
+            ),
+        )
+    }
+
+    override suspend fun followUser(userId: String): ApiResult<Unit> {
+        return apiCallExecutor.execute { profileService.followUser(userId) }
+    }
+
+    override suspend fun unfollowUser(userId: String): ApiResult<Unit> {
+        return apiCallExecutor.execute { profileService.unfollowUser(userId) }
+    }
+
+    override suspend fun blockUser(userId: String): ApiResult<Unit> {
+        return apiCallExecutor.execute { profileService.blockUser(userId) }
+    }
+
+    override suspend fun unblockUser(userId: String): ApiResult<Unit> {
+        return apiCallExecutor.execute { profileService.unblockUser(userId) }
+    }
+
     private fun com.omniflow.data.models.profile.UserProfileDto.toDataModel() = ProfileDataModel(
         id = id,
         username = username,
@@ -102,6 +174,8 @@ class ProfileRepositoryImpl @Inject constructor(
         followingCount = followingCount,
         tripCount = tripCount,
         postCount = postCount,
+        isFollowing = isFollowing,
+        isBlockedByMe = isBlockedByMe,
     )
 
     private fun mockProfileContent(): ProfileContentModel {
@@ -136,4 +210,18 @@ class ProfileRepositoryImpl @Inject constructor(
             ),
         )
     }
+
+    private fun mockPublicProfileContent(username: String) = com.omniflow.data.models.profile.UserProfileDto(
+        id = "mock-pub-$username",
+        username = username,
+        bio = "Dünyayı keşfediyorum ✈️",
+        profilePhotoUrl = null,
+        karmaScore = 3840,
+        followersCount = 284,
+        followingCount = 147,
+        tripCount = 2,
+        postCount = 1,
+        isFollowing = false,
+        isBlockedByMe = false,
+    )
 }

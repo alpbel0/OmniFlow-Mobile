@@ -61,4 +61,12 @@ object OmniTextStyles {
         .copy(letterSpacing = 0.8.sp)
     val captionTiny = omniTextStyle(FontWeight.Bold, 10.sp, 14.sp)
     val bodyXSmall = omniTextStyle(FontWeight.Normal, 12.sp, 16.sp)
+
+    val profileHandle = omniTextStyle(FontWeight.SemiBold, 18.sp, 24.sp)
+    val profileStat = omniTextStyle(FontWeight.Bold, 18.sp, 22.sp)
+    val profileBlockedTitle = omniTextStyle(FontWeight.SemiBold, 15.sp, 20.sp)
+    val profileChip = omniTextStyle(FontWeight.SemiBold, 13.sp, 16.sp)
+    val profileLabel = omniTextStyle(FontWeight.Normal, 12.sp, 16.sp)
+    val profileLabelBold = omniTextStyle(FontWeight.Bold, 12.sp, 14.sp)
+    val profilePostBody = omniTextStyle(FontWeight.Normal, 14.sp, 20.sp)
 }

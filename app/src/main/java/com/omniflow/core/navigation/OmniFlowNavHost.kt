@@ -36,6 +36,8 @@ import com.omniflow.ui.notifications.NotificationsViewModel
 import com.omniflow.ui.profile.ProfileScreen
 import com.omniflow.ui.profile.ProfileUiState
 import com.omniflow.ui.profile.ProfileViewModel
+import com.omniflow.ui.profile.PublicProfileScreen
+import com.omniflow.ui.profile.PublicProfileViewModel
 import com.omniflow.uicomponents.EmptyState
 
 @Composable
@@ -151,6 +153,9 @@ fun OmniFlowNavHost() {
                     onSearchClick = { navController.navigate(Routes.Explore.route) },
                     onNotifClick = { navController.navigate(Routes.Notifications.route) },
                     onProfileClick = { navController.navigate(Routes.Profile.route) },
+                    onCommunityUserClick = { username ->
+                        navController.navigate(Routes.PublicProfile.createRoute(username))
+                    },
                     onTripClick = { /* TODO M3: navigate to TripDetail */ },
                     onInspirationClick = { /* TODO M4: navigate to DestinationDetail */ },
                     onCreateTrip = { /* TODO M3: navigate to trip wizard */ },
@@ -207,6 +212,31 @@ fun OmniFlowNavHost() {
                     onLocationChange = { viewModel.onLocationChange(it) },
                     onStyleToggle = { viewModel.onStyleToggle(it) },
                     onChangePhoto = { viewModel.onChangePhoto() },
+                    onRetry = { viewModel.retry() },
+                )
+            }
+            composable(
+                route = Routes.PublicProfile.route,
+                arguments = listOf(
+                    navArgument("username") { type = NavType.StringType },
+                ),
+            ) {
+                val viewModel: PublicProfileViewModel = hiltViewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                PublicProfileScreen(
+                    uiState = uiState,
+                    paddingValues = innerPadding,
+                    onBack = { navController.popBackStack() },
+                    onMoreMenu = { viewModel.onMoreMenu() },
+                    onFollowersTap = { /* TODO M2: Followers route */ },
+                    onFollowingTap = { /* TODO M2: Following route */ },
+                    onFollowTap = { viewModel.onFollow() },
+                    onUnfollowTap = { viewModel.onUnfollow() },
+                    onMessageTap = { /* TODO: Messaging module */ },
+                    onUnblockTap = { viewModel.onUnblock() },
+                    onTabChange = { tab -> viewModel.onTabChange(tab) },
+                    onTripTap = { /* TODO M3: TripDetail */ },
                     onRetry = { viewModel.retry() },
                 )
             }

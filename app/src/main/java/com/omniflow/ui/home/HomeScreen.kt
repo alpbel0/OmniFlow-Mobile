@@ -57,6 +57,7 @@ fun HomeScreen(
     onSearchClick: () -> Unit = {},
     onNotifClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
+    onCommunityUserClick: (String) -> Unit = {},
     onTripClick: (String) -> Unit = {},
     onInspirationClick: (String) -> Unit = {},
     onCreateTrip: () -> Unit = {},
@@ -91,6 +92,7 @@ fun HomeScreen(
                     onSearchClick = onSearchClick,
                     onNotifClick = onNotifClick,
                     onProfileClick = onProfileClick,
+                    onCommunityUserClick = onCommunityUserClick,
                     onTripClick = onTripClick,
                     onInspirationClick = onInspirationClick,
                     onCreateTrip = onCreateTrip,
@@ -106,6 +108,7 @@ private fun HomeContent(
     onSearchClick: () -> Unit,
     onNotifClick: () -> Unit,
     onProfileClick: () -> Unit,
+    onCommunityUserClick: (String) -> Unit,
     onTripClick: (String) -> Unit,
     onInspirationClick: (String) -> Unit,
     onCreateTrip: () -> Unit,
@@ -192,7 +195,7 @@ private fun HomeContent(
             CommunityCard(
                 items = communitySection.items,
                 modifier = Modifier.padding(horizontal = d.contentHPadding),
-                onItemClick = {},
+                onItemClick = onCommunityUserClick,
             )
         }
     }
@@ -760,7 +763,7 @@ private fun CommunityCard(
                         .background(HomePalette.dividerColor),
                 )
             }
-            CommunityRow(item, onClick = { onItemClick(item.id) })
+            CommunityRow(item, onClick = { onItemClick(item.username) })
         }
     }
 }
@@ -884,6 +887,7 @@ private fun PreviewHomeScreenVariantA() {
             onSearchClick = {},
             onNotifClick = {},
             onProfileClick = {},
+            onCommunityUserClick = {},
             onTripClick = {},
             onInspirationClick = {},
             onCreateTrip = {},
@@ -900,6 +904,7 @@ private fun PreviewHomeScreenVariantB() {
             onSearchClick = {},
             onNotifClick = {},
             onProfileClick = {},
+            onCommunityUserClick = {},
             onTripClick = {},
             onInspirationClick = {},
             onCreateTrip = {},

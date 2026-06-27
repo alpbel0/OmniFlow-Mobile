@@ -10,6 +10,8 @@ data class ProfileDataModel(
     val followingCount: Int,
     val tripCount: Int,
     val postCount: Int,
+    val isFollowing: Boolean = false,
+    val isBlockedByMe: Boolean = false,
 )
 
 data class ProfileTripModel(

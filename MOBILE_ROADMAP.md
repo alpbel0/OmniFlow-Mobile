@@ -932,31 +932,31 @@ Bottom navigation devreye girer; Home, bildirimler ve tüm profil/sosyal-kullan�
 ### Task 2.4: Edit Profile + Foto Yükleme
 
 **Tahmini Süre:** 2.5 saat
-**Durum:** ✅ Tamamlandı (Task 2.3 ile birlikte)
+**Durum:** ✅ Tamamlandı (Backend B0.5 bağımlılığı nedeniyle kaydetme no-op bağlandı)
 
 > ⛔ **Bağımlılık: B0.5** (Konum + Seyahat Stili alanları için backend hazır olmalı)
 
 **Yapılacaklar:**
-- [ ] **Edit Profile** — profil fotoğrafı, bio, konum, seyahat stili (`PUT /api/v1/users/me`, `POST /api/v1/users/me/profile-photo`)
-- [ ] **Kullanıcı adı** read-only gösterilir (🔒), düzenlenemez
-- [ ] **Konum** — tek satır text field (ör. "İstanbul, Türkiye")
-- [ ] **Seyahat Stili** — multi-select chip'ler: `Macera · Kültür · Sahil · Şehir · Doğa · Gastronomi`; seçili = mavi, seçilmemiş = outline
-- [ ] Foto yükleme sırasında avatar üzerinde loading overlay; başarıda snackbar
-- [ ] `[Kaydet]` butonu değişiklik yokken disabled
-- [ ] ViewModel + UiState
+- [x] **Edit Profile** — profil fotoğrafı, bio, konum, seyahat stili (`PUT /api/v1/users/me`, `POST /api/v1/users/me/profile-photo`)
+- [x] **Kullanıcı adı** read-only gösterilir (🔒), düzenlenemez
+- [x] **Konum** — tek satır text field (ör. "İstanbul, Türkiye")
+- [x] **Seyahat Stili** — multi-select chip'ler: `Macera · Kültür · Sahil · Şehir · Doğa · Gastronomi`; seçili = mavi, seçilmemiş = outline
+- [x] Foto yükleme sırasında avatar üzerinde loading overlay; başarıda snackbar
+- [x] `[Kaydet]` butonu değişiklik yokken disabled
+- [x] ViewModel + UiState
 
 ---
 
 ### Task 2.5: Public User Profile + Follow/Block
 
 **Tahmini Süre:** 1.5 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [ ] **Public User Profile** — başka kullanıcı (`/users/{username}`) + Follow/Unfollow/Block
-- [ ] Engellenmiş kullanıcı → metrikler sıfır/gizli
-- [ ] Follow toggle optimistic
-- [ ] ViewModel + UiState
+- [x] **Public User Profile** — başka kullanıcı (`/users/{username}`) + Follow/Unfollow/Block
+- [x] Engellenmiş kullanıcı → metrikler sıfır/gizli
+- [x] Follow toggle optimistic
+- [x] ViewModel + UiState
 
 ---
 
