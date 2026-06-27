@@ -27,6 +27,7 @@ sealed class Routes(val route: String) {
     data object Trips : Routes("trips")
     data object Explore : Routes("explore")
     data object Social : Routes("social")
+    data object Community : Routes("social")
     data object Notifications : Routes("notifications")
     data object Profile : Routes("profile")
 

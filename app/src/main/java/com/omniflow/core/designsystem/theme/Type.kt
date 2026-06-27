@@ -53,3 +53,12 @@ private fun omniTextStyle(
     fontSize = fontSize,
     lineHeight = lineHeight,
 )
+
+object OmniTextStyles {
+    val greeting = omniTextStyle(FontWeight.SemiBold, 19.sp, 24.sp)
+    val heroTitle = omniTextStyle(FontWeight.Bold, 20.sp, 26.sp)
+    val statusLabel = omniTextStyle(FontWeight.SemiBold, 11.sp, 14.sp)
+        .copy(letterSpacing = 0.8.sp)
+    val captionTiny = omniTextStyle(FontWeight.Bold, 10.sp, 14.sp)
+    val bodyXSmall = omniTextStyle(FontWeight.Normal, 12.sp, 16.sp)
+}

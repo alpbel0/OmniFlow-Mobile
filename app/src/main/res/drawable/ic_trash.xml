@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <!-- Top bar -->
+    <path android:pathData="M3,6H5H21" android:strokeColor="#6F7F95" android:strokeWidth="2" android:strokeLineCap="round"/>
+    <!-- Bin body -->
+    <path android:pathData="M19,6L18,20A2,2 0,0 1,16 22H8A2,2 0,0 1,6 20L5,6" android:strokeColor="#6F7F95" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="@android:color/transparent"/>
+    <!-- Handle -->
+    <path android:pathData="M9,6V4A1,1 0,0 1,10 3H14A1,1 0,0 1,15 4V6" android:strokeColor="#6F7F95" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" android:fillColor="@android:color/transparent"/>
+    <!-- Left inner line -->
+    <path android:pathData="M10,11V17" android:strokeColor="#6F7F95" android:strokeWidth="2" android:strokeLineCap="round"/>
+    <!-- Right inner line -->
+    <path android:pathData="M14,11V17" android:strokeColor="#6F7F95" android:strokeWidth="2" android:strokeLineCap="round"/>
+</vector>

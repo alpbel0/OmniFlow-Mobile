@@ -3,6 +3,7 @@ package com.omniflow.ui.auth.login
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.omniflow.BuildConfig
 import com.omniflow.R
 import com.omniflow.core.auth.PendingAuthCredentialsStore
 import com.omniflow.core.common.EmailValidator
@@ -34,9 +35,14 @@ class LoginViewModel @Inject constructor(
     val effects = _effects.receiveAsFlow()
 
     init {
+        if (BuildConfig.DEBUG && _uiState.value.email.isBlank()) {
+            _uiState.update {
+                it.copy(email = "bel.yigitalp@gmail.com", password = "Yigitalpbel5.")
+            }
+        }
         savedStateHandle.getStateFlow(LOGIN_EMAIL_KEY, "")
             .onEach { email ->
-                if (email.isConcreteEmailArgument() && _uiState.value.email.isBlank()) {
+                if (email.isConcreteEmailArgument()) {
                     _uiState.update { it.copy(email = email) }
                 }
             }

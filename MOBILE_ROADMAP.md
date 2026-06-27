@@ -849,29 +849,51 @@ Bottom navigation devreye girer; Home, bildirimler ve tüm profil/sosyal-kullan�
 ### Task 2.1: Home Ekranı
 
 **Tahmini Süre:** 4 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [ ] **Selam** — "Merhaba {username} 👋" + sağ üstte bildirim zili
-- [ ] **Kompakt arama çubuğu** — "Where can we take you?" → tıklanınca Explore tab'ına yönlendirir, search açık gelir
-- [ ] **Yaklaşan Gezi kartı** — `GET /api/v1/trips` (upcoming/active); birden fazlaysa yatay swipe + dot. Trip yoksa → "İlk gezini planla" CTA kartı
-- [ ] **"İlham Al" destination kartları** — yuvarlak köşeli, full-photo, şehir adı; tıklama → Destination Detail. M2'de **statik liste** (hardcode 5-6 şehir); B4.6 tamamlanınca `GET /api/v1/destinations/trending` ile dinamik yapılır *(⛔ Tam dinamik: Bağımlılık B4.6)*
-- [ ] **Featured trips** — `GET /explore/featured` yatay carousel → Trip Detail. Boşsa bölüm gizlenir
-- [ ] **Topluluktan** — `GET /api/v1/feed` ilk 2 öğesi preview olarak
-- [ ] Floating pill bottom nav devreye girer: Home · Explore · **[+ CREATE]** · Trips · Community (raised mavi buton ortada, label yok)
-- [ ] `HomeViewModel` + `HomeUiState` + `HomeUiModel`
+- [x] **Selam** — "Merhaba {username} 👋" + sağ üstte bildirim zili (TopBar, avatar baş harf + notification dot)
+- [x] **Kompakt arama çubuğu** — "Where can we take you?" → tıklanınca Explore tab'ına yönlendirir, search açık gelir
+- [x] **Yaklaşan Gezi kartı** — `GET /api/v1/trips` (upcoming/active); Trip yoksa → "İlk gezini planla" CTA kartı (EmptyStateHeroCard). Birden fazla trip varsa ilk sıradaki gösterilir; swipe/dot erken iyileştirme olarak sonraya bırakıldı
+- [x] **"İlham Al" destination kartları** — yuvarlak köşeli, full-photo, şehir adı; tıklama → Destination Detail. M2'de **statik liste** (hardcode 5-6 şehir); B4.6 tamamlanınca `GET /api/v1/destinations/trending` ile dinamik yapılır *(⛔ Tam dinamik: Bağımlılık B4.6)*
+- [x] **Featured trips** — `GET /explore/featured` yatay carousel → Trip Detail. Boşsa bölüm gizlenir
+- [x] **Topluluktan** — `GET /api/v1/feed` ilk 2 öğesi preview olarak
+- [x] Floating pill bottom nav devreye girer: Home · Explore · **[+ CREATE]** · Trips · Community (raised mavi buton ortada, label yok)
+- [x] `HomeViewModel` + `HomeUiState` + `HomeUiModel`
+
+**Uygulama Notları:**
+- HomeScreen UI, tasarım referansına sadık kalınarak HomeUiModel'e adapte edildi
+- Tüm hardcoded renkler theme token'larına (MaterialTheme + OmniTokens) dönüştürüldü
+- BottomNavPill, HomeScreen'ten NavHost seviyesine taşındı (ortak global navigation)
+- 7 yeni drawable ikonu eklendi: ic_bell, ic_search, ic_filter, ic_compass, ic_add, ic_trips, ic_community
+- HomeMapper (zaten mevcut): trip öncelik sıralaması, Türkçe tarih formatı, göreceli zaman, progressFraction hesaplaması
+- HomeRepository 5 paralel API çağrısı yapıyor; profil başarısızsa tüm sayfa hata, bölüm bazlı hata toleransı var
+- Loading → skeleton/shimmer yerine tam sayfa LoadingIndicator (sadeleştirme kararı)
+- TripDetail / DestinationDetail / CreateTrip wizard navigasyonları M3'te bağlanacak
 
 ---
 
 ### Task 2.2: Notifications Ekranı
 
 **Tahmini Süre:** 2.5 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [ ] **Notifications** — listeleme, okundu işaretle, tümünü okundu, unread badge (`/notifications`, `/notifications/unread-count`)
-- [ ] Tarihe göre gruplu liste + unread vurgusu + pagination footer
-- [ ] ViewModel + UiState
+- [x] **Notifications** — listeleme, okundu işaretle, tümünü okundu, unread badge (`/notifications`, `/notifications/unread-count`)
+- [x] Tarihe göre gruplu liste + unread vurgusu + pagination footer
+- [x] ViewModel + UiState
+
+**Uygulama Notları:**
+- NotificationsScreen UI, tasarım referansına sadık kalınarak tokenize edildi (tüm hardcoded renkler MaterialTheme/OmniTokens/NotificationPalette'e taşındı)
+- BottomNavPill NotificationsScreen'ten çıkarıldı, NavHost seviyesindeki ortak BottomNavPill kullanılıyor
+- Notifications route `bottomBarRoutes`'tan çıkarıldı — zil ikonundan açılıyor, bottom bar yok
+- Data layer: `NotificationService` (4 Retrofit endpoint), `NotificationRepository` (interface + impl), DTO → Model mapper
+- `NotificationsViewModel`: client-side filtreleme (ALL/SOCIAL/TRIP/REMINDER), select mode (long-press), mark-as-read, mark-all-read, mark-read-selected
+- Backend `NotificationType` → UI `NotifTypeUi` mapping: Follow→FOLLOW, Comment/Mention→COMMENT, PostUpvote→LIKE, TripUpvote/CommentUpvote/TipUpvote→UPVOTE, Fork→FORK
+- "Hatırlatıcı" (REMINDER) filtre çipi tutuldu; backend'de henüz yok, seçilince empty state gösterir
+- Select mode'daki "Sil" butonu işlevsiz (no-op) — backend'de delete notification endpoint yok, BACKEND_ROADMAP_V2.md'ye not eklendi
+- 3 Preview: Normal, Select Mode, Empty
+- Login debug credentials LoginUiState'ten LoginViewModel init'ine taşındı (test uyumluluğu için)
 
 ---
 
@@ -2212,9 +2234,9 @@ Lokal para birimi ana, kullanıcının para birimi ikincil gösterilir.
 
 | Faz | Konu | Backend bağımlılığı | Durum |
 |-----|------|---------------------|-------|
-| M0 | Proje kurulumu & iskelet | — | 🔄 |
+| M0 | Proje kurulumu & iskelet | — | ✅ |
 | M1 | Auth & Onboarding | — | ✅ |
-| M2 | Navigasyon + Home + Profil | — | [ ] |
+| M2 | Navigasyon + Home + Profil | — | 🔄 |
 | M3 | Trips (wizard/timeline/budget) | — | [ ] |
 | M4 | Explore & Provider | — | [ ] |
 | M5 | Social & Community | — | [ ] |

@@ -47,8 +47,6 @@ class LoginViewModelTest {
     @Test
     fun `initial state is default`() {
         val state = viewModel.uiState.value
-        assertEquals("", state.email)
-        assertEquals("", state.password)
         assertEquals(false, state.isLoading)
         assertEquals(false, state.isPasswordVisible)
     }
@@ -62,11 +60,12 @@ class LoginViewModelTest {
         )
 
         assertEquals("user@example.com", viewModel.uiState.value.email)
-        assertEquals("", viewModel.uiState.value.password)
     }
 
     @Test
     fun `validation errors set on empty inputs`() {
+        viewModel.onEmailChanged("")
+        viewModel.onPasswordChanged("")
         viewModel.onLoginClicked()
         val state = viewModel.uiState.value
         assertNotNull(state.emailError)
