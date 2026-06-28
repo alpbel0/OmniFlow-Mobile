@@ -36,6 +36,8 @@ import com.omniflow.ui.notifications.NotificationsViewModel
 import com.omniflow.ui.profile.ProfileScreen
 import com.omniflow.ui.profile.ProfileUiState
 import com.omniflow.ui.profile.ProfileViewModel
+import com.omniflow.ui.profile.FollowListScreen
+import com.omniflow.ui.profile.FollowListViewModel
 import com.omniflow.ui.profile.PublicProfileScreen
 import com.omniflow.ui.profile.PublicProfileViewModel
 import com.omniflow.uicomponents.EmptyState
@@ -202,8 +204,18 @@ fun OmniFlowNavHost() {
                     paddingValues = innerPadding,
                     onBack = { navController.popBackStack() },
                     onSettingsTap = { /* TODO: Settings route */ },
-                    onFollowersTap = { /* TODO M2: Followers route */ },
-                    onFollowingTap = { /* TODO M2: Following route */ },
+                    onFollowersTap = {
+                        val userId = (uiState.contentState as? com.omniflow.core.common.UiState.Success)?.data?.id
+                        if (!userId.isNullOrEmpty()) {
+                            navController.navigate(Routes.FollowList.createRoute(userId, "followers"))
+                        }
+                    },
+                    onFollowingTap = {
+                        val userId = (uiState.contentState as? com.omniflow.core.common.UiState.Success)?.data?.id
+                        if (!userId.isNullOrEmpty()) {
+                            navController.navigate(Routes.FollowList.createRoute(userId, "following"))
+                        }
+                    },
                     onEditProfile = { viewModel.onEditProfile() },
                     onTabChange = { viewModel.onTabChange(it) },
                     onTripTap = { /* TODO M3: TripDetail */ },
@@ -229,14 +241,47 @@ fun OmniFlowNavHost() {
                     paddingValues = innerPadding,
                     onBack = { navController.popBackStack() },
                     onMoreMenu = { viewModel.onMoreMenu() },
-                    onFollowersTap = { /* TODO M2: Followers route */ },
-                    onFollowingTap = { /* TODO M2: Following route */ },
+                    onFollowersTap = {
+                        val userId = (uiState.contentState as? com.omniflow.core.common.UiState.Success)?.data?.userId
+                        if (!userId.isNullOrEmpty()) {
+                            navController.navigate(Routes.FollowList.createRoute(userId, "followers"))
+                        }
+                    },
+                    onFollowingTap = {
+                        val userId = (uiState.contentState as? com.omniflow.core.common.UiState.Success)?.data?.userId
+                        if (!userId.isNullOrEmpty()) {
+                            navController.navigate(Routes.FollowList.createRoute(userId, "following"))
+                        }
+                    },
                     onFollowTap = { viewModel.onFollow() },
                     onUnfollowTap = { viewModel.onUnfollow() },
                     onMessageTap = { /* TODO: Messaging module */ },
                     onUnblockTap = { viewModel.onUnblock() },
                     onTabChange = { tab -> viewModel.onTabChange(tab) },
                     onTripTap = { /* TODO M3: TripDetail */ },
+                    onRetry = { viewModel.retry() },
+                )
+            }
+            composable(
+                route = Routes.FollowList.route,
+                arguments = listOf(
+                    navArgument("userId") { type = NavType.StringType },
+                    navArgument("mode") { type = NavType.StringType },
+                ),
+            ) {
+                val viewModel: FollowListViewModel = hiltViewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                FollowListScreen(
+                    uiState = uiState,
+                    paddingValues = innerPadding,
+                    onBack = { navController.popBackStack() },
+                    onSearchChange = { viewModel.onSearchChange(it) },
+                    onFollowTap = { viewModel.onFollow(it) },
+                    onUnfollowTap = { viewModel.onUnfollow(it) },
+                    onUserTap = { username ->
+                        navController.navigate(Routes.PublicProfile.createRoute(username))
+                    },
                     onRetry = { viewModel.retry() },
                 )
             }

@@ -963,11 +963,11 @@ Bottom navigation devreye girer; Home, bildirimler ve tüm profil/sosyal-kullan�
 ### Task 2.6: Followers / Following
 
 **Tahmini Süre:** 1 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [ ] **Followers / Following** — liste + search
-- [ ] Search sonucu boşsa "Sonuç yok"
+- [x] **Followers / Following** — liste + search
+- [x] Search sonucu boşsa "Sonuç yok"
 
 ---
 

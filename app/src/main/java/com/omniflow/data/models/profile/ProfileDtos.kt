@@ -65,3 +65,14 @@ data class UpdateProfileRequestDto(
 
 typealias ProfileTripsPageDto = PagedResponseDto<ProfileTripDto>
 typealias ProfilePostsPageDto = PagedResponseDto<ProfilePostDto>
+
+@Serializable
+data class FollowUserDto(
+    val id: String,
+    val username: String,
+    val profilePhotoUrl: String? = null,
+    val isFollowing: Boolean? = null,
+    val karmaScore: Int = 0,
+)
+
+typealias FollowUsersPageDto = PagedResponseDto<FollowUserDto>

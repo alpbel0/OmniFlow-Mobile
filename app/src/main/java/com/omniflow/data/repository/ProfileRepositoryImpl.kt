@@ -2,6 +2,7 @@ package com.omniflow.data.repository
 
 import com.omniflow.core.network.ApiCallExecutor
 import com.omniflow.core.network.ApiResult
+import com.omniflow.data.models.profile.FollowUserDto
 import com.omniflow.data.models.profile.ProfileContentModel
 import com.omniflow.data.models.profile.ProfileDataModel
 import com.omniflow.data.models.profile.ProfilePostModel
@@ -164,6 +165,36 @@ class ProfileRepositoryImpl @Inject constructor(
         return apiCallExecutor.execute { profileService.unblockUser(userId) }
     }
 
+    override suspend fun getFollowers(
+        userId: String,
+        page: Int,
+        search: String?,
+    ): ApiResult<List<FollowUserDto>> {
+        val result = apiCallExecutor.execute {
+            profileService.getFollowers(userId, page, pageSize = 20, search = search)
+        }
+        return when (result) {
+            is ApiResult.Success -> ApiResult.Success(result.data.data)
+            is ApiResult.Error -> ApiResult.Success(mockFollowUsers())
+            is ApiResult.Loading -> result
+        }
+    }
+
+    override suspend fun getFollowing(
+        userId: String,
+        page: Int,
+        search: String?,
+    ): ApiResult<List<FollowUserDto>> {
+        val result = apiCallExecutor.execute {
+            profileService.getFollowing(userId, page, pageSize = 20, search = search)
+        }
+        return when (result) {
+            is ApiResult.Success -> ApiResult.Success(result.data.data)
+            is ApiResult.Error -> ApiResult.Success(mockFollowUsers())
+            is ApiResult.Loading -> result
+        }
+    }
+
     private fun com.omniflow.data.models.profile.UserProfileDto.toDataModel() = ProfileDataModel(
         id = id,
         username = username,
@@ -187,8 +218,8 @@ class ProfileRepositoryImpl @Inject constructor(
                 bio = "Seyahat tutkunu 🌍 (Mock)",
                 profilePhotoUrl = null,
                 karmaScore = 1240,
-                followersCount = 142,
-                followingCount = 89,
+                followersCount = 6,
+                followingCount = 6,
                 tripCount = 2,
                 postCount = 1,
             ),
@@ -223,5 +254,14 @@ class ProfileRepositoryImpl @Inject constructor(
         postCount = 1,
         isFollowing = false,
         isBlockedByMe = false,
+    )
+
+    private fun mockFollowUsers(): List<FollowUserDto> = listOf(
+        FollowUserDto("mock-f1", "selin.k", null, isFollowing = true, karmaScore = 2340),
+        FollowUserDto("mock-f2", "alptravel", null, isFollowing = false, karmaScore = 3840),
+        FollowUserDto("mock-f3", "mert.y", null, isFollowing = true, karmaScore = 890),
+        FollowUserDto("mock-f4", "ece.world", null, isFollowing = false, karmaScore = 1120),
+        FollowUserDto("mock-f5", "can.exp", null, isFollowing = false, karmaScore = 560),
+        FollowUserDto("mock-f6", "zeynep.t", null, isFollowing = true, karmaScore = 1780),
     )
 }

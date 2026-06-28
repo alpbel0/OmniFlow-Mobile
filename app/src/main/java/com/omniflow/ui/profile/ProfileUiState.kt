@@ -18,6 +18,7 @@ data class ProfileUiState(
 )
 
 data class ProfileUiModel(
+    val id: String = "",
     val handle: String,
     val bio: String,
     val karma: Int,

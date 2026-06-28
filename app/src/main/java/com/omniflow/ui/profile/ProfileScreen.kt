@@ -890,6 +890,7 @@ private fun EditProfileBody(
 // Preview Sample Data
 // ─────────────────────────────────────────
 private val sampleProfile = ProfileUiModel(
+    id = "mock-user",
     handle = "@yigitalpbel",
     bio = "Seyahat tutkunu \uD83C\uDF0D",
     karma = 1240,

@@ -1,6 +1,7 @@
 package com.omniflow.data.repository
 
 import com.omniflow.core.network.ApiResult
+import com.omniflow.data.models.profile.FollowUserDto
 import com.omniflow.data.models.profile.ProfileContentModel
 import com.omniflow.data.models.profile.ProfileDataModel
 import okhttp3.MultipartBody
@@ -15,4 +16,15 @@ interface ProfileRepository {
     suspend fun unfollowUser(userId: String): ApiResult<Unit>
     suspend fun blockUser(userId: String): ApiResult<Unit>
     suspend fun unblockUser(userId: String): ApiResult<Unit>
+    suspend fun getFollowers(
+        userId: String,
+        page: Int = 1,
+        search: String? = null,
+    ): ApiResult<List<FollowUserDto>>
+
+    suspend fun getFollowing(
+        userId: String,
+        page: Int = 1,
+        search: String? = null,
+    ): ApiResult<List<FollowUserDto>>
 }

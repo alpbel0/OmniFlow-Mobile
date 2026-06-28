@@ -33,6 +33,9 @@ sealed class Routes(val route: String) {
     data object PublicProfile : Routes("public_profile/{username}") {
         fun createRoute(username: String): String = "public_profile/${urlEncode(username)}"
     }
+    data object FollowList : Routes("follow_list/{userId}/{mode}") {
+        fun createRoute(userId: String, mode: String): String = "follow_list/$userId/$mode"
+    }
 
     companion object {
         private fun urlEncode(value: String): String =

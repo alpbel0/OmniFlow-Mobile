@@ -88,7 +88,7 @@ private fun String.toRelativeTime(): String {
     }
 }
 
-private fun deterministicAvatarGradient(username: String): List<Color> {
+internal fun deterministicAvatarGradient(username: String): List<Color> {
     val index = username.hashCode().absoluteValue % ProfilePalette.postAvatarGradients.size
     return ProfilePalette.postAvatarGradients[index]
 }

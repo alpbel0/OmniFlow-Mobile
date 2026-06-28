@@ -1,5 +1,6 @@
 package com.omniflow.data.remote
 
+import com.omniflow.data.models.profile.FollowUsersPageDto
 import com.omniflow.data.models.profile.ProfilePostsPageDto
 import com.omniflow.data.models.profile.ProfileTripsPageDto
 import com.omniflow.data.models.profile.UpdateProfileRequestDto
@@ -53,6 +54,22 @@ interface ProfileService {
 
     @DELETE("api/v1/users/{userId}/block")
     suspend fun unblockUser(@Path("userId") userId: String)
+
+    @GET("api/v1/users/{userId}/followers")
+    suspend fun getFollowers(
+        @Path("userId") userId: String,
+        @Query("pageNumber") pageNumber: Int = 1,
+        @Query("pageSize") pageSize: Int = 20,
+        @Query("search") search: String? = null,
+    ): FollowUsersPageDto
+
+    @GET("api/v1/users/{userId}/following")
+    suspend fun getFollowing(
+        @Path("userId") userId: String,
+        @Query("pageNumber") pageNumber: Int = 1,
+        @Query("pageSize") pageSize: Int = 20,
+        @Query("search") search: String? = null,
+    ): FollowUsersPageDto
 
     @PUT("api/v1/users/me")
     suspend fun updateProfile(@Body request: UpdateProfileRequestDto): UserProfileDto

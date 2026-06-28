@@ -7,6 +7,7 @@ import java.time.OffsetDateTime
 
 fun ProfileContentModel.toUiModel(): ProfileUiModel {
     return ProfileUiModel(
+        id = profile.id,
         handle = "@${profile.username}",
         bio = profile.bio ?: "",
         karma = profile.karmaScore,
