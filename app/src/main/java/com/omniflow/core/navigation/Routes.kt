@@ -27,7 +27,7 @@ sealed class Routes(val route: String) {
     data object Trips : Routes("trips")
     data object Explore : Routes("explore")
     data object Social : Routes("social")
-    data object Community : Routes("social")
+    data object Community : Routes("community")
     data object Notifications : Routes("notifications")
     data object Profile : Routes("profile")
     data object PublicProfile : Routes("public_profile/{username}") {
@@ -36,6 +36,7 @@ sealed class Routes(val route: String) {
     data object FollowList : Routes("follow_list/{userId}/{mode}") {
         fun createRoute(userId: String, mode: String): String = "follow_list/$userId/$mode"
     }
+    data object Settings : Routes("settings")
 
     companion object {
         private fun urlEncode(value: String): String =

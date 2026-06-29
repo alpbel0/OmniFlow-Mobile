@@ -3,6 +3,8 @@ package com.omniflow.data.remote
 import com.omniflow.data.models.profile.FollowUsersPageDto
 import com.omniflow.data.models.profile.ProfilePostsPageDto
 import com.omniflow.data.models.profile.ProfileTripsPageDto
+import com.omniflow.data.models.profile.SuggestedFollowDto
+import com.omniflow.data.models.profile.TopContributorDto
 import com.omniflow.data.models.profile.UpdateProfileRequestDto
 import com.omniflow.data.models.profile.UserProfileDto
 import okhttp3.MultipartBody
@@ -77,4 +79,10 @@ interface ProfileService {
     @Multipart
     @POST("api/v1/users/me/profile-photo")
     suspend fun uploadProfilePhoto(@Part file: MultipartBody.Part): UserProfileDto
+
+    @GET("api/v1/users/suggested-follows")
+    suspend fun getSuggestedFollows(@Query("limit") limit: Int = 6): List<SuggestedFollowDto>
+
+    @GET("api/v1/users/top-contributors")
+    suspend fun getTopContributors(@Query("limit") limit: Int = 10): List<TopContributorDto>
 }

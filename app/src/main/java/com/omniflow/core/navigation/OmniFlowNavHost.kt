@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.padding
@@ -40,6 +41,10 @@ import com.omniflow.ui.profile.FollowListScreen
 import com.omniflow.ui.profile.FollowListViewModel
 import com.omniflow.ui.profile.PublicProfileScreen
 import com.omniflow.ui.profile.PublicProfileViewModel
+import com.omniflow.ui.social.CommunityDiscoveryScreen
+import com.omniflow.ui.social.CommunityViewModel
+import com.omniflow.ui.settings.SettingsScreen
+import com.omniflow.ui.settings.SettingsViewModel
 import com.omniflow.uicomponents.EmptyState
 
 @Composable
@@ -172,7 +177,20 @@ fun OmniFlowNavHost() {
                 FeaturePlaceholderScreen(name = "Explore", paddingValues = innerPadding)
             }
             composable(Routes.Community.route) {
-                FeaturePlaceholderScreen(name = "Community", paddingValues = innerPadding)
+                val viewModel: CommunityViewModel = hiltViewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                CommunityDiscoveryScreen(
+                    uiState = uiState,
+                    paddingValues = innerPadding,
+                    onBack = { navController.popBackStack() },
+                    onFollowSuggested = { viewModel.onFollowSuggested(it) },
+                    onFollowContrib = { viewModel.onFollowContrib(it) },
+                    onUserTap = { username ->
+                        navController.navigate(Routes.PublicProfile.createRoute(username))
+                    },
+                    onRetry = { viewModel.retry() },
+                )
             }
             composable(Routes.Social.route) {
                 FeaturePlaceholderScreen(name = "Social", paddingValues = innerPadding)
@@ -203,7 +221,7 @@ fun OmniFlowNavHost() {
                     uiState = uiState,
                     paddingValues = innerPadding,
                     onBack = { navController.popBackStack() },
-                    onSettingsTap = { /* TODO: Settings route */ },
+                    onSettingsTap = { navController.navigate(Routes.Settings.route) },
                     onFollowersTap = {
                         val userId = (uiState.contentState as? com.omniflow.core.common.UiState.Success)?.data?.id
                         if (!userId.isNullOrEmpty()) {
@@ -283,6 +301,30 @@ fun OmniFlowNavHost() {
                         navController.navigate(Routes.PublicProfile.createRoute(username))
                     },
                     onRetry = { viewModel.retry() },
+                )
+            }
+            composable(Routes.Settings.route) {
+                val viewModel: SettingsViewModel = hiltViewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(uiState.loggedOut) {
+                    if (uiState.loggedOut) {
+                        navController.navigate(Routes.Login.createRoute()) {
+                            popUpTo(Routes.Home.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                }
+
+                SettingsScreen(
+                    groups = uiState.groups,
+                    isLoggingOut = uiState.isLoggingOut,
+                    paddingValues = innerPadding,
+                    onBack = { navController.popBackStack() },
+                    onRowClick = { id ->
+                        // Sub-screen navigation — placeholder for now
+                    },
+                    onLogout = { viewModel.onLogout() },
                 )
             }
         }

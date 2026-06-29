@@ -4,6 +4,8 @@ import com.omniflow.core.network.ApiResult
 import com.omniflow.data.models.profile.FollowUserDto
 import com.omniflow.data.models.profile.ProfileContentModel
 import com.omniflow.data.models.profile.ProfileDataModel
+import com.omniflow.data.models.profile.SuggestedFollowDto
+import com.omniflow.data.models.profile.TopContributorDto
 import okhttp3.MultipartBody
 
 interface ProfileRepository {
@@ -27,4 +29,7 @@ interface ProfileRepository {
         page: Int = 1,
         search: String? = null,
     ): ApiResult<List<FollowUserDto>>
+
+    suspend fun getSuggestedFollows(): ApiResult<List<SuggestedFollowDto>>
+    suspend fun getTopContributors(): ApiResult<List<TopContributorDto>>
 }

@@ -974,27 +974,38 @@ Bottom navigation devreye girer; Home, bildirimler ve tüm profil/sosyal-kullan�
 ### Task 2.7: Suggested Follows + Top Contributors
 
 **Tahmini Süre:** 1 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 > **Entry point kararı:** Community tab (👥) M2'de bu ekranı doğrudan gösterir — M5'te tam Community Feed yapılana kadar placeholder görevi görür. M5 tamamlanınca Community tab'ının içine "Gezginler" alt bölümü olarak taşınır.
 
 **Yapılacaklar:**
-- [ ] **Community tab** → M2'de doğrudan bu ekrana yönlenir (NavHost'ta Community route = GezginleriKesfet)
-- [ ] **Suggested Follows** — yatay scroll kart listesi (avatar + şehir + karma + "Takip Et")
-- [ ] **Top Contributors** — sıralı dikey liste, #1 altın sol border, madalya/numara rozeti
-- [ ] "Takip Et" optimistic toggle (takip ediyorsun / takip et)
-- [ ] M5'te Community Feed gelince bu ekran sub-screen'e düşer; route değişikliği o milestone'da yapılır
+- [x] **Community tab** → M2'de doğrudan bu ekrana yönlenir (NavHost'ta Community route = GezginleriKesfet)
+- [x] **Suggested Follows** — yatay scroll kart listesi (avatar + şehir + karma + "Takip Et")
+- [x] **Top Contributors** — sıralı dikey liste, #1 altın sol border, madalya/numara rozeti
+- [x] "Takip Et" optimistic toggle (takip ediyorsun / takip et)
+- [x] M5'te Community Feed gelince bu ekran sub-screen'e düşer; route değişikliği o milestone'da yapılır
 
 ---
 
 ### Task 2.8: Settings Shell
 
 **Tahmini Süre:** 0.5 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 **Yapılacaklar:**
-- [ ] **Settings (shell)** — logout + alt ayar girişleri (içerikler ileride dolacak)
-- [ ] Logout → oturum temizle → Login
+- [x] **Settings (shell)** — logout + alt ayar girişleri (içerikler ileride dolacak)
+- [x] Logout → oturum temizle → Login
+
+**Uygulama Notu:**
+- **5 yeni dosya**: `SettingsPalette.kt`, `SettingsDimens.kt`, `SettingsUiState.kt` (data modelleri + UiState), `SettingsViewModel.kt` (TokenManager.clearSession → Login), `SettingsScreen.kt` (tokenize).
+- **OmniTextStyles.settingsSectionTitle** (12.sp SemiBold) eklendi.
+- **Routes.Settings** (`"settings"`) eklendi; NavHost'ta `composable(Routes.Settings.route)` bağlandı. BottomNavPill Settings'te gösterilmez (`bottomBarRoutes` içinde değil).
+- **ProfileScreen** `onSettingsTap` → `navController.navigate(Routes.Settings.route)` olarak bağlandı (daha önce TODO'ydı).
+- **Logout akışı**: ViewModel `onLogout()` → `tokenStore.clearSession()` → `loggedOut=true` → `LaunchedEffect` ile `Routes.Login` (Home inclusive popUpTo) navigasyonu. Loading sırasında `CircularProgressIndicator` gösterilir.
+- **Tokenizasyon**: 8 inline `Color(0x…)` → `SettingsPalette`; ~20 inline `.dp` → `SettingsDimens`; tüm `fontSize =` → `MaterialTheme.typography.*` / `OmniTextStyles.*`. `.copy(fontWeight = …)` sadece fontWeight için kullanıldı (lint güvenli).
+- **Data modelleri** (`SettingRowType`, `SettingRow`, `SettingGroup`, `defaultSettingGroups`) `SettingsUiState.kt`'e taşındı; 4 grup (Hesap, Uygulama, Gizlilik & Güvenlik, Destek) korundu.
+- **Alt ekranlar** (Hesap Bilgileri, Şifre Değiştir, vb.) şu an placeholder; ilgili milestone'larda dolacak.
+- `compileDebugKotlin`, `lintDebug`, `installDebug` başarılı; APK Xiaomi `2312DRA50G` cihazda.
 
 ---
 
@@ -1039,23 +1050,36 @@ Uygulamanın kalbi. Trip listesi, detay, 8 adımlı oluşturma wizard'ı, destin
 **Tahmini Süre:** 2.5 saat
 **Durum:** [ ] Bekliyor
 
+> ⛔ **Bağımlılık: B0.6** (Trip %hazır), **B0.7** (Görüntülenme), **B0.8** (Kapak fotoğrafı)
+
 **Yapılacaklar:**
-- [ ] **My Trips** — Draft/Published/Archived sekmeleri (`GET /trips`)
-- [ ] Sekme bazlı "Henüz {Draft/Published/Archived} trip yok" + Wizard CTA
+- [ ] **My Trips** — `Draft / Published / Archived` sekmeleri (`GET /api/v1/trips`)
+- [ ] **Trip kartı** — büyük kapak fotoğrafı (Coil); fotoğraf yoksa renk gradyanı placeholder
+- [ ] **Draft kart**: sol üst "Taslak" badge (turuncu) + sağ üst "%{CompletionPercentage} hazır" badge; alt satır: 👤 kişi sayısı · 📍 destinasyon sayısı; tarih yoksa "Tarih belirlenmedi"; kart altında "Düzenle / Yayınla" aksiyon butonları
+- [ ] **Published kart**: sol üst "X gün kaldı" (yeşil) veya "Tamamlandı" (gri) badge; sağ üst ❤️{UpvoteCount} · 🔀{ForkCount}; alt satır: 👤 · 📍 · gün sayısı
+- [ ] **Archived kart**: "Arşiv" badge (gri), aynı alt satır formatı
+- [ ] **Yayın Özeti** — Published tab altında aggregate stats kartı: Rota · Görüntülenme · Beğeni · Çatallanma
+- [ ] Sekme bazlı empty state + Wizard CTA (Draft boşsa "İlk gezini planla")
 - [ ] Pagination footer
-- [ ] ViewModel + UiState
+- [ ] `MyTripsViewModel` + `MyTripsUiState` + `TripCardUiModel`
 
 ---
 
 ### Task 3.2: Trip Detail Görünümü
 
-**Tahmini Süre:** 2.5 saat
+**Tahmini Süre:** 3 saat
 **Durum:** [ ] Bekliyor
 
+> ⛔ **Bağımlılık: B0.8** (Kapak fotoğrafı upload)
+
 **Yapılacaklar:**
-- [ ] **Trip Detail** — kapak, başlık, destinasyon özeti, timeline özeti, flight/hotel özeti, budget özeti
+- [ ] **Header** — kapak fotoğrafı hero arka planda (Coil), başlık + destinasyonlar + süre + kişi sayısı + UpvoteCount/ForkCount overlay; scroll ile fotoğraf kaybolur
+- [ ] **Harita bölümü** — Google Maps Compose; destinasyon pinleri; sağ üst toggle butonu: "Kuş Bakışı" (düz çizgi) / "Yol" (ORS polyline); *(İleride: OSRM ile değiştirilecek)*
+- [ ] **Timeline özet kartı** — ilk 3 entry önizlemesi + "Tümünü Gör"; tıklanınca in-page panel expand, sol üstte ← geri
+- [ ] **Uçuş & Otel özet** — varsa seçili uçuş + otel bilgisi; tıklanınca ayrı sayfaya gider
+- [ ] **Bütçe özet kartı** — toplam tahmini bütçe + tier; tıklanınca in-page panel expand (tam bütçe breakdown)
 - [ ] Owner değilse edit/publish/delete gizli; Draft/Archived sadece owner'a görünür
-- [ ] ViewModel + UiState
+- [ ] `TripDetailViewModel` + `TripDetailUiState`
 
 ---
 
@@ -1065,6 +1089,7 @@ Uygulamanın kalbi. Trip listesi, detay, 8 adımlı oluşturma wizard'ı, destin
 **Durum:** [ ] Bekliyor
 
 **Yapılacaklar:**
+- [ ] **Üst bar:** Owner → ✏️ Düzenle + ⋮ menu (Yayınla / Arşivle / Sil); başkasının trip'i → ❤️ Upvote + 🔖 Kaydet + 🔀 Fork
 - [ ] Detail aksiyonları: publish, archive, edit, delete, save/unsave, upvote, fork
 - [ ] Save/upvote optimistic + snackbar
 

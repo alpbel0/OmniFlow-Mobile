@@ -473,32 +473,34 @@ Chip'ler bir yere **götürmez**, sadece listeyi filtreler.
 
 ## 6.3 Trip Detail Page
 
-**Amac:** Bir trip'in genel detaylarini gostermek.
+**Amac:** Bir trip'in tum detaylarini tek ekranda gostermek.
 
-**Kim gorur:** Owner veya yetkili kullanici / public trip ise diger kullanicilar
+**Kim gorur:** Owner (tum statüler) / diger kullanicilar (sadece Published)
 
-**Ana icerik:**
-- Kapak gorseli
-- Baslik / aciklama
-- Trip bilgileri
-- Destinations ozeti
-- Timeline ozeti
-- Flight / hotel ozeti
-- Budget ozeti
+**Layout kararlari:**
+- Kapak fotografi hero olarak arka planda; baslik + temel bilgiler overlay seklinde fotografi uzerinde. Scroll ile fotografi ekrandan kaybolur, collapsing toolbar yok.
+- Icerik bolum sirasi (asagi scroll): Header (kapak + bilgiler) → Harita → Timeline ozeti → Ucus & Otel ozeti → Butce ozeti
+- Rating sistemi yok; upvote sayisi (UpvoteCount) header bolumunde gosterilir.
+
+**Harita:**
+- Google Maps Compose entegrasyonu
+- Iki mod arasindan toggle: "Kus Bakisi" (destinasyonlar arasi duz cizgi) / "Yol" (OpenRouteService API ile gercek rota polyline)
+- Gelecekte OSRM (Open Source Routing Machine) ile yol routing'e gecilecek (OSRM self-hosted, dusuk maliyet)
+
+**Panel acilma davranislari:**
+- Timeline ozet karti → in-page panel expand (yeni route yok; sol uste geri butonu ile ozete donus)
+- Butce ozet karti → in-page panel expand (ayni pattern)
+- Ucus & Otel ozet → ayri sayfa (icerik daha karmasik)
+
+**Aksiyon bar (ust bar sag):**
+- Owner ise: ✏️ Duzenle + ⋮ menu (Yayinla / Arsivle / Sil)
+- Baskasinin published trip'i: ❤️ Upvote + 🔖 Kaydet + 🔀 Fork
 
 **Ana aksiyonlar:**
-- Publish
-- Archive
-- Edit
-- Delete
-- Paylas
-- Save
-- Unsave
-- Upvote
-- Fork
-- Live Trip Mode'a gec
-- Budget summary ac
-- Recommend places ac
+- Publish / Archive / Edit / Delete (owner)
+- Save / Unsave / Upvote / Fork (diger kullanicilar)
+- Live Trip Mode'a gec (M8)
+- Recommend places ac (ayri sayfa)
 
 ## 6.4 Create Trip Entry Page
 

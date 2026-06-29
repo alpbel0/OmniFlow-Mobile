@@ -7,6 +7,8 @@ import com.omniflow.data.models.profile.ProfileContentModel
 import com.omniflow.data.models.profile.ProfileDataModel
 import com.omniflow.data.models.profile.ProfilePostModel
 import com.omniflow.data.models.profile.ProfileTripModel
+import com.omniflow.data.models.profile.SuggestedFollowDto
+import com.omniflow.data.models.profile.TopContributorDto
 import com.omniflow.data.models.profile.UpdateProfileRequestDto
 import com.omniflow.data.remote.ProfileService
 import okhttp3.MultipartBody
@@ -195,6 +197,24 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getSuggestedFollows(): ApiResult<List<SuggestedFollowDto>> {
+        val result = apiCallExecutor.execute { profileService.getSuggestedFollows() }
+        return when (result) {
+            is ApiResult.Success -> ApiResult.Success(result.data)
+            is ApiResult.Error -> ApiResult.Success(mockSuggestedFollows())
+            is ApiResult.Loading -> result
+        }
+    }
+
+    override suspend fun getTopContributors(): ApiResult<List<TopContributorDto>> {
+        val result = apiCallExecutor.execute { profileService.getTopContributors() }
+        return when (result) {
+            is ApiResult.Success -> ApiResult.Success(result.data)
+            is ApiResult.Error -> ApiResult.Success(mockTopContributors())
+            is ApiResult.Loading -> result
+        }
+    }
+
     private fun com.omniflow.data.models.profile.UserProfileDto.toDataModel() = ProfileDataModel(
         id = id,
         username = username,
@@ -263,5 +283,20 @@ class ProfileRepositoryImpl @Inject constructor(
         FollowUserDto("mock-f4", "ece.world", null, isFollowing = false, karmaScore = 1120),
         FollowUserDto("mock-f5", "can.exp", null, isFollowing = false, karmaScore = 560),
         FollowUserDto("mock-f6", "zeynep.t", null, isFollowing = true, karmaScore = 1780),
+    )
+
+    private fun mockSuggestedFollows(): List<SuggestedFollowDto> = listOf(
+        SuggestedFollowDto("mock-s1", "alptravel", null, tripCount = 28, karmaScore = 3840, isFollowing = false, suggestionReason = "Popüler gezgin"),
+        SuggestedFollowDto("mock-s2", "selin.k", null, tripCount = 19, karmaScore = 2340, isFollowing = true, suggestionReason = "Seni takip ediyor"),
+        SuggestedFollowDto("mock-s3", "ece.world", null, tripCount = 11, karmaScore = 1890, isFollowing = false, suggestionReason = "Popüler gezgin"),
+        SuggestedFollowDto("mock-s4", "can.exp", null, tripCount = 5, karmaScore = 560, isFollowing = false, suggestionReason = "Paylaşımlarını beğendin"),
+    )
+
+    private fun mockTopContributors(): List<TopContributorDto> = listOf(
+        TopContributorDto("mock-t1", "ceydagezgin", null, karmaScore = 12480, tripCount = 34),
+        TopContributorDto("mock-t2", "alptravel", null, karmaScore = 8920, tripCount = 28),
+        TopContributorDto("mock-t3", "selin.k", null, karmaScore = 6340, tripCount = 19),
+        TopContributorDto("mock-t4", "mert.y", null, karmaScore = 4210, tripCount = 15),
+        TopContributorDto("mock-t5", "ece.world", null, karmaScore = 3180, tripCount = 11),
     )
 }

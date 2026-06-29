@@ -69,4 +69,7 @@ object OmniTextStyles {
     val profileLabel = omniTextStyle(FontWeight.Normal, 12.sp, 16.sp)
     val profileLabelBold = omniTextStyle(FontWeight.Bold, 12.sp, 14.sp)
     val profilePostBody = omniTextStyle(FontWeight.Normal, 14.sp, 20.sp)
+    val sectionHeader = omniTextStyle(FontWeight.Bold, 11.sp, 14.sp)
+        .copy(letterSpacing = 0.6.sp)
+    val settingsSectionTitle = omniTextStyle(FontWeight.SemiBold, 12.sp, 16.sp)
 }
