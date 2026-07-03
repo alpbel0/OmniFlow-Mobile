@@ -41,6 +41,8 @@ import com.omniflow.ui.profile.FollowListScreen
 import com.omniflow.ui.profile.FollowListViewModel
 import com.omniflow.ui.profile.PublicProfileScreen
 import com.omniflow.ui.profile.PublicProfileViewModel
+import com.omniflow.ui.trips.MyTripsScreen
+import com.omniflow.ui.trips.MyTripsViewModel
 import com.omniflow.ui.social.CommunityDiscoveryScreen
 import com.omniflow.ui.social.CommunityViewModel
 import com.omniflow.ui.settings.SettingsScreen
@@ -171,7 +173,19 @@ fun OmniFlowNavHost() {
                 )
             }
             composable(Routes.Trips.route) {
-                FeaturePlaceholderScreen(name = "Trips", paddingValues = innerPadding)
+                val viewModel: MyTripsViewModel = hiltViewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                MyTripsScreen(
+                    uiState = uiState,
+                    paddingValues = innerPadding,
+                    onTabSelected = { viewModel.onTabSelected(it) },
+                    onTripClick = { /* TODO Task 3.2: TripDetail */ },
+                    onCreateTrip = { /* TODO M3: trip wizard */ },
+                    onExplore = { navController.navigate(Routes.Explore.route) },
+                    onFilterSelected = { viewModel.onFilterSelected(it) },
+                    onAddCollection = { viewModel.onAddCollection() },
+                )
             }
             composable(Routes.Explore.route) {
                 FeaturePlaceholderScreen(name = "Explore", paddingValues = innerPadding)

@@ -420,12 +420,71 @@ Chip'ler bir yere **götürmez**, sadece listeyi filtreler.
 **Kim gorur:** Authenticated user
 
 **Ana icerik:**
-- Draft / Published / Archived filtreleri
-- Trip kartlari
+- Draft / Published / Archived sekmeleri
+- Büyük kapak fotoğraflı trip kartları
 
 **Ana aksiyonlar:**
-- Trip detail ac
-- Yeni trip olustur
+- Karta tıkla → Trip Detail (kart üzerinde hiçbir buton yok)
+- Yeni trip oluştur (+ CREATE butonu)
+
+### Tasarım Kararları (M3)
+
+**Sekme yapısı:** `Taslak | Yayında | Kaydedilenler` — 3 sekme.
+
+> **Mimari karar:** "Arşiv" ayrı bir sekme olmaktan çıkarıldı. Arşivlenmiş trip'ler "Yayında" sekmesinde `⚫ Arşiv` badge'iyle görünür. Böylece "Kaydedilenler" (başkalarının trip'leri) üçüncü sekmeye oturur. Backend'de `TripStatus.Archived` hâlâ var; sadece UI'da ayrı tab kaldırıldı. Arşivleme aksiyonu Trip Detail `⋮` menüsünden yapılabilir.
+
+**Kart kuralı:** Kart üzerinde hiçbir aksiyon butonu yok. Karta tıklamak = Trip Detail açılır. Edit işlemi yalnızca Trip Detail içinden yapılır.
+
+**Taslak sekmesi — Draft kart:**
+- Sol üst: `🟡 Taslak` badge (turuncu)
+- Sağ üst: `%{CompletionPercentage} hazır` badge *(⛔ B0.6)*
+- Büyük kapak fotoğrafı (Coil); yoksa renk gradyanı placeholder *(⛔ B0.8)*
+- Alt satır: `👤 {kişi sayısı} · 📍 {destinasyon sayısı}`
+- Tarih: belirtilmişse tarih aralığı; yoksa `Tarih belirlenmedi`
+
+**Yayında sekmesi — Published kart:**
+- Sol üst: `🟢 X gün kaldı` (yeşil) veya `⚫ Tamamlandı` (gri) badge
+- Sağ üst: `❤️ {UpvoteCount} · 🔀 {ForkCount}`
+- Büyük kapak fotoğrafı
+- Alt satır: `👤 · 📍 · {gün} gün`
+
+**Yayında sekmesi — Archived kart (aynı sekmede, farklı badge):**
+- Sol üst: `⚫ Arşiv` badge (gri)
+- Sağ üst: `❤️ {UpvoteCount} · 🔀 {ForkCount}` (son yayın değerleri)
+- Aynı alt satır formatı
+
+**Yayın Özeti kartı:** Yayında sekmesinin en üstünde aggregate stats kartı:
+- 4 metrik: `Rota · Görüntülenme · Beğeni · Çatallanma` *(⛔ B0.7 için Görüntülenme)*
+
+**Kaydedilenler sekmesi — Collections + chip filtre:** *(⛔ B4.1)*
+
+Sekmeye girilince ekranın üstünde yatay kaydırmalı chip şeridi:
+```
+[Tümü] [Avrupa] [Yaz 2026] [Balayı] ...  [+]
+                                          sabit
+```
+- `Tümü` chip'i → tüm kayıtlı trip'ler (koleksiyonsuzlar dahil)
+- Named chip'ler → o koleksiyondaki trip'ler (`GET /api/v1/collections/{id}`)
+- `+` butonu her zaman en sağda sabit (koleksiyon sayısından bağımsız) → yeni koleksiyon oluştur (isim input dialog'u)
+
+**Kart:** kapak fotoğrafı + trip adı + `@username` (yapan kişi) + `❤️ {UpvoteCount}`. ForkCount kart üzerinde gösterilmez — Trip Detail'de görülür. Karta tıklamak = Trip Detail (misafir görünümü).
+
+**Koleksiyon kapağı:** otomatik olarak koleksiyondaki ilk trip'in fotoğrafı kullanılır. Kullanıcı chip'e uzun basarak veya koleksiyon ayarlarından manuel değiştirebilir.
+
+**Kaydetme akışı (Trip Detail'deki `🔖 Kaydet`'e basılınca):**
+- Bottom sheet açılır: "Koleksiyona Ekle" başlığı
+- Mevcut koleksiyonlar checkbox listesi (bir trip birden fazla koleksiyona eklenebilir)
+- "＋ Yeni koleksiyon oluştur" satırı → isim girişi → oluştur + kaydet
+- Kayıt tamamlanınca: snackbar `"{Koleksiyon adı}'na kaydedildi"`
+
+**Yenileme davranışı:** Sayfa yenilenince sunucu gerçeği yansır; silinen kayıt listeden düşer (optimistic güncelleme yok).
+
+**Boşsa:** "Henüz kaydettiğin gezi yok" + **Keşfet** CTA
+
+**Boş durum:**
+- Taslak boşsa: "İlk gezini planla" + Wizard CTA
+- Yayında boşsa: "Henüz yayınlanmış gezi yok"
+- Kaydedilenler boşsa: "Henüz kaydettiğin gezi yok" + Keşfet CTA
 
 ## 6.2 Saved Trips Page
 
@@ -473,34 +532,190 @@ Chip'ler bir yere **götürmez**, sadece listeyi filtreler.
 
 ## 6.3 Trip Detail Page
 
-**Amac:** Bir trip'in tum detaylarini tek ekranda gostermek.
+**Amac:** Bir trip'in tüm detaylarını tek ekranda göstermek.
 
-**Kim gorur:** Owner (tum statüler) / diger kullanicilar (sadece Published)
+**Kim gorur:** Owner (tüm statüler) / diğer kullanıcılar (sadece Published)
 
-**Layout kararlari:**
-- Kapak fotografi hero olarak arka planda; baslik + temel bilgiler overlay seklinde fotografi uzerinde. Scroll ile fotografi ekrandan kaybolur, collapsing toolbar yok.
-- Icerik bolum sirasi (asagi scroll): Header (kapak + bilgiler) → Harita → Timeline ozeti → Ucus & Otel ozeti → Butce ozeti
-- Rating sistemi yok; upvote sayisi (UpvoteCount) header bolumunde gosterilir.
+### Tasarım Kararları (M3)
 
-**Harita:**
+---
+
+#### KATMAN 1 — Sabit Üst Bar
+
+Her scroll pozisyonunda ekranın en üstünde sabit kalır:
+
+- **Sol:** `←` geri butonu
+- **Orta:** Trip başlığı (ör. "Roma & Floransa")
+- **Sağ:**
+  - Owner ise: `✏️` edit ikonu + `⋮` menu ikonu (Yayınla / Arşivle / Sil)
+  - Misafir ise: boş (aksiyonlar fotoğraf üzerinde)
+
+---
+
+#### KATMAN 2 — Cover Photo Bölümü (~%45 yükseklik, scroll ile kaybolur)
+
+Ekranı açınca görünen ilk büyük görsel alan. Scroll aşağı kaydıkça bu bölüm kaybolur (parallax / collapse).
+
+**Arka plan:**
+- Kapak fotoğrafı varsa: `POST /api/v1/trips/{id}/cover-photo` ile yüklenen fotoğraf (Coil, full-bleed) *(⛔ B0.8)*
+- Fotoğraf yoksa: teal-navy gradyan placeholder (My Trips kartlarıyla tutarlı)
+- Üzerine **karartılı gradient overlay**: alt %60 kararır (`rgba(0,0,0,0.55)`), üst %40 hafif karartılı — butonlar ve badge'ler okunaklı olsun
+
+**Fotoğraf üzerindeki içerik (overlay):**
+
+*Üst sol köşe (fotoğrafın içinde):*
+- Statü badge: `🟢 Yayında` (yeşil pill) veya `🟡 Taslak` (turuncu) veya `⚫ Arşiv` (gri)
+- Hemen yanında: tarih aralığı (ör. `15 – 22 Tem 2025`, beyaz metin)
+
+*Alt kısım (fotoğrafın içinde, gradient üstünde):*
+- Aksiyon satırı — **3 eşit buton, semi-transparent arka planlı (frosted glass stili):**
+  - `❤️ {UpvoteCount}` — Upvote (misafir için toggle; owner için readonly sayaç)
+  - `🔖 Kaydet` — Save/Unsave toggle
+  - `🔀 Fork` — Fork (misafir için aktif; owner için gizli veya disabled)
+- Owner görünümünde bu 3 buton gizli; aksiyonlar üst bar `⋮` menüsünde
+
+**Scroll davranışı:**
+Cover photo bölümü yukarı kaydırınca parallax efektiyle küçülür ve tamamen kaybolur. Harita bu noktada sticky header konumuna geçer.
+
+---
+
+#### KATMAN 3 — Harita Bölümü (~%35 yükseklik, scroll'da sticky olur)
+
+Cover photo kaydıktan sonra ekranın üstünde sabitlenir. Kullanıcı daha fazla aşağı kaydırsa bile harita bu konumda kalır (en az %30–35 yükseklikte).
+
+**İçerik:**
 - Google Maps Compose entegrasyonu
-- Iki mod arasindan toggle: "Kus Bakisi" (destinasyonlar arasi duz cizgi) / "Yol" (OpenRouteService API ile gercek rota polyline)
-- Gelecekte OSRM (Open Source Routing Machine) ile yol routing'e gecilecek (OSRM self-hosted, dusuk maliyet)
+- Destinasyon pinleri (renkli, etiketli: ör. `📍 Roma`, `📍 Floransa`, `📍 Venedik`)
+- Rota görselleştirme (toggle ile değişir — aşağıya bak)
 
-**Panel acilma davranislari:**
-- Timeline ozet karti → in-page panel expand (yeni route yok; sol uste geri butonu ile ozete donus)
-- Butce ozet karti → in-page panel expand (ayni pattern)
-- Ucus & Otel ozet → ayri sayfa (icerik daha karmasik)
+**Harita içi kontroller:**
+- **Sağ üst:** `[Kuş Bakışı | Yol]` toggle — seçili olan mavi/aktif
+  - `Kuş Bakışı`: pinler arası kesik düz çizgi (crow-fly)
+  - `Yol`: ORS (Open Route Service) polyline — gerçek yol üzerinden renkli çizgi. *(İleride OSRM self-hosted ile değiştirilecek; şimdilik ORS API)*
+- **Sağ alt:** `⛶` büyüt ikonu (küçük yuvarlak buton) → Tam Ekran Harita Modu'nu açar
 
-**Aksiyon bar (ust bar sag):**
-- Owner ise: ✏️ Duzenle + ⋮ menu (Yayinla / Arsivle / Sil)
-- Baskasinin published trip'i: ❤️ Upvote + 🔖 Kaydet + 🔀 Fork
+---
+
+#### KATMAN 4 — Scroll İçeriği (harita'nın altı, tamamen kaydırılabilir)
+
+Harita sticky'yken altındaki içerik scroll edilir. Yukarıdan aşağıya sırası:
+
+**a) Stats satırı**
+Yatay, ikon + metin ikilisi, 4 metrik:
+```
+🗓 8 Gün   ⚡ 12 Aktivite   ⭕ %65   👤 2 Kişi
+```
+- `%65` = trip tamamlanma yüzdesi *(⛔ B0.6)*
+- Arka plan: hafif kart veya separator ile haritadan ayrılır
+
+**b) Uçuş satırı** (tıklanabilir → Provider Flights sayfası)
+```
+✈️  THY · İST → FCO   ·   15 Tem · 06:30          ›
+```
+- Uçuş seçilmemişse: `✈️  Uçuş ekle` (soluk, tıklanınca provider sayfası)
+
+**c) Otel satırı** (tıklanabilir → Provider Hotels sayfası)
+```
+🏨  Hotel Artemide · Roma   ·   15–18 Tem           ›
+```
+- Otel seçilmemişse: `🏨  Otel ekle` (soluk)
+
+**d) Gün kartları (her zaman görünür, collapse/expand)**
+
+Her gün için bir kart. Varsayılan: ilk gün açık, diğerleri kapalı.
+
+*Kapalı kart:*
+```
+① Pazartesi, 15 Tem   |   3 aktivite              ›
+```
+- Renkli daire numara: Gün 1 = mavi, Gün 2 = turuncu, Gün 3 = mor, Gün 4+ döngüsel
+
+*Açık kart (expand edilince):*
+```
+① Pazartesi, 15 Tem   |   3 aktivite              ˄
+────────────────────────────────────────────
+  🚗  14:30   Havaalanı Transferi
+              Fiumicino → Otel
+  🏨  16:00   Hotel Check-in
+              Hotel Artemide · Roma
+  🍽️  20:00   Akşam Yemeği
+              Ristorante da Luigi
+```
+
+**İkon sistemi:**
+- 🚗 → Transport (araba, metro, otobüs)
+- ✈️ → Uçuş
+- 🏨 → Konaklama
+- 🍽️ → Yemek / Restoran
+- 🏛️ → Müze / Tarihi yer
+- 🛍️ → Alışveriş
+- 🌿 → Doğa / Park
+
+---
+
+#### TAM EKRAN HARİTA MODU
+
+Haritadaki `⛶` ikonuna basılınca aktif olur. Çıkmak için `←` Geri.
+
+**Ekran yapısı:**
+- Harita: %100 ekran (bottom nav gizli, scroll content gizli)
+- **Üst sol:** `← Geri` butonu (floating, koyu semi-transparent pill)
+- **Üst orta/sağ:** `[Kuş Bakışı | Yol]` toggle (floating)
+
+**Floating Draggable Timeline Card (varsayılan: sol alt köşe):**
+
+Haritanın üzerine overlay olarak gelir. Kullanıcı bu kartı harita üzerinde istediği yere **sürükleyebilir**. Harita, kartın altında kalan kısım dahil her yerde **parmakla sürüklenebilir** (kart hareket etmez, harita hareket eder).
+
+Kart içeriği:
+```
+┌─────────────────────┐
+│ 📅 Rota      ✕ Gizle│
+│─────────────────────│
+│ ● Gün 1 · 3 aktivite│
+│ ● Gün 2 · 4 aktivite│
+│ ● Gün 3 · 3 aktivite│
+│ ● Gün 4 · 2 aktivite│
+│         ...         │
+│         ≡           │  ← sürükle tutacağı
+└─────────────────────┘
+```
+
+- **`✕ Gizle`** → kart kaybolur; haritanın sol alt köşesinde küçük `☰` pill butonu kalır (karta geri dönmek için)
+- Kart arka planı: `rgba(13,27,42,0.88)` + blur (frosted glass)
+- Kart genişliği: ~%40 ekran genişliği; yüksekliği: ~%50 ekran yüksekliği
+
+**Yol modu:** Toggle'da `Yol` seçiliyse pinler arası ORS polyline gösterilir (renkli, road-following çizgi). `Kuş Bakışı` seçiliyse kesik düz çizgi.
+
+---
+
+#### SCROLL / GEÇİŞ DAVRANIŞLARI ÖZETİ
+
+| Pozisyon | Cover Photo | Harita | İçerik |
+|----------|-------------|--------|--------|
+| Sayfa başı | Tam görünür (~%45) | Cover photo altında | Görünmez |
+| Kısmen scroll | Küçülüyor (parallax) | Görünmeye başlıyor | Kısmen görünür |
+| Cover photo kayboldu | Gizli | **Sticky** (~%35) | Tam görünür, scroll devam eder |
+| Tam ekran harita | Gizli | %100 | Gizli |
+
+---
+
+#### AKSİYON KURALLARI
+
+**Rating sistemi yok.** UpvoteCount, cover photo üzerindeki `❤️` butonunda sayı olarak gösterilir.
+
+**My Trips listesinden geliş:**
+- Karta tıklamak = Trip Detail açılır; kart üzerinde hiçbir buton yok
+- Edit aksiyonu yalnızca Trip Detail üst barından yapılır
+
+**Owner vs Misafir:**
+- Owner: Üst bar `✏️ + ⋮`, cover photo üzerindeki `❤️ · 🔖 · 🔀` satırı **gizli**
+- Misafir (Published): Cover photo üzerinde `❤️ · 🔖 · 🔀` görünür; üst bar sadece `←` + başlık
 
 **Ana aksiyonlar:**
 - Publish / Archive / Edit / Delete (owner)
-- Save / Unsave / Upvote / Fork (diger kullanicilar)
-- Live Trip Mode'a gec (M8)
-- Recommend places ac (ayri sayfa)
+- Save / Unsave / Upvote / Fork (diğer kullanıcılar)
+- Live Trip Mode'a geç (M8)
+- Recommend places aç (ayrı sayfa)
 
 ## 6.4 Create Trip Entry Page
 

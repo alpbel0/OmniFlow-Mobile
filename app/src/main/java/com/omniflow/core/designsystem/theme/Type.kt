@@ -72,4 +72,9 @@ object OmniTextStyles {
     val sectionHeader = omniTextStyle(FontWeight.Bold, 11.sp, 14.sp)
         .copy(letterSpacing = 0.6.sp)
     val settingsSectionTitle = omniTextStyle(FontWeight.SemiBold, 12.sp, 16.sp)
+    val tripCardTitle = omniTextStyle(FontWeight.Bold, 20.sp, 26.sp)
+    val tripSavedTitle = omniTextStyle(FontWeight.Bold, 13.5.sp, 17.sp)
+    val tripSavedUser = omniTextStyle(FontWeight.SemiBold, 10.5.sp, 14.sp)
+    val tripFilterChip = omniTextStyle(FontWeight.SemiBold, 12.5.sp, 16.sp)
+    val tripMetaSmall = omniTextStyle(FontWeight.Normal, 10.sp, 14.sp)
 }

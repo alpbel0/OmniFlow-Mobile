@@ -1048,20 +1048,43 @@ Uygulamanın kalbi. Trip listesi, detay, 8 adımlı oluşturma wizard'ı, destin
 ### Task 3.1: My Trips Listesi
 
 **Tahmini Süre:** 2.5 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
 > ⛔ **Bağımlılık: B0.6** (Trip %hazır), **B0.7** (Görüntülenme), **B0.8** (Kapak fotoğrafı)
 
 **Yapılacaklar:**
-- [ ] **My Trips** — `Draft / Published / Archived` sekmeleri (`GET /api/v1/trips`)
-- [ ] **Trip kartı** — büyük kapak fotoğrafı (Coil); fotoğraf yoksa renk gradyanı placeholder
-- [ ] **Draft kart**: sol üst "Taslak" badge (turuncu) + sağ üst "%{CompletionPercentage} hazır" badge; alt satır: 👤 kişi sayısı · 📍 destinasyon sayısı; tarih yoksa "Tarih belirlenmedi"; kart altında "Düzenle / Yayınla" aksiyon butonları
-- [ ] **Published kart**: sol üst "X gün kaldı" (yeşil) veya "Tamamlandı" (gri) badge; sağ üst ❤️{UpvoteCount} · 🔀{ForkCount}; alt satır: 👤 · 📍 · gün sayısı
-- [ ] **Archived kart**: "Arşiv" badge (gri), aynı alt satır formatı
-- [ ] **Yayın Özeti** — Published tab altında aggregate stats kartı: Rota · Görüntülenme · Beğeni · Çatallanma
-- [ ] Sekme bazlı empty state + Wizard CTA (Draft boşsa "İlk gezini planla")
-- [ ] Pagination footer
-- [ ] `MyTripsViewModel` + `MyTripsUiState` + `TripCardUiModel`
+> **Sekme kararı:** `Taslak | Yayında | Kaydedilenler` — 3 sekme. "Arşiv" ayrı sekme değil; arşivlenmiş trip'ler "Yayında" sekmesinde `Arşiv` badge'iyle gösterilir.
+>
+> ⛔ **Bağımlılık (Kaydedilenler sekmesi — Collections):** `BACKEND_ROADMAP_V2.md → B4.1`
+
+- [x] **My Trips** — `Taslak / Yayında / Kaydedilenler` sekmeleri (`GET /api/v1/Trips?status=` + `GET /api/v1/saved-trips`)
+- [x] **Trip kartı** — renk gradyanı placeholder (kapak fotoğrafı yoksa); tripId hash'ine göre deterministik gradyan
+- [x] **Kart navigasyonu** — karta tıklamak Trip Detail'e gider (TODO Task 3.2)
+- [x] **Draft kart**: `Taslak` badge + `%{progressPercent} hazır` (mock); alt satır: kişi sayısı · destinasyon sayısı
+- [x] **Published kart**: `X gün kaldı` (yeşil) veya `Tamamlandı` (gri) badge; sağ üst rating · fork; alt satır: kişi · destinasyon · gün
+- [x] **Archived kart** (Yayında sekmesinde): `Arşiv` badge (gri), aynı alt satır
+- [x] **Yayın Özeti kartı** — Published sekmesi altında aggregate stats (ViewModel'de canlı hesaplanır)
+- [x] **Kaydedilenler sekmesi** — grid, filtre chip'leri (local mock collections), `+` butonu ile koleksiyon ekleme
+- [x] **Draft aksiyon butonları** — Düzenle / Yayınla (publish loading state ile)
+- [x] `MyTripsViewModel` + `MyTripsUiState` + `TripsMapper`
+
+**Uygulama Notu:**
+- **13 yeni dosya**: `TripDtos.kt`, `TripModels.kt`, `TripMappers.kt` (data/mapper), `TripService.kt`, `TripRepository.kt`, `TripRepositoryImpl.kt` (mock fallback), `TripsModule.kt` (Hilt), `TripsPalette.kt`, `TripsDimens.kt`, `MyTripsUiState.kt`, `MyTripsGradients.kt`, `TripsMapper.kt` (ui), `MyTripsViewModel.kt`.
+- **OmniTextStyles yeni**: `tripCardTitle` (20.sp Bold), `tripSavedTitle` (13.5.sp Bold), `tripSavedUser` (10.5.sp SemiBold), `tripFilterChip` (12.5.sp SemiBold), `tripMetaSmall` (10.sp Normal).
+- **Gradient**: 8 renk set'i, tripId hash'ine göre deterministik seçim (`gradientForId(id)`).
+- **PublishSummary**: ViewModel'de published trip'lerden hesaplanır; rota sayısı, çatallanma, ortalama puan.
+- **Collections**: Local/mock liste (Tümü, Avrupa, Yaz 2026). Backend B4.1 hazır olunca canlı API'ye geçilir.
+- **Mock fallback**: `getMyTrips` ve `getSavedTrips` API hatasında mock veri döner; 2 draft + 2 published/archived + 2 saved.
+- `compileDebugKotlin`, `lintDebug`, `installDebug` başarılı.
+- [x] **Kart navigasyonu** — karta tıklamak Trip Detail'e gider; kart üzerinde hiçbir aksiyon butonu yok
+- [x] **Draft kart**: `🟡 Taslak` badge + `%{CompletionPercentage} hazır` *(⛔ B0.6)*; alt satır: 👤 · 📍; tarih yoksa "Tarih belirlenmedi"
+- [x] **Published kart**: `🟢 X gün kaldı` (yeşil) veya `⚫ Tamamlandı` (gri) badge; sağ üst ❤️{UpvoteCount} · 🔀{ForkCount}; alt satır: 👤 · 📍 · gün sayısı
+- [x] **Archived kart** (Yayında sekmesinde, Published kartlarla karışık): `⚫ Arşiv` badge (gri), aynı alt satır
+- [x] **Yayın Özeti kartı** — Yayında sekmesi üstünde aggregate stats: Rota · Görüntülenme · Beğeni · Çatallanma *(⛔ B0.7)*
+- [x] **Kaydedilenler sekmesi** — `GET /api/v1/saved-trips`; kart: kapak + trip adı + @username + ❤️ · 🔀; yenileme = sunucu gerçeği (optimistic yok)
+- [x] Sekme bazlı boş durum: Taslak → "İlk gezini planla" + Wizard CTA · Yayında → "Yayınlanmış gezi yok" · Kaydedilenler → "Kaydettiğin gezi yok" + Keşfet CTA
+- [x] Pagination footer
+- [x] `MyTripsViewModel` + `MyTripsUiState` + `TripCardUiModel`
 
 ---
 
@@ -1070,14 +1093,30 @@ Uygulamanın kalbi. Trip listesi, detay, 8 adımlı oluşturma wizard'ı, destin
 **Tahmini Süre:** 3 saat
 **Durum:** [ ] Bekliyor
 
-> ⛔ **Bağımlılık: B0.8** (Kapak fotoğrafı upload)
+> ⛔ **Bağımlılık: B0.6** (tamamlanma %), **B0.8** (kapak fotoğrafı)
+
+**Layout: Cover Photo → Harita (sticky) → Scroll İçerik + Tam Ekran Harita Modu**
+
+Detaylı layout, scroll davranışları ve aksiyon kuralları için bkz. `OMNIFLOW_PAGE_ARCHITECTURE.md § 6.3`
 
 **Yapılacaklar:**
-- [ ] **Header** — kapak fotoğrafı hero arka planda (Coil), başlık + destinasyonlar + süre + kişi sayısı + UpvoteCount/ForkCount overlay; scroll ile fotoğraf kaybolur
-- [ ] **Harita bölümü** — Google Maps Compose; destinasyon pinleri; sağ üst toggle butonu: "Kuş Bakışı" (düz çizgi) / "Yol" (ORS polyline); *(İleride: OSRM ile değiştirilecek)*
-- [ ] **Timeline özet kartı** — ilk 3 entry önizlemesi + "Tümünü Gör"; tıklanınca in-page panel expand, sol üstte ← geri
-- [ ] **Uçuş & Otel özet** — varsa seçili uçuş + otel bilgisi; tıklanınca ayrı sayfaya gider
-- [ ] **Bütçe özet kartı** — toplam tahmini bütçe + tier; tıklanınca in-page panel expand (tam bütçe breakdown)
+- [ ] **Sabit üst bar** — `←` + trip başlığı + `✏️ ⋮` (owner) / sadece başlık (misafir)
+- [ ] **Cover photo bölümü (~%45)** — tam genişlik fotoğraf (Coil); yoksa teal-navy gradyan placeholder; üzerine karartılı gradient overlay
+  - Overlay üst: statü badge (`🟢 Yayında` / `🟡 Taslak` / `⚫ Arşiv`) + tarih aralığı
+  - Overlay alt: `❤️ {UpvoteCount} · 🔖 Kaydet · 🔀 Fork` (frosted glass butonlar, **misafir görünümü**); owner'da bu satır gizli
+  - Scroll ile parallax/collapse — tamamen kaybolur
+- [ ] **Harita bölümü (~%35, cover photo kaybolunca sticky)** — Google Maps Compose; destinasyon pinleri; sağ üst `[Kuş Bakışı | Yol]` toggle; sağ alt `⛶` büyüt ikonu
+  - Kuş Bakışı = kesik düz çizgi rota
+  - Yol = ORS polyline (ileride OSRM)
+- [ ] **Stats satırı** — `🗓 {gün}Gün · ⚡{aktivite}Aktivite · ⭕%{tamamlanma} · 👤{kişi}Kişi`
+- [ ] **Uçuş satırı** (tıklanabilir → Provider Flights) — `✈️ THY · İST→FCO · 15 Tem 06:30 ›`; seçilmemişse `Uçuş ekle`
+- [ ] **Otel satırı** (tıklanabilir → Provider Hotels) — `🏨 Hotel Artemide · Roma · 15–18 Tem ›`; seçilmemişse `Otel ekle`
+- [ ] **Gün kartları** — her zaman görünür; renk kodlu numara dairesi (Gün1=mavi, Gün2=turuncu, Gün3=mor...); kapalı = aktivite sayısı; açık = timeline entry listesi (ikon + saat + başlık + alt başlık)
+- [ ] **Tam ekran harita modu** (`⛶` ikonuna basınca):
+  - Harita %100 ekran; bottom nav + scroll içerik gizli
+  - Floating `← Geri` + `[Kuş Bakışı | Yol]` toggle (floating pill)
+  - **Floating Draggable Timeline Card** (overlay, varsayılan sol alt): `📅 Rota` başlığı + `✕ Gizle` + gün listesi + `≡` sürükle tutacağı — sürüklenebilir; harita altında parmakla kaydırılabilir
+  - Card gizlenince sol alt köşede `☰` pill butonu kalır
 - [ ] Owner değilse edit/publish/delete gizli; Draft/Archived sadece owner'a görünür
 - [ ] `TripDetailViewModel` + `TripDetailUiState`
 
@@ -1089,21 +1128,16 @@ Uygulamanın kalbi. Trip listesi, detay, 8 adımlı oluşturma wizard'ı, destin
 **Durum:** [ ] Bekliyor
 
 **Yapılacaklar:**
-- [ ] **Üst bar:** Owner → ✏️ Düzenle + ⋮ menu (Yayınla / Arşivle / Sil); başkasının trip'i → ❤️ Upvote + 🔖 Kaydet + 🔀 Fork
+- [ ] **Üst bar — Owner**: sağ üstte ✏️ Edit butonu + ⋮ menu (Yayınla / Arşivle / Sil); edit → Trip edit formuna gider
+- [ ] **Üst bar — Başkasının trip'i**: ❤️ Upvote + 🔖 Kaydet + 🔀 Fork
 - [ ] Detail aksiyonları: publish, archive, edit, delete, save/unsave, upvote, fork
 - [ ] Save/upvote optimistic + snackbar
 
 ---
 
-### Task 3.4: Saved Trips
+### Task 3.4: ~~Saved Trips~~ — My Trips'e Taşındı
 
-**Tahmini Süre:** 1 saat
-**Durum:** [ ] Bekliyor
-
-**Yapılacaklar:**
-- [ ] **Saved Trips** (`GET /saved-trips`)
-- [ ] "Henüz kayıtlı trip yok" + Explore CTA
-- [ ] Unsave → optimistic + snackbar
+> **Karar (M3):** Saved Trips ayrı bir sayfa olmaktan çıkarıldı. My Trips ekranında `Kaydedilenler` adlı üçüncü sekme olarak yaşıyor. Bkz. Task 3.1.
 
 ---
 
@@ -1112,9 +1146,27 @@ Uygulamanın kalbi. Trip listesi, detay, 8 adımlı oluşturma wizard'ı, destin
 **Tahmini Süre:** 2 saat
 **Durum:** [ ] Bekliyor
 
+**Wizard Yapısı (Kesinleşmiş):**
+- **7 adım** (8'den indirildi — Person Count, Travel Companion adımına birleştirildi)
+- Her adım **tam ekran** Composable
+- Üstte **horizontal scroll chip bar**: tamamlanan adımların özeti; chip'e tıklayınca o adıma atla, düzenle, Devam'a bas → sonraki adımlar **korunur** (üstüne yazar)
+- Progress bar: `3/7` formatında
+- Tek seçimli adımlarda (Companion, Tempo, Transport) seçim yapılınca **"Devam Et" butonu aktifleşir** ama otomatik ilerleme olmaz
+
+**7 Adım:**
+1. Origin (nereden)
+2. Destinations (nereye + tarihler)
+3. Kim ile + Kaç kişi (Travel Companion + personCount aynı ekranda)
+4. Bütçe (Budget tier + opsiyonel tutar)
+5. Travel Styles (max 3)
+6. Tempo (Slow/Moderate/Fast)
+7. Transport Preference (Walk/Transit/Mixed)
+→ Review & Create (özet ekranı, adım sayılmaz)
+
 **Yapılacaklar:**
 - [ ] Ortak `WizardViewModel` — adımlar arası state (her adımın verisi tek `WizardState`'te tutulur), ileri/geri navigasyon, her adımda kendi validasyonu geçmeden "Devam" pasif
-- [ ] Her adım ayrı Composable; üstte ilerleme göstergesi (1/8 ...)
+- [ ] Her adım ayrı Composable; üstte progress bar (`1/7` ...) + tamamlanan adım chip'leri (horizontal scroll)
+- [ ] Chip'e tıklayınca ilgili adıma git; düzenleme sonrası "Devam"a basınca sonraki adımlar korunur
 - [ ] Kısmi state kaybını önlemek için `SavedStateHandle` / process-death koruması
 
 ---
@@ -1137,47 +1189,53 @@ Uygulamanın kalbi. Trip listesi, detay, 8 adımlı oluşturma wizard'ı, destin
 
 ---
 
-### Task 3.7: Wizard Adım 3 (Person Count) + Adım 4 (Travel Companion)
+### Task 3.7: Wizard Adım 3 (Travel Companion + Person Count)
 
 **Tahmini Süre:** 1 saat
 **Durum:** [ ] Bekliyor
 
 **Yapılacaklar:**
-- [ ] **Adım 3 — Person Count**
-  - Alan: `personCount` (int)
-  - Validasyon: `≥ 1` (stepper, makul üst sınır örn. 20)
-- [ ] **Adım 4 — Travel Companion**
-  - Alan: `travelCompanion` (enum: Solo / Couple / Family / Friends — backend `TravelCompanion`)
-  - Validasyon: tek seçim zorunlu
+- [ ] **Adım 3 — Kim ile + Kaç kişi** (tek ekran)
+  - Alanlar: `travelCompanion` (enum: Solo / Couple / Family / Friends) + `personCount` (int)
+  - Companion: 2×2 grid kart seçimi (ikon + etiket)
+  - Person Count stepper: Solo seçilince **gizlenir** (personCount=1 otomatik), diğerlerinde görünür
+  - Validasyon: companion zorunlu · personCount `≥ 1` · Solo dışında `≥ 2`
 
 ---
 
-### Task 3.8: Wizard Adım 5 (Budget) + Adım 6 (Travel Styles)
+### Task 3.8: Wizard Adım 4 (Budget) + Adım 5 (Travel Styles)
 
 **Tahmini Süre:** 1.5 saat
 **Durum:** [ ] Bekliyor
 
 **Yapılacaklar:**
-- [ ] **Adım 5 — Budget**
-  - Alanlar: `budgetTier` (Economy/Standard/Premium), `manualBudget` (decimal, opsiyonel)
-  - Validasyon: tier zorunlu · manualBudget girilirse `> 0` · para birimi gösterimi
+- [ ] **Adım 4 — Budget**
+  - Alanlar: `budgetTier` (Economy/Standard/Premium), `currency` (USD/EUR), `manualBudget` (decimal, opsiyonel)
+  - UI düzeni:
+    - Üst kısım: Economy / Standard / Premium — tam genişlik dikey liste kart
+    - Alt kısım "Tahmini bütçe (opsiyonel)":
+      - `[$]` `[€]` toggle + hemen yanında text input aynı satırda
+      - Preset chip'ler: `[500-1k]` `[1k-2.5k]` `[2.5k-5k]` `[5k-10k]` `[10k+]`
+      - Chip'e tıklayınca input'a o değer yazılır; elle de değiştirilebilir
+      - Para birimi M13'e kadar sabit $veya€ (M13: Currency Servisi B7)
+  - Validasyon: tier zorunlu · manualBudget girilirse `> 0`
   - Bilgi: "Bütçe yetersizse sistem otomatik daha düşük tier önerebilir" (fallback notu)
-- [ ] **Adım 6 — Vibe / Travel Styles**
+- [ ] **Adım 5 — Vibe / Travel Styles**
   - Alan: `travelStyles` (multi-select, backend 11 değer: Romantic, Cultural, Adventure, Nature, Local, Relax, Shopping, Gastronomy, Influencer, Nightlife, Budget)
   - Validasyon: **en az 1, en fazla 3** seçim
 
 ---
 
-### Task 3.9: Wizard Adım 7 (Tempo) + Adım 8 (Transport)
+### Task 3.9: Wizard Adım 6 (Tempo) + Adım 7 (Transport)
 
 **Tahmini Süre:** 1 saat
 **Durum:** [ ] Bekliyor
 
 **Yapılacaklar:**
-- [ ] **Adım 7 — Tempo**
+- [ ] **Adım 6 — Tempo**
   - Alan: `tempo` (Slow / Moderate / Fast — backend `Tempo`)
   - Validasyon: tek seçim zorunlu · her birinin günlük kapasite etkisi açıklaması (Slow≈3, Moderate≈5, Fast≈7)
-- [ ] **Adım 8 — Transport Preference**
+- [ ] **Adım 7 — Transport Preference**
   - Alan: `transportPreference` (Walk / Transit / Mixed — backend `TransportPreference`)
   - Validasyon: tek seçim zorunlu
 
