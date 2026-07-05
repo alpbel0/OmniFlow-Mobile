@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <!-- Cylinder top -->
+    <path android:pathData="M12,8m-9,0a9,3 0,1 1,18 0a9,3 0,1 1,-18 0"
+        android:strokeColor="#6F7F95" android:strokeWidth="1.75"
+        android:fillColor="@android:color/transparent"/>
+    <!-- Cylinder body -->
+    <path android:pathData="M3,8V16C3,17.66 7.03,19 12,19C16.97,19 21,17.66 21,16V8"
+        android:strokeColor="#6F7F95" android:strokeWidth="1.75"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent"/>
+    <!-- Mid line -->
+    <path android:pathData="M3,12C3,13.66 7.03,15 12,15C16.97,15 21,13.66 21,12"
+        android:strokeColor="#6F7F95" android:strokeWidth="1.75"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent"/>
+</vector>

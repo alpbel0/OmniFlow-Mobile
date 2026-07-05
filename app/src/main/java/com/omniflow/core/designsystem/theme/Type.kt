@@ -53,3 +53,31 @@ private fun omniTextStyle(
     fontSize = fontSize,
     lineHeight = lineHeight,
 )
+
+object OmniTextStyles {
+    val greeting = omniTextStyle(FontWeight.SemiBold, 19.sp, 24.sp)
+    val heroTitle = omniTextStyle(FontWeight.Bold, 20.sp, 26.sp)
+    val statusLabel = omniTextStyle(FontWeight.SemiBold, 11.sp, 14.sp)
+        .copy(letterSpacing = 0.8.sp)
+    val captionTiny = omniTextStyle(FontWeight.Bold, 10.sp, 14.sp)
+    val bodyXSmall = omniTextStyle(FontWeight.Normal, 12.sp, 16.sp)
+
+    val profileHandle = omniTextStyle(FontWeight.SemiBold, 18.sp, 24.sp)
+    val profileStat = omniTextStyle(FontWeight.Bold, 18.sp, 22.sp)
+    val profileBlockedTitle = omniTextStyle(FontWeight.SemiBold, 15.sp, 20.sp)
+    val profileChip = omniTextStyle(FontWeight.SemiBold, 13.sp, 16.sp)
+    val profileLabel = omniTextStyle(FontWeight.Normal, 12.sp, 16.sp)
+    val profileLabelBold = omniTextStyle(FontWeight.Bold, 12.sp, 14.sp)
+    val profilePostBody = omniTextStyle(FontWeight.Normal, 14.sp, 20.sp)
+    val sectionHeader = omniTextStyle(FontWeight.Bold, 11.sp, 14.sp)
+        .copy(letterSpacing = 0.6.sp)
+    val settingsSectionTitle = omniTextStyle(FontWeight.SemiBold, 12.sp, 16.sp)
+    val tripCardTitle = omniTextStyle(FontWeight.Bold, 20.sp, 26.sp)
+    val tripSavedTitle = omniTextStyle(FontWeight.Bold, 13.5.sp, 17.sp)
+    val tripSavedUser = omniTextStyle(FontWeight.SemiBold, 10.5.sp, 14.sp)
+    val tripFilterChip = omniTextStyle(FontWeight.SemiBold, 12.5.sp, 16.sp)
+    val tripMetaSmall = omniTextStyle(FontWeight.Normal, 10.sp, 14.sp)
+    val tripDetailTitle = omniTextStyle(FontWeight.Bold, 26.sp, 34.sp)
+    val tripDetailBadge = omniTextStyle(FontWeight.Bold, 11.sp, 14.sp)
+    val tripDetailOverlayTitle = omniTextStyle(FontWeight.Bold, 15.sp, 22.sp)
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ic_heart.xml — Favorite / heart -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <path
+        android:pathData="M12,21s-1,-0.73 -5.5,-4.5C3.5,13.73 2,11.64 2,9.14C2,6.14 4.14,4 7.14,4C8.64,4 10.14,4.86 12,6.86C13.86,4.86 15.36,4 16.86,4C19.86,4 22,6.14 22,9.14C22,11.64 20.5,13.73 17.5,16.5C13,20.27 12,21 12,21Z"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.9"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"/>
+</vector>

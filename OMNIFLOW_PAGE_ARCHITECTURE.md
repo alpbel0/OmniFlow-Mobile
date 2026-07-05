@@ -420,12 +420,71 @@ Chip'ler bir yere **götürmez**, sadece listeyi filtreler.
 **Kim gorur:** Authenticated user
 
 **Ana icerik:**
-- Draft / Published / Archived filtreleri
-- Trip kartlari
+- Draft / Published / Archived sekmeleri
+- Büyük kapak fotoğraflı trip kartları
 
 **Ana aksiyonlar:**
-- Trip detail ac
-- Yeni trip olustur
+- Karta tıkla → Trip Detail (kart üzerinde hiçbir buton yok)
+- Yeni trip oluştur (+ CREATE butonu)
+
+### Tasarım Kararları (M3)
+
+**Sekme yapısı:** `Taslak | Yayında | Kaydedilenler` — 3 sekme.
+
+> **Mimari karar:** "Arşiv" ayrı bir sekme olmaktan çıkarıldı. Arşivlenmiş trip'ler "Yayında" sekmesinde `⚫ Arşiv` badge'iyle görünür. Böylece "Kaydedilenler" (başkalarının trip'leri) üçüncü sekmeye oturur. Backend'de `TripStatus.Archived` hâlâ var; sadece UI'da ayrı tab kaldırıldı. Arşivleme aksiyonu Trip Detail `⋮` menüsünden yapılabilir.
+
+**Kart kuralı:** Kart üzerinde hiçbir aksiyon butonu yok. Karta tıklamak = Trip Detail açılır. Edit işlemi yalnızca Trip Detail içinden yapılır.
+
+**Taslak sekmesi — Draft kart:**
+- Sol üst: `🟡 Taslak` badge (turuncu)
+- Sağ üst: `%{CompletionPercentage} hazır` badge *(⛔ B0.6)*
+- Büyük kapak fotoğrafı (Coil); yoksa renk gradyanı placeholder *(⛔ B0.8)*
+- Alt satır: `👤 {kişi sayısı} · 📍 {destinasyon sayısı}`
+- Tarih: belirtilmişse tarih aralığı; yoksa `Tarih belirlenmedi`
+
+**Yayında sekmesi — Published kart:**
+- Sol üst: `🟢 X gün kaldı` (yeşil) veya `⚫ Tamamlandı` (gri) badge
+- Sağ üst: `❤️ {UpvoteCount} · 🔀 {ForkCount}`
+- Büyük kapak fotoğrafı
+- Alt satır: `👤 · 📍 · {gün} gün`
+
+**Yayında sekmesi — Archived kart (aynı sekmede, farklı badge):**
+- Sol üst: `⚫ Arşiv` badge (gri)
+- Sağ üst: `❤️ {UpvoteCount} · 🔀 {ForkCount}` (son yayın değerleri)
+- Aynı alt satır formatı
+
+**Yayın Özeti kartı:** Yayında sekmesinin en üstünde aggregate stats kartı:
+- 4 metrik: `Rota · Görüntülenme · Beğeni · Çatallanma` *(⛔ B0.7 için Görüntülenme)*
+
+**Kaydedilenler sekmesi — Collections + chip filtre:** *(⛔ B4.1)*
+
+Sekmeye girilince ekranın üstünde yatay kaydırmalı chip şeridi:
+```
+[Tümü] [Avrupa] [Yaz 2026] [Balayı] ...  [+]
+                                          sabit
+```
+- `Tümü` chip'i → tüm kayıtlı trip'ler (koleksiyonsuzlar dahil)
+- Named chip'ler → o koleksiyondaki trip'ler (`GET /api/v1/collections/{id}`)
+- `+` butonu her zaman en sağda sabit (koleksiyon sayısından bağımsız) → yeni koleksiyon oluştur (isim input dialog'u)
+
+**Kart:** kapak fotoğrafı + trip adı + `@username` (yapan kişi) + `❤️ {UpvoteCount}`. ForkCount kart üzerinde gösterilmez — Trip Detail'de görülür. Karta tıklamak = Trip Detail (misafir görünümü).
+
+**Koleksiyon kapağı:** otomatik olarak koleksiyondaki ilk trip'in fotoğrafı kullanılır. Kullanıcı chip'e uzun basarak veya koleksiyon ayarlarından manuel değiştirebilir.
+
+**Kaydetme akışı (Trip Detail'deki `🔖 Kaydet`'e basılınca):**
+- Bottom sheet açılır: "Koleksiyona Ekle" başlığı
+- Mevcut koleksiyonlar checkbox listesi (bir trip birden fazla koleksiyona eklenebilir)
+- "＋ Yeni koleksiyon oluştur" satırı → isim girişi → oluştur + kaydet
+- Kayıt tamamlanınca: snackbar `"{Koleksiyon adı}'na kaydedildi"`
+
+**Yenileme davranışı:** Sayfa yenilenince sunucu gerçeği yansır; silinen kayıt listeden düşer (optimistic güncelleme yok).
+
+**Boşsa:** "Henüz kaydettiğin gezi yok" + **Keşfet** CTA
+
+**Boş durum:**
+- Taslak boşsa: "İlk gezini planla" + Wizard CTA
+- Yayında boşsa: "Henüz yayınlanmış gezi yok"
+- Kaydedilenler boşsa: "Henüz kaydettiğin gezi yok" + Keşfet CTA
 
 ## 6.2 Saved Trips Page
 
@@ -473,32 +532,35 @@ Chip'ler bir yere **götürmez**, sadece listeyi filtreler.
 
 ## 6.3 Trip Detail Page
 
-**Amac:** Bir trip'in genel detaylarini gostermek.
+> **Tasarım kararlarının tek kaynağı:** `omniflow-mobile/TRIP_DETAILS_PAGE.md`. Bu bölüm sadece mimari özet — tam detay (tam ölçüler, API contract'ları, edge case'ler) için o dokümana bakılmalı. Uygulama görevleri için bkz. `MOBILE_ROADMAP.md → Task 3.2 / 3.3` (alt görevlere bölünmüş).
 
-**Kim gorur:** Owner veya yetkili kullanici / public trip ise diger kullanicilar
+**Amac:** Bir trip'in tüm detaylarını (özet, harita, zaman çizelgesi, bütçe) tek ekranda göstermek; owner için düzenleme, misafir için keşif/etkileşim sağlamak.
 
-**Ana icerik:**
-- Kapak gorseli
-- Baslik / aciklama
-- Trip bilgileri
-- Destinations ozeti
-- Timeline ozeti
-- Flight / hotel ozeti
-- Budget ozeti
+**Kim gorur:** Published trip'lerde **herkes (anonim dahil)**; Draft/Archived'de sadece owner (diğerlerine 404, bkz. `BACKEND_ROADMAP_V2.md → B0.10`).
+
+**Genel Yapı — Sabit Üst Bar + 3 Resizable Pane:**
+- Sayfa **tek-scroll değil** — sabit üst bar altında, kullanıcının 2 handle ile boyutlandırabildiği 3 bölüm: **Detaylar** (üst, 0-30%, default 30%), **Map** (orta, 0-40%, default 30%), **Timeline** (alt, türetilen, default 40%)
+- Oranlar **trip-bazlı, cihaz-yerel** hatırlanır (Room DB); handle'lar cascade-through, tap-to-snap-to-default, haptic feedback (snap/tam kapanma anında) davranışlarına sahip
+- **Yatay (landscape) modda farklı layout**: Timeline sol sütun (genişlik ekseni), Detaylar+Map sağ sütunda üst-alt (yükseklik ekseni) — 2 bağımsız handle, farklı eksenler
+
+**Sabit Üst Bar:**
+- Sol `←` geri, orta başlık (ellipsis), sağda **her zaman 2 ikon** (simetrik): Owner → `✏️ Edit` + `⋮ Menü`; Misafir → `❤️ Upvote` + `⋮ Menü`
+- Owner `⋮` menüsü **trip durumuna göre değişir**: Draft→Yayınla·Sil; Published→Arşivle·**Düzenlemek için Taslağa Al**·Paylaş·Sil; Archived→Yayına Al·Sil
+- `✏️ Edit` ve Timeline entry mutasyonları (Edit/Kilidi Aç/Sil/+Detay Ekle) **sadece Draft'ta aktif** — Published/Archived'da owner önce "Taslağa Al" ile Draft'a dönmeli (bkz. `BACKEND_ROADMAP_V2.md → B0.14`)
+
+**Detaylar Bölümü:** Kapak fotoğrafı, status badge, tarih aralığı, başlık, ülke+kişi sayısı, ❤️/🔀 sayıları (salt-okunur). Küçülürken kademeli kaybolur (beğeni/fork/ülke/tarih önce, başlık en son).
+
+**Map Bölümü:** MapLibre Compose + OpenFreeMap (ücretsiz, API key gerekmez), destinasyon pinleri, `[Kuş Bakışı | Yol]` toggle (Kuş Bakışı = crow-fly, her zaman çalışır; Yol = OpenRouteService polyline, backend proxy üzerinden — bkz. `BACKEND_ROADMAP_V2.md → B0.15`, best-effort/fallback). `⛶` ile Tam Ekran Harita Modu (floating draggable Timeline card).
+
+**Timeline Bölümü — 2 Mod:**
+- **Review Modu** (varsayılan): Toplam Bütçe satırı (herkese açık) + Review/Gün gün toggle + Flights/Hotels/Mekan kategori kartları (progress ring + checklist, sadece Flights/Hotels manuel toggle edilebilir — Mekan otomatik/salt-okunur)
+- **Gün gün Modu**: Gün sekmeleri (yatay) + seçili günün kronolojik listesi (saat + ikon + isim)
+- **Detay Modal**: entry'ye dokununca açılır — gerçek entry varsa (Durum A) tip'e özel kart (Flight/Hotel = "boarding pass" tarzı; diğerleri sade) + Edit/Fork; entry yoksa (Durum B) boş durum + "+ Detay Ekle" (ayrı sayfaya gider, modal'a değil)
 
 **Ana aksiyonlar:**
-- Publish
-- Archive
-- Edit
-- Delete
-- Paylas
-- Save
-- Unsave
-- Upvote
-- Fork
-- Live Trip Mode'a gec
-- Budget summary ac
-- Recommend places ac
+- Owner: Yayınla, Arşivle, Yayına Al, Düzenlemek için Taslağa Al, Sil (onay dialoglu), Timeline entry Edit/Kilidi Aç/Sil/Ekle (Draft-only)
+- Misafir/Herkes: Upvote, Fork, Kaydet (Collections bottom sheet, mock), Paylaş (native share, app açmaz — bkz. B4.5), Şikayet Et (M3'te disabled, B5.1 bekliyor)
+- Checklist işaretleme (Flights/Hotels) — Draft-only DEĞİL, her durumda owner işaretleyebilir
 
 ## 6.4 Create Trip Entry Page
 
@@ -643,7 +705,7 @@ Wizard'in her adimi ayri page olarak ele alinmalidir.
 
 **Amac:** Trip'in butce dagilimini gostermek.
 
-**Kim gorur:** Owner veya yetkili kullanici
+**Kim gorur:** Published trip'lerde **herkes (anonim dahil)**; Draft/Archived'de sadece owner. Bkz. `BACKEND_ROADMAP_V2.md → B0.10`, tasarım detayı `omniflow-mobile/TRIP_DETAILS_PAGE.md`.
 
 **Ana icerik:**
 - Tahmini toplam maliyet
@@ -657,7 +719,7 @@ Wizard'in her adimi ayri page olarak ele alinmalidir.
 
 **Amac:** Bir destination icin puanlanmis ve onerilmis place listesi gostermek.
 
-**Kim gorur:** Trip owner / collaborator
+**Kim gorur:** Published trip'lerde **herkes (anonim dahil)**; Draft/Archived'de sadece owner — Trip Detail'deki diğer child kaynaklarla (Timeline, Budget Summary, Destinations) **tutarlı olsun diye** aynı visibility deseni benimsendi (bkz. `BACKEND_ROADMAP_V2.md → B0.10`). "Timeline'a ekle" aksiyonu zaten sadece owner'a görünür (misafir bu sayfayı görebilir ama düzenleyemez).
 
 **Ana icerik:**
 - Recommended
@@ -676,7 +738,7 @@ Wizard'in her adimi ayri page olarak ele alinmalidir.
 
 **Amac:** Trip'in planlanan tum entry'lerini gostermek.
 
-**Kim gorur:** Trip owner / collaborator
+**Kim gorur (read vs write ayrımı):** Published trip'lerde **herkes (anonim dahil) görüntüler**; Draft/Archived'de sadece owner (404 diğerlerine, bkz. `BACKEND_ROADMAP_V2.md → B0.10`). **Create/Edit/Delete/Reorder/Visited aksiyonları ise sadece owner'a açık** — misafir/anonim salt-okunur görüntüler.
 
 **Ana icerik:**
 - Gun bazli timeline

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ic_community.xml — People / Community tab -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Front person body -->
+    <path
+        android:pathData="M17,21V19A4,4 0,0 0,13 15H5A4,4 0,0 0,1 19V21"
+        android:strokeColor="#6F7F95"
+        android:strokeWidth="1.75"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"/>
+
+    <!-- Front person head -->
+    <path
+        android:pathData="M9,11m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"
+        android:strokeColor="#6F7F95"
+        android:strokeWidth="1.75"
+        android:fillColor="@android:color/transparent"/>
+
+    <!-- Back person body -->
+    <path
+        android:pathData="M23,21V19A4,4 0,0 0,20 15.13"
+        android:strokeColor="#6F7F95"
+        android:strokeWidth="1.75"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent"/>
+
+    <!-- Back person head -->
+    <path
+        android:pathData="M16,3.13A4,4 0,0 1,16 10.88"
+        android:strokeColor="#6F7F95"
+        android:strokeWidth="1.75"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent"/>
+</vector>
