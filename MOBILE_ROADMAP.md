@@ -26,7 +26,7 @@
 | Yerel DB / cache | Room + DataStore |
 | Görsel | Coil |
 | Navigation | Navigation-Compose (type-safe routes) |
-| Harita | Google Maps Compose (M8'de) |
+| Harita | MapLibre Android SDK (native, `AndroidView` ile sarmalanır) + OpenFreeMap tile (ücretsiz, API key/kart gerektirmez) — rota çizimi: OpenRouteService backend proxy (ORS), ileride OSRM'e geçilebilir |
 | Push | Firebase Cloud Messaging (M9'da) |
 | Test | JUnit + MockK + Turbine + coroutines-test |
 | Build | Gradle (Kotlin DSL) + Version Catalog (`libs.versions.toml`) |
@@ -1090,53 +1090,283 @@ Uygulamanın kalbi. Trip listesi, detay, 8 adımlı oluşturma wizard'ı, destin
 
 ### Task 3.2: Trip Detail Görünümü
 
+**Tahmini Süre:** ~21 saat (aşağıdaki alt görevlerin toplamı)
+**Durum:** [ ] Bekliyor — sıfırdan yeniden tasarlandı, alt görevlere bölündü
+
+> **Tek kaynak:** Tüm tasarım kararları, tam ölçüler, API contract'ları ve edge case'ler için **`omniflow-mobile/TRIP_DETAILS_PAGE.md`**. Aşağıdaki her alt görev o dokümanın ilgili bölümüne referans verir. Önceki mimari (Gün sekmeleri + Kategori/Gün toggle + blur-modal, eski Task 3.2.1–3.2.7) kullanıcının vizyonunu yansıtmadığı için **tamamen terk edildi**; kod tarafında `TripDetailScreen.kt` + `TripDetailViewModel.kt` hâlâ eski implementasyonu içeriyor, aşağıdaki alt görevler bunu rework edecek.
+>
+> **Backend bağımlılıkları (tüm alt görevler için ortak havuz, her birinde ayrıca belirtilir):** B0.9 (Checklist Confirmation), B0.10 (🔴 Güvenlik — visibility helper), B0.11 (Unarchive), B0.12 (Geocoding), B0.13 (PlanningSlotKey), B0.14 (🔴 Unpublish), B0.15 (ORS Proxy) — hepsi `BACKEND_ROADMAP_V2.md`'de.
+>
+> ⚠️ **Sıralama düzeltmesi (Map bağımlılığı):** `MapLibre Compose Kurulumu` daha önce M8/Task 8.1'de planlıydı, bu task'a (3.2.4) taşındı — M8/Task 8.1 artık sadece Live Trip'e özel GPS katmanı ekliyor.
+>
+> ⚠️ **B4.1 (Collections) — bloklayıcı değil:** Kaydet bottom sheet'i local mock collections kullanır (Task 3.1 ile aynı çözüm).
+> ⚠️ **B4.3 (Share metadata) / B5.1 (Report) — bloklayıcı değil:** Paylaş M3'te aktif (zengin önizleme olmadan), Şikayet Et M3'te disabled.
+
+---
+
+#### Task 3.2.1: Sabit Üst Bar
+
+**Tahmini Süre:** 2 saat
+**Durum:** [x] Tamamlandı — `TripDetailScreen.kt` package düzeltildi (`com.omniflow.ui.trips`), gerçek `TripDetailViewModel`/`TripDetailUiState`'e bağlandı. `unpublishTrip`/`unarchiveTrip` gerçek `@POST` endpoint olarak eklendi (B0.11/B0.14 backend'i henüz yok, mock fallback KULLANILMADI — hata durumunda gerçek `ApiResult.Error` döner).
+
+> Referans: `TRIP_DETAILS_PAGE.md → Sabit Üst Bar`
+> ⛔ Bağımlılık: B0.11, B0.14 (durum bazlı menü içeriği) — mobil taraf backend'i beklemeden tamamlandı, gerçek endpoint entegrasyonu backend hazır olunca test edilecek
+
+- [x] `←` geri + başlık (ellipsis, `maxLines=1`) + sağda 2 ikon (Owner: `✏️`+`⋮`, Misafir: `❤️`+`⋮`)
+- [x] Owner `⋮` menüsü **durum bazlı**: Draft→Yayınla·Sil; Published→Arşivle·Düzenlemek için Taslağa Al·Paylaş·Sil; Archived→Yayına Al·Sil
+- [x] `✏️ Edit` sadece Draft'ta aktif, Published/Archived'da disabled/gri
+- [x] Bu butonlar üst barda, gövdeden ayrı sabit bir Row'da yaşıyor (resizable pane altyapısı henüz yok — Task 3.2.2)
+- [ ] Misafir menüsündeki `🔖 Kaydet` şu an basit toggle (collection-picker bottom sheet henüz yok — Task 3.3.2/B4.1'e bırakıldı)
+- [ ] Anonim kullanıcı + auth-gerektiren aksiyon (login-required uyarısı) henüz eklenmedi — Task 3.3.2'ye bırakıldı
+
+---
+
+#### Task 3.2.2: Resizable Pane Altyapısı (Portrait)
+
 **Tahmini Süre:** 3 saat
-**Durum:** [ ] Bekliyor
+**Durum:** ✅ Tamamlandı
 
-> ⛔ **Bağımlılık: B0.6** (tamamlanma %), **B0.8** (kapak fotoğrafı)
+> Referans: `TRIP_DETAILS_PAGE.md → Genel Sayfa Yapısı / Bölüm Boyutları ve Handle'lar`
+> Not: Bu görev, `TripDetailScreen.kt`'deki mevcut tek-parça `TripDetailBody`'yi (Task 3.2.1'de bilinçli olarak minimal/tek-scroll bırakılmıştı) Detaylar/Map/Timeline 3 ayrı pane + 2 handle olarak yeniden yazacak.
 
-**Layout: Cover Photo → Harita (sticky) → Scroll İçerik + Tam Ekran Harita Modu**
+- [x] `%100` referans alanı = ekran yüksekliği − 56dp üst bar − bottom nav − `WindowInsets` (`Modifier.weight` ile otomatik — manuel piksel hesabı yok)
+- [x] Drag state: local Compose state (`remember { mutableStateOf }`) — sürüklerken anlık/60fps; `TripDetailUiState`'e (ViewModel'e) **sadece drag-end/tap-snap anında commit edilir** (`onPaneResize` → ViewModel → Room)
+- [x] 2 handle (Detaylar↔Map, Map↔Timeline) — min/maks/default: Detaylar 0-30(30), Map 0-40(30), Timeline türetilen(40) — `DETAYLAR_MAX=0.30f`, `MAP_MAX=0.40f`, default'lar `0.30f/0.30f`
+- [x] Drag: tek `pointerInput` + `awaitEachGesture` (tap+drag çakışması yok), `onSizeChanged` ile `totalHeightPx` ölçümü → `positionChange().y / totalHeightPx` ile fraksiyonel delta
+- [x] Tek dokunuş: drag yoksa `onTap` → default orana snap; zaten default'taysa (`liveDetaylar != DETAYLAR_DEFAULT || liveMap != MAP_DEFAULT` karşılaştırması) no-op + haptic yok
+- [x] Cascade kuralı (simetrik) — `applyHandle1Drag` (Detaylar büyür, Map geriler) ve `applyHandle2Drag` (Map'in own clamp'i → overflow Detaylar'a kaskad) — Timeline hiç mutate edilmez, `1f - detaylar - map` türetilen, invariant float drift birikmez
+- [x] Performans: `Modifier.weight(fraction)` ile layout yerleşimi (manuel piksel/yükseklik hesabı yok), drag-commit sadece drag-end'de
+- [x] Handle görsel: 32dp×4dp drag-indicator çizgisi, 48dp sabit yükseklikli Column sibling (komşu pane weight küçülse de handle satırı korunur) — gerçek MapLibre `AndroidView` entegrasyonu/gesture-tuning Task 3.2.4'e bırakıldı
+- [x] Tampon boşluk: Map pane içinde `padding(vertical = 24.dp)` → handle hit-area ile Map render sınırı arası yapısal buffer (native-View tuning 3.2.4)
+- [x] Handle görsel crossfade: `Crossfade` + `LaunchedEffect(isInteracting) { delay(1000); showIdleLabel = true }` — idle → isim, dokunma → çizgi, parmak kalkınca ~1sn gecikmeyle isme dönüş
+- [x] %0 edge case: `coerceAtLeast(EPSILON=0.0001f)` ile weight floor; `if (liveX > epsilon)` ile içerik render — görsel %0, layout geçerli, handle 48dp hit-area her zaman erişilebilir
+- [x] Haptic feedback: `LocalHapticFeedback.current` — (a) tap-to-snap anında, (b) drag sırasında pane >0'dan ≤0'a geçince (edge dedeksiyon `prevDetaylar`/`prevMap` ile tek seferlik LongPress)
+- [x] Timeline scroll: `rememberScrollState()` aynı composable seviyesinde — resize sırasında Column yeniden yaratılmaz, sadece height/weight değişir, scroll pozisyonu korunur
+- [x] Trip-bazlı, cihaz-yerel kalıcılık — Room DB: `TripPanePreferencesEntity` (`tripId` PK, `detaylarFraction`, `mapFraction`, `displayMode`, `selectedDayIndex` — Timeline saklanmaz, türetilen), `TripPanePreferencesDao` (`@Upsert` + `get`), `OmniFlowDatabase` version 1→2 + `.fallbackToDestructiveMigration()`, `TripPanePreferencesRepository` + Impl (Entity↔domain izolasyonu). **Landscape alanları dahil edilmedi** (Task 3.2.8'de ayrı migration)
 
-Detaylı layout, scroll davranışları ve aksiyon kuralları için bkz. `OMNIFLOW_PAGE_ARCHITECTURE.md § 6.3`
+**Ek bug-fix (loadTripDetail):** Mevcut `TripDetailViewModel.loadTripDetail()` her çağrıda (owner aksiyonlarından sonra `runAction()` içinden de tetikleniyor) `_uiState`'i mapper'ın taze/default sonucuyla komple değiştiriyordu — bu `displayMode`/`selectedDayIndex`'i (ve eklenecek pane oranlarını) sessizce sıfırlıyordu. Düzeltildi: mapper sonucu `fresh.copy(...)` ile mevcut tercihler (detaylar/map/displayMode/selectedDayIndex) korunarak uygulanıyor.
 
-**Yapılacaklar:**
-- [ ] **Sabit üst bar** — `←` + trip başlığı + `✏️ ⋮` (owner) / sadece başlık (misafir)
-- [ ] **Cover photo bölümü (~%45)** — tam genişlik fotoğraf (Coil); yoksa teal-navy gradyan placeholder; üzerine karartılı gradient overlay
-  - Overlay üst: statü badge (`🟢 Yayında` / `🟡 Taslak` / `⚫ Arşiv`) + tarih aralığı
-  - Overlay alt: `❤️ {UpvoteCount} · 🔖 Kaydet · 🔀 Fork` (frosted glass butonlar, **misafir görünümü**); owner'da bu satır gizli
-  - Scroll ile parallax/collapse — tamamen kaybolur
-- [ ] **Harita bölümü (~%35, cover photo kaybolunca sticky)** — Google Maps Compose; destinasyon pinleri; sağ üst `[Kuş Bakışı | Yol]` toggle; sağ alt `⛶` büyüt ikonu
-  - Kuş Bakışı = kesik düz çizgi rota
-  - Yol = ORS polyline (ileride OSRM)
-- [ ] **Stats satırı** — `🗓 {gün}Gün · ⚡{aktivite}Aktivite · ⭕%{tamamlanma} · 👤{kişi}Kişi`
-- [ ] **Uçuş satırı** (tıklanabilir → Provider Flights) — `✈️ THY · İST→FCO · 15 Tem 06:30 ›`; seçilmemişse `Uçuş ekle`
-- [ ] **Otel satırı** (tıklanabilir → Provider Hotels) — `🏨 Hotel Artemide · Roma · 15–18 Tem ›`; seçilmemişse `Otel ekle`
-- [ ] **Gün kartları** — her zaman görünür; renk kodlu numara dairesi (Gün1=mavi, Gün2=turuncu, Gün3=mor...); kapalı = aktivite sayısı; açık = timeline entry listesi (ikon + saat + başlık + alt başlık)
-- [ ] **Tam ekran harita modu** (`⛶` ikonuna basınca):
-  - Harita %100 ekran; bottom nav + scroll içerik gizli
-  - Floating `← Geri` + `[Kuş Bakışı | Yol]` toggle (floating pill)
-  - **Floating Draggable Timeline Card** (overlay, varsayılan sol alt): `📅 Rota` başlığı + `✕ Gizle` + gün listesi + `≡` sürükle tutacağı — sürüklenebilir; harita altında parmakla kaydırılabilir
-  - Card gizlenince sol alt köşede `☰` pill butonu kalır
-- [ ] Owner değilse edit/publish/delete gizli; Draft/Archived sadece owner'a görünür
-- [ ] `TripDetailViewModel` + `TripDetailUiState`
+**Yapılan dosya değişiklikleri:**
+- Yeni: `data/local/TripPanePreferencesEntity.kt`, `data/local/dao/TripPanePreferencesDao.kt`, `data/repository/TripPanePreferencesRepository.kt`
+- Değiştirilen: `data/local/OmniFlowDatabase.kt` (v2 + DAO), `core/di/DatabaseModule.kt` (fallbackToDestructiveMigration + DAO provider), `core/di/TripsModule.kt` (@Binds), `ui/trips/TripDetailUiState.kt` (2 alan + timelineFraction), `ui/trips/TripDetailViewModel.kt` (repo injekt, bug fix, load/save/persist), `ui/trips/TripDetailScreen.kt` (TripDetailBody → TripDetailPanes + ResizeHandle), `core/navigation/OmniFlowNavHost.kt` (onPaneResize callback)
+
+**Doğrulama:** `./gradlew :app:compileDebugKotlin --rerun-tasks` başarılı (KSP Room dahil). Sadece mevcut `Divider` deprecated uyarıları (bu değişiklik dışında). Manuel QA planı (12 madde)spec'te listelendi — drag + tap + cascade + haptic + crossfade timing + force-stop persistence + bug-fix regression + landscape crash yok.
+
+---
+
+#### Task 3.2.3: Detaylar Bölümü
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** ✅ Tamamlandı
+
+> Referans: `TRIP_DETAILS_PAGE.md → Detaylar Bölümünün İçeriği / İçerik Adaptasyonu`
+
+- [x] Tam açık içerik: kapak fotoğrafı (gerçek `coverPhotoUrl` — Coil `AsyncImage` + gradyan null-fallback, HomeScreen pattern'iyle birebir), status badge (3 renk — `statusColor()`: Draft→Warning amber, Published→Success yeşil, Archived→TextSecondary gri), tarih aralığı, başlık, ülke+kişi sayısı, ❤️/🔀 sayıları (salt-okunur)
+- [x] Küçülürken kademeli kaybolma — **tek eşik** (`DETAYLAR_COLLAPSE_THRESHOLD = 0.20f`): %20'nin altına inince badge/tarih/ülke/kişi/❤️/🔀 hepsi birlikte kaybolur, başlık `EPSILON`'a kadar kalmaya devam eder
+- [x] %0'da tamamen kapanır — başlık da dahil (`if (uiState.detaylarFraction > EPSILON)`)
+- [x] Layout: `Box` + `align(TopStart)`/`align(BottomStart)` (badge/tarih üstte, başlık/özet altta — referans mockup'la tutarlı), scrim bindirme (foto ve gradyan fallback üzerinde metin her zaman beyaz)
+
+**Ek bug-fix (status renk):** Mevcut `StatusPill` Draft trip'ler de dahil hepsinde `Success` yeşil gösteriyordu. `TripDetailPalette`'daki amber tonla aynı hex (`Color(0xFFF59E0B)`) `OmniColor.Warning` olarak eklendi, 3 yollu `statusColor(status)` fonksiyonu yazıldı.
+
+**Ek temizlik (Timeline kopya satır):** TimelinePane'in en üstünde tekrar gösterilen status/tarih/ülke/kişi/❤️/🔀 satırı kaldırıldı — bu iş Detaylar'ın, Timeline sadece Toplam Bütçe (3.2.5) + kategori kartları gösterir (spec). Kaldırılan yerde kısa yorumla not düşüldü.
+
+**Yapılan dosya değişiklikleri:**
+- Değiştirilen: `ui/trips/TripDetailUiState.kt` (`coverPhotoUrl: String? = null`), `ui/trips/TripDetailMapper.kt` (`coverPhotoUrl = coverPhotoUrl`), `ui/trips/TripDetailScreen.kt` (`OmniColor.Warning` + `DetaylarPane` [yeni, `DetaylarPanePlaceholder` yerine] + `statusColor()` + `DETAYLAR_COLLAPSE_THRESHOLD` + TimelinePane kopya sil + `coil.compose.AsyncImage`/`ContentScale` import'ları)
+
+**Doğrulama:** `./gradlew :app:compileDebugKotlin` başarılı (yeni import'lar dahil). Sadece mevcut `Divider` deprecated uyarıları.
+
+---
+
+#### Task 3.2.4: Map Bölümü + MapLibre Kurulumu
+
+**Tahmini Süre:** 3 saat
+**Durum:** [x] Tamamlandı — MapLibre native Android SDK ile kuruldu (`org.maplibre.gl:android-sdk` v11.8.0), OpenFreeMap `liberty` stili entegre edildi. Mock şehir koordinatları (`MockCityCoordinates`) ile pinler ve Kuş Bakışı rotası pürüzsüz çizildi. `GET /api/v1/Trips/{id}/route` endpoint'i gerçek olarak bağlandı; ORS hatası durumunda sessizce Kuş Bakışı'na fallback ve toggle pasifleştirme lojiği doğrulandı. Tam ekran modu floating `← Geri` ve dynamic kamera kadrajı ile tamamlandı.
+
+> Referans: `TRIP_DETAILS_PAGE.md → Map — 2 Mod`
+> ⛔ Bağımlılık: B0.12 (koordinat), B0.15 (ORS proxy)
+
+**M3 Map Kapsamı:**
+
+| Kapsam | M3'te var mı | Not |
+|---|---|---|
+| MapLibre Compose kurulumu (OpenFreeMap tile) | ✅ Evet | M8'den taşındı |
+| Destinasyon pinleri | ✅ Evet | `TripDestination` koordinatlarından (B0.12) |
+| **Kuş Bakışı** modu | ✅ Evet | ORS'a bağımlı değil, varsayılan/güvenli mod |
+| **Yol** modu (ORS) | ✅ Evet, best-effort | Backend proxy'den (B0.15), mobil ORS'u hiç çağırmaz |
+| Tam Ekran Harita Modu + floating card | ✅ Evet | Statik, GPS gerektirmez |
+| Konum izni / canlı GPS | ❌ Hayır | M8'e ait |
+| Offline davranışı | ❌ Kapsam dışı | Boş/gri harita + placeholder yeterli |
+
+- [x] MapLibre Compose bağımlılığı + OpenFreeMap tile style kurulumu
+- [x] Pinler, `[Kuş Bakışı | Yol]` toggle, `⛶` büyüt ikonu
+- [x] Null koordinatlı destinasyon → pin ve rota çiziminden atlanır, bir sonraki geçerliye direkt bağlanır
+- [x] ORS proxy çağrısı (`GET /api/v1/Trips/{id}/route`), hata → sessizce Kuş Bakışı'na fallback
+- [x] Tam Ekran Harita Modu: floating `← Geri` + toggle + draggable Timeline card (varsayılan sol alt, `✕ Gizle`/`☰` geri aç)
+
+> **Sonradan iyileştirme (Rota kartı):** "📅 Rota" kartı artık başlık satırından tutup ekranın her yerine sürüklenebiliyor (`detectDragGestures`, sınır içinde `coerceIn`). "✕ Gizle" kaldırıldı — yerine `ic_chevron_down` ikonu geldi, karta hiç dokunmuyor sadece tek satıra küçültüyor (kart hiçbir zaman tamamen kaybolmuyor). Gün satırına dokununca o günün saat/ikon/başlık listesi (`dayEntries` filtrelenerek) accordion şeklinde altında açılıyor; bir entry'ye dokununca mevcut Detay Modal açılıyor.
+
+---
+
+#### Task 3.2.5: Timeline — Review Modu
+
+**Tahmini Süre:** 3.5 saat
+**Durum:** [x] Tamamlandı — `buildCategoryCards()` gerçek mantığa göre yeniden yazıldı (Flights=leg bazlı `origin+destinationList` ardışık geçişleri, Hotels=destinasyon başına sabit 2 gece varsayımı, Mekan=sabit "Moderate≈5/gün" + PlaceCategory alt grup). Toplam Bütçe satırı (mock veri, tripId hash bazlı) + progress ring (coin-flip, sadece kart expanded'ken aktif) + checklist toggle (Flights/Hotels manuel, Mekan otomatik/salt-okunur) eklendi.
+
+> Referans: `TRIP_DETAILS_PAGE.md → Timeline Bölümü / Review Modu`
+> ⛔ Bağımlılık: B0.9 (checklist confirmation) — mobil taraf backend'i beklemeden tamamlandı
+
+- [x] Toplam Bütçe satırı (tam genişlik, herkese açık — anonim dahil, mock veri) + Review/Gün gün toggle (ayrı satırda, altında)
+- [x] Flights/Hotels/Mekan kategori kartları — progress ring (coin-flip animasyonu sadece kart expanded'ken aktif; gerçek viewport-görünürlük tespiti kapsam dışı bırakıldı, `LazyColumn`'a geçiş gerektirirdi)
+- [x] Ring renk kuralı: <%100 mavi, =%100 yeşil, >%100 kırmızı
+- [x] Checklist satırları (Flights/Hotels manuel toggle, Mekan otomatik/salt-okunur) — `itemKey` formatı + `PUT /checklist/{itemKey}` gerçek endpoint (mock fallback yok)
+- [x] Kart expand: wrap-content, kendi scroll'u yok (nested scroll conflict önlenir)
+- [x] Misafir: checklist salt-okunur (görür, işaretleyemez — `Checkbox(enabled = isOwner)`)
+
+**Bilinen mock/stand-in'ler (backend eksikliğinden):**
+- `itemKey`'ler gerçek `TripDestination.Id` GUID yerine şehir adı bazlı (`flight-leg:{fromCity}:{toCity}`, `hotel-night:{city}:{night}`) — B0.13 gelince güncellenecek.
+- Hotel gece sayısı sabit 2/destinasyon (gerçek tarih aralığı yok); Mekan beklenen sayısı sabit "Moderate≈5/gün" (Wizard Tempo alanı henüz mobile akmıyor).
+- Checklist `PUT` çağrısı backend olmadığı için her zaman hata dönüyor — **kullanıcı kararıyla bilerek geri alınmıyor** (revert yok), toggle lokalde kalıcı görünür. B0.9 gelince upvote/save'deki optimistic+revert-on-error pattern'ine geçilecek.
+- Toplam Bütçe tamamen mock (`tripId.hashCode()` bazlı) — gerçek `budget-summary` endpoint'i Task 3.2.9'da bağlanacak.
+
+**Doğrulama:** `./gradlew :app:compileDebugKotlin` başarılı (sadece önceden var olan `Divider`/MapLibre/`LocalLifecycleOwner` deprecation uyarıları).
+
+---
+
+#### Task 3.2.6: Timeline — Gün gün Modu
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** ✅ Tamamlandı
+
+> Referans: `TRIP_DETAILS_PAGE.md → Timeline Bölümü / Gün gün Modu`
+
+- [x] Gün sekmeleri — yatay scroll (horizontalScroll), "Gün N" kısa metin (day.index'ten türetilir), mevcut SegmentPill/MapModePill ile tutarlı pill görsel dili
+- [x] Seçili günün kronolojik listesi — saat + düz bağlantı çizgisi (Box width(1.5.dp).weight(1f).background(Border)) + ikon daire (28dp CircleShape, IconContainer + Primary ikon) + entry adı (tek satır), son entry'de çizgi yok
+- [x] Zaman gösterimi: entry.time dönüşümsüz (girildiği gibi, B2.4 gelene kadar)
+- [x] Boş gün mesajı: "Bu gün için henüz bir kayıt yok" (dayItems.isEmpty() durumu)
+- [x] Entry'ye dokunma → mevcut detay dialogu (onEntryDetailClick), gerçek Detay Modal Task 3.2.7'ye bırakıldı
+
+---
+
+#### Task 3.2.7: Detay Modal
+
+**Tahmini Süre:** 3 saat
+**Durum:** ✅ Tamamlandı
+
+> Referans: `TRIP_DETAILS_PAGE.md → Detay Modal — İçerik`
+> ⛔ Bağımlılık: B0.13 (PlanningSlotKey, exact match), B0.14 (Draft-only gate) — mock stand-in'lerle bypass edildi
+
+- [x] Durum A (gerçek entry): FlightCardContent (rota/tarih/süre/fiyat boarding-pass kartı), HotelCardContent (giriş/gece/fiyat), SimpleEntryContent (Mekan: ikon+başlık+bilgi, düz görünüm)
+- [x] Durum B (bağlı entry yok): EmptyLegContent — boş durum mesajı + owner+Draft'a `+ Detay Ekle`, Misafir'e sadece mesaj + `🔀 Fork`
+- [x] HorizontalPager ile aynı gün+kategorideki diğer entry'lere swipe
+- [x] Locked entry (isLocked=true): salt-okunur alanlar + `🔓 Kilidi Aç` butonu (canMutate=Draft-only), Sil gizli; unlock sonrası (isLocked=false) ✏️ Edit + Sil aktif
+- [x] Owner + Draft değilse (Published/Archived) Edit/Kilidi Aç/Sil disabled (gri)
+- [x] Entry silme (onDeleteEntry): hasLinkedEntry=false yapar (Durum A→B geçişi), aynı satırın checklist isConfirmed durumu DEĞİŞMEZ, modal kapanır
+- [x] mock: CategoryEntry'e hasLinkedEntry/isLocked/price/durationLabel/category alanları eklendi; Flight'ların ~%67'si, Hotel'lerin ilk gecesi Durum A
+- [x] Backend endpoint'leri: unlockTimelineEntry (PUT), deleteTimelineEntry (DELETE) — gerçek çağrı, mock fallback yok; B0.14 gelene kadar hata sessiz yutulur
+- [x] CategoryEntry modeli genişletildi (5 yeni alan, hepsi default değerli — mevcut kod kırılmaz)
+- [x] UnlockEntryDto (TripDtos.kt), TripService/TripRepository/Impl, ViewModel (onUnlockEntry/onDeleteEntry/updateEntry helper)
+- [x] OmniFlowNavHost: onUnlockEntry/onDeleteEntry ViewModel'e bağlandı, onEditEntryClick/onAddDetailClick TODO no-op
+
+---
+
+#### Task 3.2.8: Yatay Mod (Landscape)
+
+**Tahmini Süre:** 2 saat
+**Durum:** ✅ Tamamlandı
+
+> Referans: `TRIP_DETAILS_PAGE.md → Yatay Mod (Landscape)`
+
+- [x] Orientation dispatch: `LocalConfiguration.current.orientation == ORIENTATION_LANDSCAPE` → `TripDetailPanesLandscape`, aksi → `TripDetailPanes` (mevcut)
+- [x] Layout: Timeline sol sütun (genişlik ekseni, `LANDSCAPE_TIMELINE_MIN=0f, MAX=0.60f, DEFAULT=0.40f`), Detaylar+Map sağ sütun (üst-alt, yükseklik ekseni, `LANDSCAPE_DETAYLAR_MIN=0f, MAX=0.30f, DEFAULT=0.30f`)
+- [x] Handle A (dikey ayraç, yatay sürükleme — `HandleAxis.Horizontal`) + Handle B (yatay ayraç, dikey sürükleme — `HandleAxis.Vertical`) — bağımsız eksenler, cascade yok
+- [x] ResizeHandle genelleştirmesi: `axis: HandleAxis = HandleAxis.Vertical` parametresi — hit-area, drag delta ekseni, crossfade çizgisi orientation'ı axis'e göre değişir; gesture/crossfade/haptic mantığı ortak (DRY)
+- [x] Trip-bazlı kalıcılık: `TripPanePreferencesEntity` + `TripPanePreferences` + `TripDetailUiState` — `landscapeTimelineFraction`, `landscapeDetaylarFraction` alanları; portrait'ten ayrı Room kaydı (aynı tablo satırında ek kolon, version=3, `fallbackToDestructiveMigration`)
+- [x] ViewModel: `onLandscapePaneResize(timelineFraction, detaylarFraction)` — clamp + persist; `loadPanePreferences`/`persistPanePreferences` tüm alanları kapsıyor; `loadTripDetail` bug-fix genişletildi (landscape alanları da korunuyor)
+- [x] Tam Ekran Harita Modu: yatay modda da portrait'tekiyle aynı `Dialog` mantığı (ayrı MapView, mode toggle)
+- [x] Eski kod temizliği: `TripDetailLandscapeScreen`, `CompactBudgetRow`, `CompactCategoryRow`, `TripCategory`, `defaultCategories` silindi
+
+---
+
+#### Task 3.2.9: Veri Orkestrasyonu
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** ✅ Tamamlandı
+
+> Referans: `TRIP_DETAILS_PAGE.md → Veri Orkestrasyonu`
+
+- [x] 4 endpoint paralel çağrı (GetById, Timeline, BudgetSummary, Checklist) — aggregate endpoint yok, `loadSecondaryData()` ile `awaitAll(async { ... }, ...)` paralel başlatılır
+- [x] Partial failure matrisi: sadece GetById bloklayıcı (tam ekran hata, mevcut davranış), diğer 3 bağımsız/non-blocking
+- [x] `GET /route` (B0.15) sayfa açılışında değil, Yol moduna geçilince on-demand çağrılır (Task 3.2.4'te zaten doğru kurulmuştu — bu görev bu davranışı değiştirmedi)
+- [x] Sessiz mock fallback kararı: backend'de Timeline/BudgetSummary/Checklist endpoint'leri henüz yok (B0.9 dahil) → üçü de hata döner, sonuçlar sessizce yutulur, mevcut mapper mock'u (categoryCards/budget/checklist) çalışmaya devam eder. Backend gelince `ApiResult.Success` dalları gerçek veriyi UI state'e besleyecek şekilde genişletilecek.
+- [x] "Inline hata + Tekrar Dene" UI'ı bilerek yazılmadı — mock fallback nedeniyle hiçbir zaman tetiklenemezdi (ölü kod). Backend gelip bu çağrılar bağımsız başarısız olabildiğinde eklenecek (MOBILE_ROADMAP.md'de not düşüldü).
+- [x] Yeni DTO'lar: `TimelineResponseDto`, `TimelineEntryDto`, `BudgetSummaryResponseDto`, `ChecklistResponseDto`, `ChecklistItemDto` — hepsi backend TBD şekil tahmini
+- [x] TripService: `getTimeline`, `getBudgetSummary`, `getChecklist` — gerçek endpoint, route casing spec'e uygun (timeline küçük-t, diğerleri büyük-T)
+- [x] TripRepository/Impl: her üç metod `apiCallExecutor.execute { tripService.getXxx(tripId) }` — repository seviyesinde mock fallback yok
+- [x] TripDetailViewModel: `loadSecondaryData()` — `viewModelScope.launch { awaitAll(async { getTimeline }, async { getBudgetSummary }, async { getChecklist }) }`; `loadTripDetail()`'in Success dalından çağrılır
 
 ---
 
 ### Task 3.3: Trip Detail Aksiyonları
 
-**Tahmini Süre:** 1 saat
-**Durum:** [ ] Bekliyor
+**Tahmini Süre:** ~4 saat (aşağıdaki alt görevlerin toplamı)
+**Durum:** [x] Tamamlandı — 3.3.1/3.3.2/3.3.3 hepsi bitti
 
-**Yapılacaklar:**
-- [ ] **Üst bar — Owner**: sağ üstte ✏️ Edit butonu + ⋮ menu (Yayınla / Arşivle / Sil); edit → Trip edit formuna gider
-- [ ] **Üst bar — Başkasının trip'i**: ❤️ Upvote + 🔖 Kaydet + 🔀 Fork
-- [ ] Detail aksiyonları: publish, archive, edit, delete, save/unsave, upvote, fork
-- [ ] Save/upvote optimistic + snackbar
+> Eski implementasyon notu (aşağıda, geçmiş kayıt) eski mimariye (V1/V2, Gün kartları) aitti — yeni tasarımla bu alt görevler geçerli.
+
+---
+
+#### Task 3.3.1: Durum Bazlı Owner Aksiyonları
+
+**Tahmini Süre:** 2 saat
+**Durum:** [x] Tamamlandı — Task 3.2.1 ile birlikte, aynı turda uygulandı.
+
+> ⛔ Bağımlılık: B0.11 (Unarchive), B0.14 (🔴 Unpublish) — mobil taraf backend'i beklemeden tamamlandı
+
+- [x] Yayınla (Draft→Published), Arşivle (Published→Archived), Yayına Al (Archived→Published)
+- [x] **Düzenlemek için Taslağa Al** (Published→Draft) — onay dialogu: "Bu geziyi düzenlemek için yayından kaldıracaksın. Düzenleme bitince tekrar yayınlaman gerekecek. Devam edilsin mi?" + İptal/Devam Et (`MoveToDraftConfirmDialog`)
+- [x] Sil — onay dialogu ("Bu gezi kalıcı olarak silinecek. Emin misin?", `DeleteConfirmDialog`), onaylanmadan API çağrısı yok
+- [ ] Not: Sil onaylandıktan sonra ekran otomatik geri gitmiyor (mevcut `loadTripDetail()` sonrası davranışı korunuyor) — nav-back-on-delete ayrı bir iyileştirme olarak bırakıldı
+
+---
+
+#### Task 3.3.2: Misafir/Herkes Aksiyonları
+
+**Tahmini Süre:** 1.5 saat
+**Durum:** [x] Tamamlandı — `TokenStore.sessionState` (mevcut, network'süz) ile anonim kontrolü eklendi; Kaydet artık boş değilse önce koleksiyon-seçim bottom sheet'i açıyor (My Trips'in `defaultCollections` mock listesi reuse edildi), zaten kaydedilmişse direkt toggle ediyor.
+
+> ⛔ Bağımlılık: B4.1 (Collections, mock ile ilerlenir)
+
+- [x] Upvote (toggle), Fork, Kaydet (Collections bottom sheet, local mock — `MyTripsUiState.defaultCollections` reuse edildi, B4.1 gelince gerçek endpoint'e geçirilir)
+- [x] Paylaş — native Android share sheet, düz link (zaten 3.2.1'de tamamdı, değişiklik yok)
+- [x] Şikayet Et — M3'te disabled (zaten 3.2.1'de tamamdı, değişiklik yok)
+- [x] **Anonim + auth gereken aksiyon:** `onAction()` içinde `AUTH_REQUIRED_ACTIONS` (UPVOTE/FORK/SAVE) + `isAnonymous` kontrolü — anonimse `showLoginRequiredDialog=true`, API çağrısı hiç yapılmaz; dialogdaki "Giriş Yap" `Routes.Login`'e yönlendirir (dönüşte manuel geri navigasyon — resume-flow mekanizması bu kapsamda yok)
+
+---
+
+#### Task 3.3.3: Erişim Kontrolü (Draft/Archived + Deep Link)
+
+**Tahmini Süre:** 0.5 saat
+**Durum:** [x] Tamamlandı (mobil tarafın yapabileceği tek şeyle sınırlı) — `loadTripDetail()`'in hata dalı artık her zaman jenerik "Bu gezi bulunamadı" gösteriyor, ham `result.message` hiç sızdırılmıyor.
+
+> ⛔ Bağımlılık: B0.10 (🔴 Güvenlik) — gerçek 404 enforcement tamamen backend işi, mobil bunu üretemez/test edemez
+
+- [x] Hata mesajı jenerik hale getirildi (teknik detay/40x-50x ayrımı sızdırılmıyor)
+- [ ] Owner olmayan biri Draft/Archived'e deep link ile erişirse → backend 404 (B0.10 gelmeden gerçekleşmiyor, mobil zaten hazır — jenerik mesaj otomatik devreye girecek)
+- [x] Owner kendi Draft/Archived trip'ine erişimi mevcut davranışla zaten çalışıyor (backend şu an hiç kısıtlama yapmıyor)
+
+---
+
+**Eski İmplementasyon (Geçmiş Kayıt — eski mimariye ait, referans amaçlı korunuyor):**
+- [x] ~~Üst bar — Owner: ✏️ Edit + ⋮ menu~~
+- [x] ~~Üst bar — Guest: share + ⋮ menu~~
+- [x] ~~Detail aksiyonları: publish, archive, delete, upvote/remove-upvote, save/unsave, fork~~
+- [x] ~~Upvote/save optimistic toggle + API hatasında geri alma~~
+- 6 dosya: `TripDetailPalette.kt`, `TripDetailDimens.kt`, `TripDetailUiState.kt`, `TripDetailMapper.kt`, `TripDetailViewModel.kt`, `TripDetailScreen.kt` (V1+V2) — yeni mimariye göre rework edilecek
+- Modifiye edilmiş dosyalar (`TripService.kt`, `TripRepository.kt` vb.) korunuyor, üzerine inşa edilecek
 
 ---
 
 ### Task 3.4: ~~Saved Trips~~ — My Trips'e Taşındı
-
 > **Karar (M3):** Saved Trips ayrı bir sayfa olmaktan çıkarıldı. My Trips ekranında `Kaydedilenler` adlı üçüncü sekme olarak yaşıyor. Bkz. Task 3.1.
 
 ---
@@ -1250,7 +1480,7 @@ Detaylı layout, scroll davranışları ve aksiyon kuralları için bkz. `OMNIFL
 - [ ] **Review & Create**
   - Tüm seçimlerin özeti (düzenle linkleriyle) + destinasyon listesi + tahmini bütçe fallback sonucu
   - Aksiyon: "Trip Oluştur" → submit (buton loading) · hata → snackbar + ilgili adıma dön
-- [ ] Son adımda `POST /trips/wizard` → `CreateTripWizardResponse` (budget fallback sonucu) → Trip Detail'e yönlendir
+- [ ] Son adımda `POST /api/v1/Trips/wizard` → `CreateTripWizardResponse` (budget fallback sonucu) → Trip Detail'e yönlendir
 
 ---
 
@@ -1271,8 +1501,10 @@ Detaylı layout, scroll davranışları ve aksiyon kuralları için bkz. `OMNIFL
 **Tahmini Süre:** 2.5 saat
 **Durum:** [ ] Bekliyor
 
+> ⛔ **Bağımlılık: B0.10** — Liste **Published trip'lerde anonim dahil herkese açık** (görüntüleme); Draft/Archived'de sadece owner (404 diğerlerine). Bkz. `OMNIFLOW_PAGE_ARCHITECTURE.md § 9.1`.
+
 **Yapılacaklar:**
-- [ ] **Timeline** — gün bazlı liste, lock/visited/sıralama durumu (`GET /trips/{id}/timeline`)
+- [ ] **Timeline** — gün bazlı liste, lock/visited/sıralama durumu (`GET /api/v1/trips/{tripId}/timeline`)
 - [ ] Gün için "Bu güne entry yok" + ekle CTA
 - [ ] Locked entry kilitli rozet
 
@@ -1282,6 +1514,8 @@ Detaylı layout, scroll davranışları ve aksiyon kuralları için bkz. `OMNIFL
 
 **Tahmini Süre:** 3 saat
 **Durum:** [ ] Bekliyor
+
+> **Not:** Create/Edit/Delete **sadece owner'a açık** (misafir/anonim salt-okunur, bu ekranlara hiç erişemez).
 
 **Yapılacaklar:**
 - [ ] **Create/Edit Timeline Entry** — 5 tip (Place, CustomFlight, CustomTransport, CustomAccommodation, CustomEvent)
@@ -1294,8 +1528,10 @@ Detaylı layout, scroll davranışları ve aksiyon kuralları için bkz. `OMNIFL
 **Tahmini Süre:** 1 saat
 **Durum:** [ ] Bekliyor
 
+> **Not:** Reorder/Visited **sadece owner'a açık** — misafir/anonim bu aksiyonları göremez/tetikleyemez.
+
 **Yapılacaklar:**
-- [ ] **Reorder** (drag) → `PUT /timeline/reorder`
+- [ ] **Reorder** (drag) → `PUT /api/v1/trips/{tripId}/timeline/reorder`
 - [ ] **Visited** toggle
 - [ ] Reorder/visited optimistic
 
@@ -1306,10 +1542,13 @@ Detaylı layout, scroll davranışları ve aksiyon kuralları için bkz. `OMNIFL
 **Tahmini Süre:** 1 saat
 **Durum:** [ ] Bekliyor
 
+> ⛔ **Bağımlılık: B0.10** — Backend'de bu endpoint şu an **katı owner-only** (`ForbiddenException`). Karar: **bütçe herkese açık** olacak (Owner/Misafir farkı yok), bu yüzden backend'in status-bazlı erişime (Published'da herkes, Draft/Archived'de sadece owner) çevrilmesi gerekiyor — bkz. `BACKEND_ROADMAP_V2.md → B0.10` ek düzeltme notu.
+
 **Yapılacaklar:**
-- [ ] **Budget Summary** — gerçek zamanlı kırılım (`GET /trips/{id}/budget-summary`)
+- [ ] **Budget Summary** — gerçek zamanlı kırılım (`GET /api/v1/Trips/{tripId}/budget-summary`)
 - [ ] Veri yoksa "Bütçe için entry ekle"
 - [ ] Fallback uygulanmışsa bilgi rozeti (adjusted tier)
+- [ ] Owner/Misafir ayrımı yok — sayfa herkese aynı şekilde görünür (Published trip'lerde)
 
 ---
 
@@ -1318,9 +1557,12 @@ Detaylı layout, scroll davranışları ve aksiyon kuralları için bkz. `OMNIFL
 **Tahmini Süre:** 0.5 saat
 **Durum:** [ ] Bekliyor
 
+> ⛔ **Bağımlılık: B0.10** — Liste **Published trip'lerde anonim dahil herkese açık**; Draft/Archived'de sadece owner (404 diğerlerine). **"Timeline'a ekle" aksiyonu ise sadece owner'a görünür** — misafir/anonim listeyi görebilir ama ekleyemez. Bkz. `OMNIFLOW_PAGE_ARCHITECTURE.md § 8.3`.
+
 **Yapılacaklar:**
-- [ ] **Recommend Places** — recommended/neutral/other (`GET /trips/{id}/recommend-places`) → timeline'a ekle
+- [ ] **Recommend Places** — recommended/neutral/other (`GET /api/v1/Trips/{id}/recommend-places`) → timeline'a ekle
 - [ ] "Öneri bulunamadı" → empty; Timeline'a ekle → snackbar
+- [ ] Owner değilse "Timeline'a ekle" butonu gizli/gösterilmez
 
 ---
 
@@ -1725,7 +1967,9 @@ Email/şifre akışının yanına Google ile giriş eklenir. Google Sign-In SDK 
 
 ## 🎯 M8 — Live Trip Mode + Harita + Visit Log + Trip Summary
 
-> ⛔ **Bağımlılık:** `BACKEND_ROADMAP_V2 → B2` (Visit Log, Trip Summary, Timezone). Ayrıca **Google Maps API anahtarı** gerekir.
+> ⛔ **Bağımlılık:** `BACKEND_ROADMAP_V2 → B2` (Visit Log, Trip Summary, Timezone). Harita için Google Maps API anahtarı **gerekmiyor** — MapLibre Compose + OpenFreeMap ücretsiz/API-key'siz kullanılıyor.
+>
+> ⚠️ **Sıralama notu:** MapLibre Compose'un temel kurulumu (kütüphane + OpenFreeMap tile) artık **M3 / Task 3.2**'de yapılıyor (Trip Detail zaten haritayı kullandığı için önce oraya taşındı). Bu fazda (M8) sadece **Live Trip'e özel GPS/konum katmanı** ekleniyor, temel harita altyapısı tekrar kurulmuyor.
 
 ### Scope
 
@@ -1733,13 +1977,15 @@ Seyahat sırasında kullanım: bugünün planı + harita + konum; gerçek ziyare
 
 ---
 
-### Task 8.1: Google Maps Compose + API Key
+### Task 8.1: Live Trip Harita — Konum Katmanı
 
-**Tahmini Süre:** 2 saat
+**Tahmini Süre:** 1 saat *(2 saatten düşürüldü — temel MapLibre kurulumu M3'e taşındığı için)*
 **Durum:** [ ] Bekliyor
 
+> ⛔ **Bağımlılık: M3 / Task 3.2** (MapLibre Compose kurulumu orada tamamlanmış olmalı)
+
 **Yapılacaklar:**
-- [ ] Google Maps Compose + API key (Manifest)
+- [ ] M3'te kurulan MapLibre haritasına **canlı konum pin'i** ve gerekli overlay'ler eklenir (temel kütüphane kurulumu tekrarlanmaz)
 
 ---
 

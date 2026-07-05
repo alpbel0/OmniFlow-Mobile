@@ -16,6 +16,7 @@ data class TripModel(
     val upvoteCount: Int,
     val viewCount: Int,
     val popularityScore: Double,
+    val ownerId: String?,
     val ownerUsername: String?,
     val isSaved: Boolean,
     val isUpvoted: Boolean,

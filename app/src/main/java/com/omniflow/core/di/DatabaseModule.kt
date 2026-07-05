@@ -3,6 +3,7 @@ package com.omniflow.core.di
 import android.content.Context
 import androidx.room.Room
 import com.omniflow.data.local.OmniFlowDatabase
+import com.omniflow.data.local.dao.TripPanePreferencesDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,6 +22,11 @@ object DatabaseModule {
             context,
             OmniFlowDatabase::class.java,
             "omniflow.db",
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
+
+    @Provides
+    @Singleton
+    fun provideTripPanePreferencesDao(database: OmniFlowDatabase): TripPanePreferencesDao =
+        database.tripPanePreferencesDao()
 }

@@ -77,4 +77,7 @@ object OmniTextStyles {
     val tripSavedUser = omniTextStyle(FontWeight.SemiBold, 10.5.sp, 14.sp)
     val tripFilterChip = omniTextStyle(FontWeight.SemiBold, 12.5.sp, 16.sp)
     val tripMetaSmall = omniTextStyle(FontWeight.Normal, 10.sp, 14.sp)
+    val tripDetailTitle = omniTextStyle(FontWeight.Bold, 26.sp, 34.sp)
+    val tripDetailBadge = omniTextStyle(FontWeight.Bold, 11.sp, 14.sp)
+    val tripDetailOverlayTitle = omniTextStyle(FontWeight.Bold, 15.sp, 22.sp)
 }

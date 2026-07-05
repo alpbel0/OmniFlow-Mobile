@@ -29,6 +29,7 @@ fun TripResponseDto.toModel(): TripModel = TripModel(
     upvoteCount = upvoteCount,
     viewCount = viewCount,
     popularityScore = popularityScore,
+    ownerId = ownerId,
     ownerUsername = ownerUsername,
     isSaved = isSaved ?: false,
     isUpvoted = isUpvoted ?: false,

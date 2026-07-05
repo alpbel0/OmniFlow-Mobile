@@ -76,6 +76,75 @@ data class SavedTripsPageDto(
     val totalCount: Int = 0,
 )
 
+/**
+ * ORS rota proxy cevabı — backend B0.15 (BACKEND_ROADMAP_V2.md) gelene kadar
+ * bu şekil tahminidir. Backend gerçek şekli belli olunca bu nota göre
+ * düzeltilecek. `points`: [ [lng, lat], [lng, lat], ... ] — GeoJSON
+ * koordinat sırası (longitude önce).
+ */
+@Serializable
+data class RouteResponseDto(
+    val points: List<List<Double>> = emptyList(),
+)
+
+/**
+ * Checklist toggle isteği gövdesi — backend B0.9 (BACKEND_ROADMAP_V2.md) gelene kadar
+ * bu şekil tahminidir.
+ */
+@Serializable
+data class ChecklistUpdateDto(
+    val isConfirmed: Boolean,
+)
+
+/**
+ * Unlock entry isteği gövdesi — backend B0.14 (BACKEND_ROADMAP_V2.md) gelene kadar
+ * bu şekil tahminidir.
+ */
+@Serializable
+data class UnlockEntryDto(
+    val isLocked: Boolean = false,
+)
+
+/**
+ * Timeline cevabı — backend B0.13 (BACKEND_ROADMAP_V2.md) gelene kadar
+ * bu şekil tahminidir.
+ */
+@Serializable
+data class TimelineResponseDto(
+    val entries: List<TimelineEntryDto> = emptyList(),
+)
+
+@Serializable
+data class TimelineEntryDto(
+    val id: String = "",
+    val title: String = "",
+)
+
+/**
+ * Bütçe özeti cevabı — backend B0.9 ile gelecek (BACKEND_ROADMAP_V2.md).
+ * Şekil tahminidir.
+ */
+@Serializable
+data class BudgetSummaryResponseDto(
+    val spent: Double = 0.0,
+    val total: Double = 0.0,
+)
+
+/**
+ * Checklist cevabı — backend B0.9 (BACKEND_ROADMAP_V2.md) gelene kadar
+ * bu şekil tahminidir.
+ */
+@Serializable
+data class ChecklistResponseDto(
+    val items: List<ChecklistItemDto> = emptyList(),
+)
+
+@Serializable
+data class ChecklistItemDto(
+    val itemKey: String = "",
+    val isConfirmed: Boolean = false,
+)
+
 enum class TripStatusDto(val value: Int) {
     Draft(0),
     Published(1),

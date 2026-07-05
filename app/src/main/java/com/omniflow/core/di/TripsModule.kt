@@ -1,6 +1,8 @@
 package com.omniflow.core.di
 
 import com.omniflow.data.remote.TripService
+import com.omniflow.data.repository.TripPanePreferencesRepository
+import com.omniflow.data.repository.TripPanePreferencesRepositoryImpl
 import com.omniflow.data.repository.TripRepository
 import com.omniflow.data.repository.TripRepositoryImpl
 import dagger.Binds
@@ -17,6 +19,12 @@ abstract class TripsModule {
     @Binds
     @Singleton
     abstract fun bindTripRepository(impl: TripRepositoryImpl): TripRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTripPanePreferencesRepository(
+        impl: TripPanePreferencesRepositoryImpl,
+    ): TripPanePreferencesRepository
 
     companion object {
         @Provides

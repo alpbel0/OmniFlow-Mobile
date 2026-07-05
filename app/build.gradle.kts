@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.coil.compose)
+    implementation(libs.maplibre.android.sdk)
 
     ksp(libs.androidx.room.compiler)
     ksp(libs.hilt.compiler)

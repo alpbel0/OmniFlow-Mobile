@@ -43,6 +43,8 @@ import com.omniflow.ui.profile.PublicProfileScreen
 import com.omniflow.ui.profile.PublicProfileViewModel
 import com.omniflow.ui.trips.MyTripsScreen
 import com.omniflow.ui.trips.MyTripsViewModel
+import com.omniflow.ui.trips.TripDetailScreen
+import com.omniflow.ui.trips.TripDetailViewModel
 import com.omniflow.ui.social.CommunityDiscoveryScreen
 import com.omniflow.ui.social.CommunityViewModel
 import com.omniflow.ui.settings.SettingsScreen
@@ -180,11 +182,51 @@ fun OmniFlowNavHost() {
                     uiState = uiState,
                     paddingValues = innerPadding,
                     onTabSelected = { viewModel.onTabSelected(it) },
-                    onTripClick = { /* TODO Task 3.2: TripDetail */ },
+                    onTripClick = { tripId ->
+                        navController.navigate(Routes.TripDetail.createRoute(tripId))
+                    },
                     onCreateTrip = { /* TODO M3: trip wizard */ },
                     onExplore = { navController.navigate(Routes.Explore.route) },
                     onFilterSelected = { viewModel.onFilterSelected(it) },
                     onAddCollection = { viewModel.onAddCollection() },
+                )
+            }
+            composable(
+                route = Routes.TripDetail.route,
+                arguments = listOf(navArgument("tripId") { type = NavType.StringType }),
+            ) {
+                val viewModel: TripDetailViewModel = hiltViewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                TripDetailScreen(
+                    uiState = uiState,
+                    paddingValues = innerPadding,
+                    onBack = { navController.popBackStack() },
+                    onMapModeChange = { viewModel.onMapModeChange(it) },
+                    onAction = { viewModel.onAction(it) },
+                    onDayClick = { /* TODO: expanded day view */ },
+                    onDaySelected = { viewModel.onDaySelected(it) },
+                    onDisplayModeChange = { viewModel.onDisplayModeChanged(it) },
+                    onEntryDetailClick = { viewModel.onViewEntryDetail(it) },
+                    onDismissEntryDetail = { viewModel.onDismissEntryDetail() },
+                    onEditClick = { /* TODO M3: trip edit screen */ },
+                    onRequestMoveToDraft = { viewModel.onRequestMoveToDraft() },
+                    onDismissMoveToDraftDialog = { viewModel.onDismissMoveToDraftDialog() },
+                    onConfirmMoveToDraft = { viewModel.onConfirmMoveToDraft() },
+                    onRequestDelete = { viewModel.onRequestDelete() },
+                    onDismissDeleteDialog = { viewModel.onDismissDeleteDialog() },
+                    onConfirmDelete = { viewModel.onConfirmDelete() },
+                    onPaneResize = { d, m -> viewModel.onPaneResize(d, m) },
+                    onLandscapePaneResize = { t, d -> viewModel.onLandscapePaneResize(t, d) },
+                    onToggleChecklistItem = { viewModel.onToggleChecklistItem(it) },
+                    onUnlockEntry = { viewModel.onUnlockEntry(it) },
+                    onDeleteEntry = { viewModel.onDeleteEntry(it) },
+                    onEditEntryClick = { /* TODO M3: entry edit screen */ },
+                    onAddDetailClick = { /* TODO M3: add detail wizard */ },
+                    onDismissLoginRequiredDialog = { viewModel.onDismissLoginRequiredDialog() },
+                    onNavigateToLogin = { navController.navigate(Routes.Login.createRoute()) },
+                    onDismissCollectionPicker = { viewModel.onDismissCollectionPicker() },
+                    onCollectionSelected = { viewModel.onCollectionSelected(it) },
                 )
             }
             composable(Routes.Explore.route) {

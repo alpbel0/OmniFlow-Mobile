@@ -105,4 +105,5 @@
     <string name="forgot_password_spam_help">Gelen kutunda yoksa spam/junk klasörünü kontrol et.</string>
     <string name="forgot_password_footer_prefix">Şifreni hatırladın mı? </string>
     <string name="forgot_password_footer_action">Login\'e dön</string>
+    <string name="trip_detail_scroll_hint">Detaylar için yukarı kaydırın</string>
 </resources>

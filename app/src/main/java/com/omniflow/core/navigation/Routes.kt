@@ -37,6 +37,9 @@ sealed class Routes(val route: String) {
         fun createRoute(userId: String, mode: String): String = "follow_list/$userId/$mode"
     }
     data object Settings : Routes("settings")
+    data object TripDetail : Routes("trip_detail/{tripId}") {
+        fun createRoute(tripId: String): String = "trip_detail/$tripId"
+    }
 
     companion object {
         private fun urlEncode(value: String): String =
